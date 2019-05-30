@@ -26,15 +26,12 @@ public class MetricsTrailConsumer {
             // 30 Minutes
             1800000};
 
-    private long[] consumerRetryIntervals = CONSUMER_DELIVERY_RETRY_INTERVALS;
-
     class MetricsTrailConsumerQueue {
 
         private final UUID trailId;
         private final MetricsPredicate gate;
         private final MetricsPredicate filter;
         private final List<Metric> accumulatedDeliveries = new ArrayList<>();
-        private final ThreadPoolExecutor delivererService = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
 
         private MetricsTrailConsumerQueue(UUID trailId) {
             this.trailId = trailId;
@@ -45,56 +42,74 @@ public class MetricsTrailConsumer {
         void enqueue(Metric metric) {
             this.accumulatedDeliveries.add(metric);
             if (this.gate == null || (metric != null && this.gate.test(metric))) {
-                this.accumulatedDeliveries.stream()
-                        .filter(accumulatedDelivery -> this.filter == null || this.filter.test(accumulatedDelivery))
-                        .forEach(accumulatedDelivery -> MetricsTrailConsumerQueue.this.deliver(this.trailId, accumulatedDelivery));
-                this.accumulatedDeliveries.clear();
+                deliverAccumulated();
             }
         }
 
+        void onTrailEnd() {
+            if (MetricsTrailConsumer.this.doFlushOnTrailEnd) {
+                deliverAccumulated();
+            }
+        }
+
+        private void deliverAccumulated() {
+            this.accumulatedDeliveries.stream()
+                    .filter(accumulatedDelivery -> this.filter == null || this.filter.test(accumulatedDelivery))
+                    .forEach(accumulatedDelivery -> MetricsTrailConsumerQueue.this.deliver(this.trailId, accumulatedDelivery));
+            this.accumulatedDeliveries.clear();
+        }
+
         private void deliver(UUID trailId, Metric metric) {
-            this.delivererService.execute(() -> {
-                int tries = 0;
-                try {
-                    while (true) {
-                        try {
-                            MetricsTrailConsumer.this.consumer.consume(MetricsTrailConsumer.this.consumerId, trailId, metric);
-                            break;
-                        } catch (Exception e) {
-                            /*
-                             * If a consumer is not able to consume its delivery, we wait for the next time
-                             * to try it.
-                             */
-                            long retryIntervalMs = MetricsTrailConsumer.this.consumerRetryIntervals[tries];
-
+            synchronized (MetricsTrailConsumer.this) {
+                if (!MetricsTrailConsumer.this.delivererService.isShutdown()) {
+                    MetricsTrailConsumer.this.delivererService.execute(() -> {
+                        int tries = 0;
+                        while (true) {
                             try {
-                                onRetry(consumer, e, retryIntervalMs);
-                            } catch (Exception e2) {
-                                // nop: this method is just called to inform.
+                                MetricsTrailConsumer.this.consumer.consume(MetricsTrailConsumer.this.consumerId, trailId, metric);
+                                break;
+                            } catch (Exception e) {
+                                /*
+                                 * If a consumer is not able to consume its delivery, we wait for the next time
+                                 * to try it.
+                                 */
+                                tries = awaitRetry(tries);
+                            } catch (Throwable t) {
+                                /*
+                                 * When something so destructive happens, we unregister the consumer to make
+                                 * sure not to create inconsistent data
+                                 */
+                                shutdown();
+                                throw t;
                             }
-
-                            Thread.sleep(retryIntervalMs);
-                            tries = Math.min(tries + 1, MetricsTrailConsumer.this.consumerRetryIntervals.length - 1);
                         }
-                    }
-                } catch (InterruptedException e) {
-                    /*
-                     * If we are not able to wait for a next try we cannot continue; we unregister
-                     * the consumer to make sure not to create inconsistent data
-                     */
-                    remove();
-                    throw new RuntimeException("Delivering a metric to the " + MetricsConsumer.class.getSimpleName()
-                            + " '" + MetricsTrailConsumer.this.consumer
-                            + "' failed, and triggering to wait for a retry failed as well.", e);
-                } catch (Throwable t) {
-                    /*
-                     * When something so destructive happens, we unregister the consumer to make
-                     * sure not to create inconsistent data
-                     */
-                    remove();
-                    throw t;
+                    });
                 }
-            });
+            }
+        }
+
+        private int awaitRetry(int tries) {
+            try {
+                long retryIntervalMs = MetricsTrailConsumer.this.consumerRetryIntervals[tries];
+
+                Thread.sleep(retryIntervalMs);
+                return Math.min(tries + 1, MetricsTrailConsumer.this.consumerRetryIntervals.length - 1);
+            } catch (Exception e) {
+                /*
+                 * If we are not able to wait for a next try we cannot continue; we unregister
+                 * the consumer to make sure not to create inconsistent data
+                 */
+                shutdown();
+                throw new RuntimeException("Delivering a metric to the " + MetricsConsumer.class.getSimpleName()
+                        + " '" + MetricsTrailConsumer.this.consumer
+                        + "' failed, and triggering to wait for a retry failed as well.", e);
+            }
+        }
+
+        private void shutdown() {
+            synchronized (MetricsTrailConsumer.this) {
+                MetricsTrailConsumer.this.delivererService.shutdownNow();
+            }
         }
     }
 
@@ -103,6 +118,11 @@ public class MetricsTrailConsumer {
 
     private final MetricsPredicate gate;
     private final MetricsPredicate filter;
+
+    private long[] consumerRetryIntervals = CONSUMER_DELIVERY_RETRY_INTERVALS;
+    private boolean doFlushOnTrailEnd = false;
+
+    private final ThreadPoolExecutor delivererService = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
 
     private MetricsTrailConsumer(String consumerId, MetricsConsumer consumer, MetricsPredicate gate, MetricsPredicate filter) {
         this.consumerId = consumerId;
@@ -144,6 +164,30 @@ public class MetricsTrailConsumer {
             throw new IllegalArgumentException("Cannot set a retry interval < 0");
         }
         this.consumerRetryIntervals = consumerRetryIntervals;
+    }
+
+    /**
+     * Returns whether the {@link MetricsTrailConsumer} should flush all of a trail's gated events when that trail ends,
+     * no matter whether the gate has been opened.
+     *
+     * @return True if a possibly set gate should be ignored when a session is
+     *         destroyed, false otherwise.
+     */
+    public boolean doFlushOnTrailEnd() {
+        return doFlushOnTrailEnd;
+    }
+
+    /**
+     * Sets whether the {@link MetricsTrailConsumer} should flush all of a trail's gated events when that trail ends,
+     * no matter whether the gate has been opened.
+     * <p>
+     * False by default.
+     *
+     * @param doFlushOnTrailEnd True if a possibly set gate should be ignored
+     *                                when a session is destroyed, false otherwise.
+     */
+    public void setDoFlushOnTrailEnd(boolean doFlushOnTrailEnd) {
+        this.doFlushOnTrailEnd = doFlushOnTrailEnd;
     }
 
     /**
