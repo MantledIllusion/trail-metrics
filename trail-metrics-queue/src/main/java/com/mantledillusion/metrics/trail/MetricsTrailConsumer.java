@@ -1,13 +1,11 @@
 package com.mantledillusion.metrics.trail;
 
 import com.mantledillusion.metrics.trail.api.Metric;
+import sun.awt.image.ImageWatched;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.function.Consumer;
 
 /**
  * Represents a {@link MetricsConsumer} that can consume {@link Metric}s from a {@link MetricsTrail}.
@@ -26,12 +24,34 @@ public class MetricsTrailConsumer {
             // 30 Minutes
             1800000};
 
-    class MetricsTrailConsumerQueue {
+    public class MetricsTrailConsumerQueue {
+
+        private class LinkedMetric {
+
+            private final Metric metric;
+            private LinkedMetric next;
+
+            private LinkedMetric(Metric metric) {
+                this.metric = metric;
+            }
+
+            private void delivered() {
+                synchronized (MetricsTrailConsumerQueue.this) {
+                    MetricsTrailConsumerQueue.this.first = this.next;
+                    if (MetricsTrailConsumerQueue.this.first == null) {
+                        MetricsTrailConsumerQueue.this.last = null;
+                    }
+                }
+            }
+        }
 
         private final UUID trailId;
         private final MetricsPredicate gate;
         private final MetricsPredicate filter;
-        private final List<Metric> accumulatedDeliveries = new ArrayList<>();
+
+        private LinkedMetric first;
+        private LinkedMetric current;
+        private LinkedMetric last;
 
         private MetricsTrailConsumerQueue(UUID trailId) {
             this.trailId = trailId;
@@ -39,77 +59,66 @@ public class MetricsTrailConsumer {
             this.filter = MetricsTrailConsumer.this.filter != null ? MetricsTrailConsumer.this.filter.functionalClone() : null;
         }
 
-        void enqueue(Metric metric) {
-            this.accumulatedDeliveries.add(metric);
-            if (this.gate == null || (metric != null && this.gate.test(metric))) {
+        synchronized void enqueue(Metric metric) {
+            if (this.filter == null || this.filter.test(metric)) {
+                LinkedMetric linkedMetric = new LinkedMetric(metric);
+                if (this.first == null) {
+                    this.first = linkedMetric;
+                }
+                if (this.current == null) {
+                    this.current = linkedMetric;
+                }
+                if (this.last != null) {
+                    this.last.next = linkedMetric;
+                }
+                this.last = linkedMetric;
+            }
+            if (this.gate == null || this.gate.test(metric)) {
                 deliverAccumulated();
             }
         }
 
-        void onTrailEnd() {
+        synchronized void onTrailEnd() {
             if (MetricsTrailConsumer.this.doFlushOnTrailEnd) {
                 deliverAccumulated();
             }
         }
 
-        private void deliverAccumulated() {
-            this.accumulatedDeliveries.stream()
-                    .filter(accumulatedDelivery -> this.filter == null || this.filter.test(accumulatedDelivery))
-                    .forEach(accumulatedDelivery -> MetricsTrailConsumerQueue.this.deliver(this.trailId, accumulatedDelivery));
-            this.accumulatedDeliveries.clear();
-        }
-
-        private void deliver(UUID trailId, Metric metric) {
-            synchronized (MetricsTrailConsumer.this) {
-                if (!MetricsTrailConsumer.this.delivererService.isShutdown()) {
-                    MetricsTrailConsumer.this.delivererService.execute(() -> {
-                        int tries = 0;
-                        while (true) {
-                            try {
-                                MetricsTrailConsumer.this.consumer.consume(MetricsTrailConsumer.this.consumerId, trailId, metric);
-                                break;
-                            } catch (Exception e) {
-                                /*
-                                 * If a consumer is not able to consume its delivery, we wait for the next time
-                                 * to try it.
-                                 */
-                                tries = awaitRetry(tries);
-                            } catch (Throwable t) {
-                                /*
-                                 * When something so destructive happens, we unregister the consumer to make
-                                 * sure not to create inconsistent data
-                                 */
-                                shutdown();
-                                throw t;
-                            }
-                        }
-                    });
-                }
+        private synchronized void deliverAccumulated() {
+            while (this.current != null) {
+                LinkedMetric linkedMetric = this.current;
+                this.current = this.current.next;
+                MetricsTrailConsumer.this.deliverHead(this.trailId, linkedMetric);
             }
         }
 
-        private int awaitRetry(int tries) {
-            try {
-                long retryIntervalMs = MetricsTrailConsumer.this.consumerRetryIntervals[tries];
-
-                Thread.sleep(retryIntervalMs);
-                return Math.min(tries + 1, MetricsTrailConsumer.this.consumerRetryIntervals.length - 1);
-            } catch (Exception e) {
-                /*
-                 * If we are not able to wait for a next try we cannot continue; we unregister
-                 * the consumer to make sure not to create inconsistent data
-                 */
-                shutdown();
-                throw new RuntimeException("Delivering a metric to the " + MetricsConsumer.class.getSimpleName()
-                        + " '" + MetricsTrailConsumer.this.consumer
-                        + "' failed, and triggering to wait for a retry failed as well.", e);
-            }
+        public UUID getTrailId() {
+            return this.trailId;
         }
 
-        private void shutdown() {
-            synchronized (MetricsTrailConsumer.this) {
-                MetricsTrailConsumer.this.delivererService.shutdownNow();
+        public synchronized boolean hasGated() {
+            return this.current != null;
+        }
+
+        public synchronized int getGatedCount() {
+            return countFromTo(this.current, this.last);
+        }
+
+        public synchronized boolean isDelivering() {
+            return this.first != this.current;
+        }
+
+        public synchronized int getDeliveringCount() {
+            return countFromTo(this.first, this.current);
+        }
+
+        private int countFromTo(LinkedMetric a, LinkedMetric b) {
+            int count = 0;
+            while (a != null && a != b) {
+                count++;
+                a = a.next;
             }
+            return count;
         }
     }
 
@@ -129,6 +138,56 @@ public class MetricsTrailConsumer {
         this.consumer = consumer;
         this.gate = gate != null ? gate.functionalClone() : null;
         this.filter = filter != null ? filter.functionalClone() : null;
+    }
+
+    private synchronized void deliverHead(UUID trailId, MetricsTrailConsumerQueue.LinkedMetric linkedMetric) {
+        if (!MetricsTrailConsumer.this.delivererService.isShutdown()) {
+            MetricsTrailConsumer.this.delivererService.execute(() -> {
+                int tries = 0;
+                while (true) {
+                    try {
+                        MetricsTrailConsumer.this.consumer.consume(MetricsTrailConsumer.this.consumerId, trailId, linkedMetric.metric);
+                        linkedMetric.delivered();
+                        break;
+                    } catch (Exception e) {
+                        /*
+                         * If a consumer is not able to consume its delivery, we wait for the next time
+                         * to try it.
+                         */
+                        tries = awaitRetry(tries);
+                    } catch (Throwable t) {
+                        /*
+                         * When something so destructive happens, we unregister the consumer to make
+                         * sure not to create inconsistent data
+                         */
+                        shutdown();
+                        throw t;
+                    }
+                }
+            });
+        }
+    }
+
+    private int awaitRetry(int tries) {
+        try {
+            long retryIntervalMs = MetricsTrailConsumer.this.consumerRetryIntervals[tries];
+
+            Thread.sleep(retryIntervalMs);
+            return Math.min(tries + 1, MetricsTrailConsumer.this.consumerRetryIntervals.length - 1);
+        } catch (Exception e) {
+            /*
+             * If we are not able to wait for a next try we cannot continue; we unregister
+             * the consumer to make sure not to create inconsistent data
+             */
+            shutdown();
+            throw new RuntimeException("Delivering a metric to the " + MetricsConsumer.class.getSimpleName()
+                    + " '" + MetricsTrailConsumer.this.consumer
+                    + "' failed, and triggering to wait for a retry failed as well.", e);
+        }
+    }
+
+    private synchronized void shutdown() {
+        MetricsTrailConsumer.this.delivererService.shutdownNow();
     }
 
     MetricsTrailConsumerQueue queueFor(UUID trailId) {

@@ -5,7 +5,7 @@ import com.mantledillusion.metrics.trail.api.Metric;
 /**
  * A stateful valve for {@link Metric}s.
  * <p>
- * A {@link MetricsValve} is able to cause a {@link AbstractMetricsQueue} to hold all
+ * A {@link MetricsValve} is able to cause a {@link MetricsTrailConsumer} to hold all
  * of a trail's events back until a {@link Metric} occurs that flushes
  * the accumulated events.
  * <p>

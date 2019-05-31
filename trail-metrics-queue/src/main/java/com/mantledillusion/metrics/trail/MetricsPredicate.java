@@ -5,7 +5,7 @@ import com.mantledillusion.metrics.trail.api.Metric;
 /**
  * A stateless predicate for {@link Metric}s.
  * <p>
- * A {@link MetricsPredicate} is able to cause a {@link AbstractMetricsQueue}
+ * A {@link MetricsPredicate} is able to cause a {@link MetricsTrailConsumer}
  * to hold all of a trail's events back until a {@link Metric} occurs that
  * flushes the accumulated events.
  * <p>

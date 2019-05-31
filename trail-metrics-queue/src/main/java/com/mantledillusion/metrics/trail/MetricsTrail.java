@@ -9,38 +9,32 @@ public class MetricsTrail {
     private static ThreadLocal<MetricsTrail> THREADLOCAL = new ThreadLocal<>();
 
     private final UUID trailId;
-    private final Set<MetricsTrailConsumer.MetricsTrailConsumerQueue> queues = Collections.synchronizedSet(
-            new IdentityHashMap<MetricsTrailConsumer.MetricsTrailConsumerQueue, Void>().keySet());
+    private final Set<MetricsTrailConsumer.MetricsTrailConsumerQueue> queues =
+            Collections.newSetFromMap(new IdentityHashMap<>());
 
     private MetricsTrail(UUID trailId) {
         this.trailId = trailId;
     }
 
-    public static boolean hasTrail() {
+    public static boolean has() {
         return THREADLOCAL.get() != null;
     }
 
-    public static synchronized MetricsTrail beginTrail() {
-        return beginTrail(UUID.randomUUID());
+    public static synchronized UUID begin() {
+        UUID trailId = UUID.randomUUID();
+        begin(trailId);
+        return trailId;
     }
 
-    public static synchronized MetricsTrail beginTrail(UUID trailId) {
+    public static void begin(UUID trailId) {
         if (THREADLOCAL.get() != null) {
             throw new IllegalStateException("Cannot begin trail " + trailId + " for thread " + Thread.currentThread() +
-                    "; the thread is already identified by trail " + THREADLOCAL.get().trailId);
+                    "; the current thread is already identified by trail " + THREADLOCAL.get().trailId);
         }
         THREADLOCAL.set(new MetricsTrail(trailId));
-        return THREADLOCAL.get();
     }
 
-    public static synchronized MetricsTrail getTrail() {
-        if (THREADLOCAL.get() == null) {
-            throw new IllegalStateException("Cannot get trail; thread current is not identified by one");
-        }
-        return THREADLOCAL.get();
-    }
-
-    public static synchronized MetricsTrail hook(MetricsTrailConsumer consumer) {
+    public static MetricsTrailConsumer.MetricsTrailConsumerQueue hook(MetricsTrailConsumer consumer) {
         MetricsTrail trail;
         if (THREADLOCAL.get() == null) {
             trail = new MetricsTrail(UUID.randomUUID());
@@ -48,23 +42,42 @@ public class MetricsTrail {
         } else {
             trail = THREADLOCAL.get();
         }
-        trail.queues.add(consumer.queueFor(trail.trailId));
-        return trail;
+        MetricsTrailConsumer.MetricsTrailConsumerQueue queue = consumer.queueFor(trail.trailId);
+        trail.queues.add(queue);
+        return queue;
     }
 
-    public static void commit(Metric metric) {
+    public static UUID commit(Metric metric) {
         MetricsTrail trail = THREADLOCAL.get();
         if (trail != null) {
             trail.queues.parallelStream().forEach(queue -> queue.enqueue(metric));
+            return trail.trailId;
         }
+        return null;
     }
 
-    public static synchronized void endTrail() {
+    public static boolean hasGated() {
         if (THREADLOCAL.get() == null) {
-            throw new IllegalStateException("Cannot end trail; thread current is not identified by one");
+            throw new IllegalStateException("Cannot retrieve whether the current trail has gated metrics; current thread is not identified by one");
+        }
+        return THREADLOCAL.get().queues.stream().anyMatch(queue -> queue.hasGated());
+    }
+
+    public static boolean isDelivering() {
+        if (THREADLOCAL.get() == null) {
+            throw new IllegalStateException("Cannot retrieve whether the current trail is currently delivering metrics; current thread is not identified by one");
+        }
+        return THREADLOCAL.get().queues.stream().anyMatch(queue -> queue.isDelivering());
+    }
+
+    public static UUID end() {
+        if (THREADLOCAL.get() == null) {
+            throw new IllegalStateException("Cannot end trail; current thread is not identified by one");
         }
         MetricsTrail trail = THREADLOCAL.get();
         trail.queues.parallelStream().forEach(queue -> queue.onTrailEnd());
         trail.queues.clear();
+        THREADLOCAL.set(null);
+        return trail.trailId;
     }
 }
