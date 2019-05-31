@@ -24,6 +24,9 @@ public class MetricsTrailConsumer {
             // 30 Minutes
             1800000};
 
+    /**
+     * Represents a queue that retrieves {@link Metric}s from a {@link MetricsTrail} to deliver them to a {@link MetricsTrailConsumer}.
+     */
     public class MetricsTrailConsumerQueue {
 
         private class LinkedMetric {
@@ -92,22 +95,47 @@ public class MetricsTrailConsumer {
             }
         }
 
+        /**
+         * Returns the ID of the trail this queue retrieves metrics from.
+         *
+         * @return The trail's ID, never null
+         */
         public UUID getTrailId() {
             return this.trailId;
         }
 
+        /**
+         * Returns whether there are {@link Metric}s that are enqueued and waiting for this consumer's gate to open so they can be delivered.
+         *
+         * @return True if there is at least one {@link Metric} currently gated, false otherwise
+         */
         public synchronized boolean hasGated() {
             return this.current != null;
         }
 
+        /**
+         * Returns the count of {@link Metric}s that are enqueued and waiting for this consumer's gate to open so they can be delivered.
+         *
+         * @return The count of {@link Metric}s currently gated
+         */
         public synchronized int getGatedCount() {
             return countFromTo(this.current, this.last);
         }
 
+        /**
+         * Returns whether there are {@link Metric}s that are currently being delivered to this consumer by asynchronous tasks.
+         *
+         * @return True if there is at least one {@link Metric} currently being delivered, false otherwise
+         */
         public synchronized boolean isDelivering() {
             return this.first != this.current;
         }
 
+        /**
+         * Returns the count of {@link Metric}s that are currently being delivered to this consumer by asynchronous tasks.
+         *
+         * @return The count of {@link Metric}s currently being delivered
+         */
         public synchronized int getDeliveringCount() {
             return countFromTo(this.first, this.current);
         }
