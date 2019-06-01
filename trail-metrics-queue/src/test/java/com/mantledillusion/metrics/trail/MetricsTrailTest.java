@@ -1,132 +1,94 @@
 package com.mantledillusion.metrics.trail;
 
 import com.mantledillusion.metrics.trail.api.Metric;
-import com.mantledillusion.metrics.trail.api.MetricType;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.UUID;
+public class MetricsTrailTest extends AbstractMetricsTest {
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
+    @Test
+    public void beginRandomTrailTest() {
+        Assertions.assertFalse(MetricsTrail.has());
 
-public class MetricsTrailTest {
+        MetricsTrail.begin();
 
-	private static final UUID TRAIL_ID = UUID.randomUUID();
+        Assertions.assertTrue(MetricsTrail.has());
+        Assertions.assertNotNull(MetricsTrail.get());
 
-	private static final String TEST_EVENT_PREFIX = "test.";
-	private static final String TEST_IMPORTANT_EVENT_PREFIX = TEST_EVENT_PREFIX+"important.";
+        MetricsTrail.end();
 
-	private MockMetricsConsumer consumer;
-	private MetricsTrailConsumer.MetricsTrailConsumerQueue queue;
-	
-	@BeforeEach
-	public void beginTrail() {
-		this.consumer = new MockMetricsConsumer();
-		MetricsTrail.begin(TRAIL_ID);
-	}
+        Assertions.assertFalse(MetricsTrail.has());
+    }
 
-	@AfterEach
-	public void endTrail() {
-		MetricsTrail.end();
-	}
-	
-	@Test
-	public void testBasicDelivery() {
-		this.queue = MetricsTrail.hook(MetricsTrailConsumer.from("testConsumer", this.consumer));
+    @Test
+    public void beginSpecificTrailTest() {
+        Assertions.assertFalse(MetricsTrail.has());
 
-		Metric metric = new Metric(TEST_EVENT_PREFIX+"A", MetricType.ALERT);
-		MetricsTrail.commit(metric);
-		waitUntilConsumed();
-		
-		assertEquals(1, this.consumer.size(TRAIL_ID));
-		assertSame(metric, this.consumer.dequeueOne(TRAIL_ID));
-	}
-	
-	@Test
-	public void testStatelessGate() {
-		MetricsPredicate gate = event -> event.getIdentifier().startsWith(TEST_IMPORTANT_EVENT_PREFIX);
-		int[][] expectedCounts = {
-				new int[] {0, 0},
-				new int[] {2, 0},
-				new int[] {2, 0},
-				new int[] {4, 0}};
-		testPredicates(gate, null, expectedCounts);
-	}
-	
-	@Test
-	public void testStatefulGate() {
-		MetricsPredicate gate = MetricsValve.of(event -> event.getIdentifier().startsWith(TEST_IMPORTANT_EVENT_PREFIX));
-		int[][] expectedCounts = {
-				new int[] {0, 0},
-				new int[] {2, 0},
-				new int[] {3, 0},
-				new int[] {4, 0}};
-		testPredicates(gate, null, expectedCounts);
-	}
-	
-	@Test
-	public void testStatelessFilter() {
-		MetricsPredicate filter = event -> event.getIdentifier().startsWith(TEST_IMPORTANT_EVENT_PREFIX);
-		int[][] expectedCounts = {
-				new int[] {0, 0},
-				new int[] {1, 0},
-				new int[] {1, 0},
-				new int[] {2, 0}};
-		testPredicates(null, filter, expectedCounts);
-	}
-	
-	@Test
-	public void testStatefulFilter() {
-		MetricsPredicate filter = MetricsValve.of(event -> event.getIdentifier().startsWith(TEST_IMPORTANT_EVENT_PREFIX));
-		int[][] expectedCounts = {
-				new int[] {0, 0},
-				new int[] {1, 0},
-				new int[] {2, 0},
-				new int[] {3, 0}};
-		testPredicates(null, filter, expectedCounts);
-	}
-	
-	private void testPredicates(MetricsPredicate gate, MetricsPredicate filter, int[][] expectedCounts) {
-		this.queue = MetricsTrail.hook(MetricsTrailConsumer.from("testConsumer", this.consumer, gate, filter));
+        MetricsTrail.begin(TRAIL_ID);
 
-		// USER A CAUSES 1 STANDARD METRIC EVENT
-		MetricsTrail.commit(new Metric(TEST_EVENT_PREFIX+"A", MetricType.ALERT));
-		
-		waitUntilConsumed();
-		assertEquals(expectedCounts[0][0], this.consumer.size(TRAIL_ID));
-		assertEquals(expectedCounts[0][1], this.queue.getGatedCount());
+        Assertions.assertTrue(MetricsTrail.has());
+        Assertions.assertEquals(TRAIL_ID, MetricsTrail.get());
 
-		// USER A CAUSES 1 IMPORTANT METRIC EVENT
-		MetricsTrail.commit(new Metric(TEST_IMPORTANT_EVENT_PREFIX+"B", MetricType.ALERT));
-		
-		waitUntilConsumed();
-		assertEquals(expectedCounts[1][0], this.consumer.size(TRAIL_ID));
-		assertEquals(expectedCounts[1][1], this.queue.getGatedCount());
-		
-		// USER A CAUSES 1 STANDARD METRIC EVENT
-		MetricsTrail.commit(new Metric(TEST_EVENT_PREFIX+"C", MetricType.ALERT));
-		
-		waitUntilConsumed();
-		assertEquals(expectedCounts[2][0], this.consumer.size(TRAIL_ID));
-		assertEquals(expectedCounts[2][1], this.queue.getGatedCount());
+        MetricsTrail.end();
 
-		// USER A CAUSES 1 IMPORTANT METRIC EVENT
-		MetricsTrail.commit(new Metric(TEST_IMPORTANT_EVENT_PREFIX+"D", MetricType.ALERT));
-		
-		waitUntilConsumed();
-		assertEquals(expectedCounts[3][0], this.consumer.size(TRAIL_ID));
-		assertEquals(expectedCounts[3][1], this.queue.getGatedCount());
-	}
-	
-	private void waitUntilConsumed() {
-		while (this.queue.getDeliveringCount() > 0) {
-			try {
-				Thread.sleep(50);
-			} catch (InterruptedException e) {
-				throw new RuntimeException("Unable to wait for event consuming");
-			}
-		}
-	}
+        Assertions.assertFalse(MetricsTrail.has());
+    }
+
+    @Test
+    public void beginTrailDuringExisting() {
+        MetricsTrail.begin();
+        Assertions.assertThrows(IllegalStateException.class, () -> MetricsTrail.begin());
+    }
+
+    @Test
+    public void beginTrailWithoutId() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> MetricsTrail.begin(null));
+    }
+
+    @Test
+    public void getTrailWithoutExisting() {
+        Assertions.assertThrows(IllegalStateException.class, () -> MetricsTrail.get());
+    }
+
+    @Test
+    public void hookConsumerWithoutExisting() {
+        Assertions.assertThrows(IllegalStateException.class, () -> MetricsTrail.hook(MetricsTrailConsumer.from(TEST_CONSUMER, this.consumer)));
+    }
+
+    @Test
+    public void hookNullConsumer() {
+        MetricsTrail.begin();
+        Assertions.assertThrows(IllegalArgumentException.class, () -> MetricsTrail.hook(null));
+    }
+
+    @Test
+    public void commitForcedMetricWithoutExisting() {
+        Assertions.assertThrows(IllegalStateException.class, () -> MetricsTrail.commit(new Metric()));
+    }
+
+    @Test
+    public void commitUnforcedMetricWithoutExisting() {
+        MetricsTrail.commit(new Metric(), false);
+    }
+
+    @Test
+    public void commitNullMetric() {
+        MetricsTrail.begin();
+        Assertions.assertThrows(IllegalArgumentException.class, () -> MetricsTrail.commit(null));
+    }
+
+    @Test
+    public void hasGatedWithoutExisting() {
+        Assertions.assertThrows(IllegalStateException.class, () -> MetricsTrail.hasGated());
+    }
+
+    @Test
+    public void isDeliveringWithoutExisting() {
+        Assertions.assertThrows(IllegalStateException.class, () -> MetricsTrail.isDelivering());
+    }
+
+    @Test
+    public void endWithoutExisting() {
+        Assertions.assertThrows(IllegalStateException.class, () -> MetricsTrail.end());
+    }
 }

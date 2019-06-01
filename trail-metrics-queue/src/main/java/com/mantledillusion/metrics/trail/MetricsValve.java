@@ -29,6 +29,15 @@ public final class MetricsValve implements MetricsPredicate {
 		return this.isOpen;
 	}
 
+	/**
+	 * Returns whether this {@link MetricsValve} is open.
+	 *
+	 * @return True if this valve is open, false otherwise
+	 */
+	public boolean isOpen() {
+		return isOpen;
+	}
+
 	@Override
 	public MetricsValve functionalClone() {
 		return new MetricsValve(this.predicate);

@@ -50,9 +50,22 @@ public class MetricsTrail {
             throw new IllegalStateException("Cannot begin trail " + trailId + " for thread " + Thread.currentThread() +
                     "; the current thread is already identified by trail " + THREADLOCAL.get().trailId);
         } else if (trailId == null) {
-            throw new IllegalStateException("Cannot begin trail using a null thread id");
+            throw new IllegalArgumentException("Cannot begin trail using a null thread id");
         }
         THREADLOCAL.set(new MetricsTrail(trailId));
+    }
+
+    /**
+     * Returns the {@link UUID} of the {@link MetricsTrail} that identifies the current {@link Thread}.
+     *
+     * @return The ID of the current {@link MetricsTrail}, never null
+     * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrail}.
+     */
+    public static UUID get() throws IllegalStateException {
+        if (THREADLOCAL.get() == null) {
+            throw new IllegalStateException("Cannot retrieve the ID of the current trail; current thread is not identified by one");
+        }
+        return THREADLOCAL.get().trailId;
     }
 
     /**
@@ -100,9 +113,7 @@ public class MetricsTrail {
     public static void commit(Metric metric, boolean forced) throws IllegalStateException {
         MetricsTrail trail = THREADLOCAL.get();
         if (trail != null) {
-            if (metric == null) {
-                throw new IllegalArgumentException("Cannot commit a null metric to a trail");
-            }
+            MetricValidator.validate(metric);
             trail.queues.parallelStream().forEach(queue -> queue.enqueue(metric));
         } else if (forced) {
             throw new IllegalStateException("Cannot commit the given metric to the current trail; current thread is not identified by one");
@@ -148,7 +159,7 @@ public class MetricsTrail {
             throw new IllegalStateException("Cannot end trail; current thread is not identified by one");
         }
         MetricsTrail trail = THREADLOCAL.get();
-        trail.queues.parallelStream().forEach(queue -> queue.onTrailEnd());
+        trail.queues.forEach(queue -> queue.onTrailEnd());
         trail.queues.clear();
         THREADLOCAL.set(null);
         return trail.trailId;

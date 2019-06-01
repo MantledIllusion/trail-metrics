@@ -40,11 +40,17 @@ public class MetricsTrailConsumer {
 
             private void delivered() {
                 synchronized (MetricsTrailConsumerQueue.this) {
-                    MetricsTrailConsumerQueue.this.first = this.next;
-                    if (MetricsTrailConsumerQueue.this.first == null) {
-                        MetricsTrailConsumerQueue.this.last = null;
+                    if (MetricsTrailConsumerQueue.this.first != null) {
+                        MetricsTrailConsumerQueue.this.first = this.next;
+                        if (MetricsTrailConsumerQueue.this.first == null) {
+                            MetricsTrailConsumerQueue.this.last = null;
+                        }
                     }
                 }
+            }
+
+            private void failed() {
+                MetricsTrailConsumerQueue.this.clearQueue();
             }
         }
 
@@ -85,6 +91,15 @@ public class MetricsTrailConsumer {
             if (MetricsTrailConsumer.this.doFlushOnTrailEnd) {
                 deliverAccumulated();
             }
+            clearQueue();
+        }
+
+        private void clearQueue() {
+            synchronized (MetricsTrailConsumerQueue.this) {
+                MetricsTrailConsumerQueue.this.first = null;
+                MetricsTrailConsumerQueue.this.current = null;
+                MetricsTrailConsumerQueue.this.last = null;
+            }
         }
 
         private synchronized void deliverAccumulated() {
@@ -119,7 +134,13 @@ public class MetricsTrailConsumer {
          * @return The count of {@link Metric}s currently gated
          */
         public synchronized int getGatedCount() {
-            return countFromTo(this.current, this.last);
+            int count = 0;
+            LinkedMetric current = this.current;
+            while (current != null) {
+                count++;
+                current = current.next;
+            }
+            return count;
         }
 
         /**
@@ -137,14 +158,11 @@ public class MetricsTrailConsumer {
          * @return The count of {@link Metric}s currently being delivered
          */
         public synchronized int getDeliveringCount() {
-            return countFromTo(this.first, this.current);
-        }
-
-        private int countFromTo(LinkedMetric a, LinkedMetric b) {
             int count = 0;
-            while (a != null && a != b) {
+            LinkedMetric current = this.first;
+            while (current != null && current != this.current) {
                 count++;
-                a = a.next;
+                current = current.next;
             }
             return count;
         }
@@ -182,13 +200,13 @@ public class MetricsTrailConsumer {
                          * If a consumer is not able to consume its delivery, we wait for the next time
                          * to try it.
                          */
-                        tries = awaitRetry(tries);
+                        tries = awaitRetry(linkedMetric, tries);
                     } catch (Throwable t) {
                         /*
                          * When something so destructive happens, we unregister the consumer to make
                          * sure not to create inconsistent data
                          */
-                        shutdown();
+                        shutdown(linkedMetric);
                         throw t;
                     }
                 }
@@ -196,7 +214,7 @@ public class MetricsTrailConsumer {
         }
     }
 
-    private int awaitRetry(int tries) {
+    private int awaitRetry(MetricsTrailConsumerQueue.LinkedMetric linkedMetric, int tries) {
         try {
             long retryIntervalMs = MetricsTrailConsumer.this.consumerRetryIntervals[tries];
 
@@ -207,14 +225,15 @@ public class MetricsTrailConsumer {
              * If we are not able to wait for a next try we cannot continue; we unregister
              * the consumer to make sure not to create inconsistent data
              */
-            shutdown();
+            shutdown(linkedMetric);
             throw new RuntimeException("Delivering a metric to the " + MetricsConsumer.class.getSimpleName()
                     + " '" + MetricsTrailConsumer.this.consumer
                     + "' failed, and triggering to wait for a retry failed as well.", e);
         }
     }
 
-    private synchronized void shutdown() {
+    private synchronized void shutdown(MetricsTrailConsumerQueue.LinkedMetric linkedMetric) {
+        linkedMetric.failed();
         MetricsTrailConsumer.this.delivererService.shutdownNow();
     }
 
@@ -241,12 +260,8 @@ public class MetricsTrailConsumer {
      */
     public void setDeliveryRetryIntervals(long interval, long... intervals) {
         long[] consumerRetryIntervals;
-        if (intervals == null) {
-            consumerRetryIntervals = new long[]{interval};
-        } else {
-            consumerRetryIntervals = new long[intervals.length + 1];
-            Arrays.setAll(consumerRetryIntervals, i -> i == 0 ? interval : intervals[i - 1]);
-        }
+        consumerRetryIntervals = new long[intervals.length + 1];
+        Arrays.setAll(consumerRetryIntervals, i -> i == 0 ? interval : intervals[i - 1]);
         if (Arrays.stream(consumerRetryIntervals).anyMatch(i -> i < 0)) {
             throw new IllegalArgumentException("Cannot set a retry interval < 0");
         }
