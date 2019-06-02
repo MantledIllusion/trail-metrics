@@ -14,16 +14,15 @@ public class MetricValidator {
 	private MetricValidator() {
 	}
 
-	private static final Predicate<MetricAttribute> NULL_ATTRIBUTE_PREDICATE = attribute -> {
-		return attribute == null || attribute.getKey() == null || attribute.getValue() == null;
-	};
+	private static final Predicate<MetricAttribute> NULL_ATTRIBUTE_PREDICATE = attribute ->
+			attribute == null || attribute.getKey() == null || attribute.getValue() == null;
 
 	private static final Predicate<MetricAttribute> NUMERIC_OPERATOR_PREDICATE = attribute -> {
 		if (Metric.OPERATOR_ATTRIBUTE_KEY.equals(attribute.getKey())) {
 			try {
 				Float.parseFloat(attribute.getValue());
 				return true;
-			} catch (NumberFormatException e) {
+			} catch (Exception e) {
 				throw new IllegalArgumentException(
 						"The attribute '" + Metric.OPERATOR_ATTRIBUTE_KEY + "' needs to be a Float numeric");
 			}

@@ -3,6 +3,7 @@ package com.mantledillusion.metrics.trail.api;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import com.mantledillusion.metrics.trail.MetricValidator;
 
@@ -53,12 +54,10 @@ public class Metric {
 	 *            {@link #OPERATOR_ATTRIBUTE_KEY} for the {@link MetricType}'s
 	 *            operator; might be null.
 	 */
-	public Metric(String identifier, MetricType type, String operator) {
+	public Metric(String identifier, MetricType type, Object operator) {
 		this.identifier = identifier;
 		this.type = type;
-		if (operator != null) {
-			this.attributes.add(new MetricAttribute(OPERATOR_ATTRIBUTE_KEY, operator));
-		}
+		this.attributes.add(MetricAttribute.operatorOf(operator));
 	}
 
 	/**

@@ -67,13 +67,13 @@ public enum MetricType {
 	 */
 	TREND(MetricValidator.VALIDATOR_NUMERIC_OPERATOR);
 
-	private final Consumer<Metric> consumer;
+	private final Consumer<Metric> validator;
 
-	MetricType(Consumer<Metric> consumer) {
-		this.consumer = consumer;
+	MetricType(Consumer<Metric> validator) {
+		this.validator = validator;
 	}
 
 	public void validateOperator(Metric metric) {
-		this.consumer.accept(metric);
+		this.validator.accept(metric);
 	}
 }

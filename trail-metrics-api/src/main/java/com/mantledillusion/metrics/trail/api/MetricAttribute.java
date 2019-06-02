@@ -64,4 +64,14 @@ public class MetricAttribute {
 	public void setValue(String value) {
 		this.value = value;
 	}
+
+	/**
+	 * Creates a new {@link MetricAttribute} that serves as operator for a {@link MetricType} that requires one.
+	 *
+	 * @param operator The value of the operator {@link MetricAttribute}; might be null
+	 * @return A new {@link MetricAttribute}, never null
+	 */
+	public static MetricAttribute operatorOf(Object operator) {
+		return new MetricAttribute(Metric.OPERATOR_ATTRIBUTE_KEY, operator == null ? null : String.valueOf(operator));
+	}
 }
