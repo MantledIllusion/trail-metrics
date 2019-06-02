@@ -8,16 +8,16 @@
 		<version>1.0.0.ALPHA1</version>
 	</parent>
 
-	<artifactId>trail-metrics-queue</artifactId>
+	<artifactId>trail-metrics-adaptor-web</artifactId>
 
-	<name>trail-metrics-queue</name>
-	<description>Queue for Trail Metrics.</description>
+	<name>trail-metrics-adaptor-web</name>
+	<description>XML based (REST/SOAP) JAXB web adaptor for the trail-metrics-api.</description>
 	<url>http://www.mantledillusion.com</url>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.mantledillusion.metrics</groupId>
-			<artifactId>trail-metrics-api</artifactId>
+			<artifactId>trail-metrics-queue</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>

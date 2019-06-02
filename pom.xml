@@ -60,6 +60,7 @@
 	<modules>
 		<module>trail-metrics-api</module>
 		<module>trail-metrics-queue</module>
+		<module>trail-metrics-adaptor-web</module>
 	</modules>
 
 	<dependencyManagement>

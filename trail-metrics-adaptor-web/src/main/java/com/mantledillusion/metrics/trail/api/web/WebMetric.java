@@ -1,32 +1,36 @@
-package com.mantledillusion.metrics.trail.api;
+package com.mantledillusion.metrics.trail.api.web;
 
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-
-import com.mantledillusion.metrics.trail.MetricValidator;
 
 /**
  * Represents a single metric.
- * <p>
- * This is a POJO type that allows setting its fields freely, but instances of
- * it can only be dispatched when {@link MetricValidator#validate(Metric)}
- * evaluates {@code true} for it.
  */
-public class Metric {
+@XmlRootElement
+@XmlType(propOrder = { "identifier", "type", "timestamp", "attributes" })
+public class WebMetric {
 
 	public static final String OPERATOR_ATTRIBUTE_KEY = "_operator";
 
+	@XmlElement(required = true, nillable = false)
 	private String identifier;
-	private MetricType type;
+	@XmlElement(required = true, nillable = false)
+	private WebMetricType type;
+	@XmlElement(required = true, nillable = false)
 	private ZonedDateTime timestamp = ZonedDateTime.now();
-	private List<MetricAttribute> attributes = new ArrayList<>();
+	@XmlElement(required = false, nillable = false)
+	private List<WebMetricAttribute> attributes = new ArrayList<>();
 
 	/**
 	 * Default constructor.
 	 */
-	public Metric() {}
+	public WebMetric() {
+		this(null, null, null);
+	}
 
 	/**
 	 * Constructor.
@@ -36,9 +40,8 @@ public class Metric {
 	 * @param type
 	 *            The type; might be null.
 	 */
-	public Metric(String identifier, MetricType type) {
-		this.identifier = identifier;
-		this.type = type;
+	public WebMetric(String identifier, WebMetricType type) {
+		this(identifier, type, null);
 	}
 
 	/**
@@ -49,21 +52,23 @@ public class Metric {
 	 * @param type
 	 *            The type; might be null.
 	 * @param operator
-	 *            The operator value to add as a {@link MetricAttribute} with
-	 *            {@link #OPERATOR_ATTRIBUTE_KEY} for the {@link MetricType}'s
+	 *            The operator value to add as a {@link WebMetricAttribute} with
+	 *            {@link #OPERATOR_ATTRIBUTE_KEY} for the {@link WebMetricType}'s
 	 *            operator; might be null.
 	 */
-	public Metric(String identifier, MetricType type, Object operator) {
+	public WebMetric(String identifier, WebMetricType type, String operator) {
 		this.identifier = identifier;
 		this.type = type;
-		this.attributes.add(MetricAttribute.operatorOf(operator));
+		if (operator != null) {
+			this.attributes.add(new WebMetricAttribute(OPERATOR_ATTRIBUTE_KEY, operator));
+		}
 	}
 
 	/**
-	 * Returns the identifier that allows categorizing {@link Metric}s.
+	 * Returns the identifier that allows categorizing {@link WebMetric}s.
 	 * <p>
 	 * For categorization it is reasonable to follow a naming scheme for
-	 * {@link Metric} identifiers like "this.is.some.event.identifier".
+	 * {@link WebMetric} identifiers like "this.is.some.event.identifier".
 	 * 
 	 * @return The identifier, might be null
 	 */
@@ -72,10 +77,10 @@ public class Metric {
 	}
 
 	/**
-	 * Returns the identifier that allows categorizing {@link Metric}s.
+	 * Returns the identifier that allows categorizing {@link WebMetric}s.
 	 * <p>
 	 * For categorization it is reasonable to follow a naming scheme for
-	 * {@link Metric} identifiers like "this.is.some.event.identifier".
+	 * {@link WebMetric} identifiers like "this.is.some.event.identifier".
 	 * 
 	 * @param identifier
 	 *            The identifier; might be null.
@@ -85,28 +90,28 @@ public class Metric {
 	}
 
 	/**
-	 * Returns the {@link MetricType} that specifies how this {@link Metric} will be
+	 * Returns the {@link WebMetricType} that specifies how this {@link WebMetric} will be
 	 * interpreted.
 	 * 
 	 * @return The type, might be null.
 	 */
-	public MetricType getType() {
+	public WebMetricType getType() {
 		return type;
 	}
 
 	/**
-	 * Returns the {@link MetricType} that specifies how this {@link Metric} will be
+	 * Returns the {@link WebMetricType} that specifies how this {@link WebMetric} will be
 	 * interpreted.
 	 * 
 	 * @param type
 	 *            The type; might be null.
 	 */
-	public void setType(MetricType type) {
+	public void setType(WebMetricType type) {
 		this.type = type;
 	}
 
 	/**
-	 * Returns the timestamp at which this {@link Metric} was created.
+	 * Returns the timestamp at which this {@link WebMetric} was created.
 	 * <p>
 	 * By default, this is set to {@link ZonedDateTime#now()}.
 	 * 
@@ -117,7 +122,7 @@ public class Metric {
 	}
 
 	/**
-	 * Sets the timestamp at which this {@link Metric} was created.
+	 * Sets the timestamp at which this {@link WebMetric} was created.
 	 * <p>
 	 * By default, this is set to {@link ZonedDateTime#now()}.
 	 * 
@@ -129,29 +134,31 @@ public class Metric {
 	}
 
 	/**
-	 * Returns the list of this {@link Metric}'s {@link MetricAttribute}.
+	 * Returns the list of this {@link WebMetric}'s {@link WebMetricAttribute}.
 	 * <p>
-	 * Attributes can be attached to a metric to fulfill {@link MetricType}
+	 * Attributes can be attached to a metric to fulfill {@link WebMetricType}
 	 * requirements by specifying a {@link #OPERATOR_ATTRIBUTE_KEY} attribute or to
 	 * deliver meta information.
 	 * 
 	 * @return The attribute list, might be null
 	 */
-	public List<MetricAttribute> getAttributes() {
+	public List<WebMetricAttribute> getAttributes() {
 		return attributes;
 	}
 
 	/**
-	 * Returns the list of this {@link Metric}'s {@link MetricAttribute}.
+	 * Returns the list of this {@link WebMetric}'s {@link WebMetricAttribute}.
 	 * <p>
-	 * Attributes can be attached to a metric to fulfill {@link MetricType}
+	 * Attributes can be attached to a metric to fulfill {@link WebMetricType}
 	 * requirements by specifying a {@link #OPERATOR_ATTRIBUTE_KEY} attribute or to
 	 * deliver meta information.
 	 * 
 	 * @param attributes
 	 *            The attribute list; might be null.
 	 */
-	public void setAttributes(List<MetricAttribute> attributes) {
+	public void setAttributes(List<WebMetricAttribute> attributes) {
 		this.attributes = attributes;
 	}
+
+
 }
