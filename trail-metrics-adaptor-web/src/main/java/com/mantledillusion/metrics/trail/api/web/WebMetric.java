@@ -1,5 +1,7 @@
 package com.mantledillusion.metrics.trail.api.web;
 
+import com.mantledillusion.metrics.trail.api.MetricAttribute;
+
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
@@ -29,7 +31,6 @@ public class WebMetric {
 	 * Default constructor.
 	 */
 	public WebMetric() {
-		this(null, null, null);
 	}
 
 	/**
@@ -41,27 +42,8 @@ public class WebMetric {
 	 *            The type; might be null.
 	 */
 	public WebMetric(String identifier, WebMetricType type) {
-		this(identifier, type, null);
-	}
-
-	/**
-	 * Constructor.
-	 * 
-	 * @param identifier
-	 *            The identifier; might be null.
-	 * @param type
-	 *            The type; might be null.
-	 * @param operator
-	 *            The operator value to add as a {@link WebMetricAttribute} with
-	 *            {@link #OPERATOR_ATTRIBUTE_KEY} for the {@link WebMetricType}'s
-	 *            operator; might be null.
-	 */
-	public WebMetric(String identifier, WebMetricType type, String operator) {
 		this.identifier = identifier;
 		this.type = type;
-		if (operator != null) {
-			this.attributes.add(new WebMetricAttribute(OPERATOR_ATTRIBUTE_KEY, operator));
-		}
 	}
 
 	/**
