@@ -21,13 +21,6 @@ public abstract class AbstractMetricsTest {
         this.consumer = new MockConsumer();
     }
 
-    @AfterEach
-    public void endTrail() {
-        if (MetricsTrail.has()) {
-            MetricsTrail.end();
-        }
-    }
-
     protected void waitUntilConsumed() {
         waitUntilConsumed(0);
     }

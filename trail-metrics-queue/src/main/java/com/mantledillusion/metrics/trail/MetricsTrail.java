@@ -7,69 +7,35 @@ import java.util.*;
 /**
  * A {@link MetricsTrail} is a stream of {@link Metric}s that occurs during a single process of any kind.
  */
-public class MetricsTrail {
-
-    private static ThreadLocal<MetricsTrail> THREADLOCAL = new ThreadLocal<>();
+public final class MetricsTrail {
 
     private final UUID trailId;
     private final Set<MetricsTrailConsumer.MetricsTrailConsumerQueue> queues =
             Collections.newSetFromMap(new IdentityHashMap<>());
 
-    private MetricsTrail(UUID trailId) {
+    /**
+     * {@link java.lang.reflect.Constructor}.
+     *
+     * @param trailId The ID that identifies the trail; might <b>not</b> be null.
+     */
+    public MetricsTrail(UUID trailId) {
+        if (trailId == null) {
+            throw new IllegalArgumentException("Cannot begin trail using a null thread id");
+        }
         this.trailId = trailId;
     }
 
     /**
-     * Returns whether the calling {@link Thread} is identified by a {@link MetricsTrail}.
+     * Returns the ID that identifies this trail.
      *
-     * @return True if the current {@link Thread} is identified by a {@link MetricsTrail}, false otherwise
+     * @return The trail ID, never null
      */
-    public static boolean has() {
-        return THREADLOCAL.get() != null;
-    }
-
-    /**
-     * Begins a {@link MetricsTrail} on the current thread using a random {@link UUID}.
-     *
-     * @throws IllegalStateException If the current {@link Thread} already is identified by a {@link MetricsTrail}, which can be checked using {@link #has()}.
-     */
-    public static synchronized UUID begin() throws IllegalStateException {
-        UUID trailId = UUID.randomUUID();
-        begin(trailId);
+    public UUID getTrailId() {
         return trailId;
     }
 
     /**
-     * Begins a {@link MetricsTrail} on the current thread using the given {@link UUID}.
-     *
-     * @param trailId The {@link UUID} to identify the new {@link MetricsTrail} by; might <b>not</b> be null.
-     * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrail}.
-     */
-    public static void begin(UUID trailId) throws IllegalStateException {
-        if (THREADLOCAL.get() != null) {
-            throw new IllegalStateException("Cannot begin trail " + trailId + " for thread " + Thread.currentThread() +
-                    "; the current thread is already identified by trail " + THREADLOCAL.get().trailId);
-        } else if (trailId == null) {
-            throw new IllegalArgumentException("Cannot begin trail using a null thread id");
-        }
-        THREADLOCAL.set(new MetricsTrail(trailId));
-    }
-
-    /**
-     * Returns the {@link UUID} of the {@link MetricsTrail} that identifies the current {@link Thread}.
-     *
-     * @return The ID of the current {@link MetricsTrail}, never null
-     * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrail}.
-     */
-    public static UUID get() throws IllegalStateException {
-        if (THREADLOCAL.get() == null) {
-            throw new IllegalStateException("Cannot retrieve the ID of the current trail; current thread is not identified by one");
-        }
-        return THREADLOCAL.get().trailId;
-    }
-
-    /**
-     * Hooks the given {@link MetricsTrailConsumer} to the current {@link Thread}s {@link MetricsTrail}.
+     * Hooks the given {@link MetricsTrailConsumer} this {@link MetricsTrail}.
      * <p>
      * To hook the given {@link MetricsTrailConsumer} to the {@link MetricsTrail}, a new
      * {@link MetricsTrailConsumer.MetricsTrailConsumerQueue} is created that will receive the trail's {@link Metric}s
@@ -79,89 +45,54 @@ public class MetricsTrail {
      *
      * @param consumer The {@link MetricsTrailConsumer} hook; might <b>not</b> be null.
      * @return A new {@link MetricsTrailConsumer.MetricsTrailConsumerQueue}, never null
-     * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrail}.
      */
-    public static MetricsTrailConsumer.MetricsTrailConsumerQueue hook(MetricsTrailConsumer consumer) throws IllegalStateException {
-        if (THREADLOCAL.get() == null) {
-            throw new IllegalStateException("Cannot retrieve whether the current trail has gated metrics; current thread is not identified by one");
-        } else if (consumer == null) {
+    public synchronized MetricsTrailConsumer.MetricsTrailConsumerQueue hook(MetricsTrailConsumer consumer) {
+        if (consumer == null) {
             throw new IllegalArgumentException("Cannot hook a null consumer to a trail");
         }
-        MetricsTrail trail = THREADLOCAL.get();
-        MetricsTrailConsumer.MetricsTrailConsumerQueue queue = consumer.queueFor(trail.trailId);
-        trail.queues.add(queue);
+        MetricsTrailConsumer.MetricsTrailConsumerQueue queue = consumer.queueFor(this.trailId);
+        this.queues.add(queue);
         return queue;
     }
 
     /**
-     * Commits the given {@link Metric} to all {@link MetricsTrailConsumer.MetricsTrailConsumerQueue}s hooked to the current {@link Thread}'s {@link MetricsTrail}.
+     * Commits the given {@link Metric} to all {@link MetricsTrailConsumer.MetricsTrailConsumerQueue}s hooked this {@link MetricsTrail}.
      *
      * @param metric The metric to commit; might <b>not</b> be null.
-     * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrail}.
      */
-    public static void commit(Metric metric) throws IllegalStateException {
-        commit(metric, true);
+    public synchronized void commit(Metric metric) {
+        MetricValidator.validate(metric);
+        this.queues.parallelStream().forEach(queue -> queue.enqueue(metric));
     }
 
     /**
-     * Commits the given {@link Metric} to all {@link MetricsTrailConsumer.MetricsTrailConsumerQueue}s hooked to the current {@link Thread}'s {@link MetricsTrail}.
-     *
-     * @param metric The metric to commit; might <b>not</b> be null.
-     * @param forced True if committing the given {@link Metric} is inevitable, so if the current {@link Thread} is not identified by a trail, an {@link IllegalStateException} has to be thrown.
-     * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrail} and the commit is forced.
-     */
-    public static void commit(Metric metric, boolean forced) throws IllegalStateException {
-        MetricsTrail trail = THREADLOCAL.get();
-        if (trail != null) {
-            MetricValidator.validate(metric);
-            trail.queues.parallelStream().forEach(queue -> queue.enqueue(metric));
-        } else if (forced) {
-            throw new IllegalStateException("Cannot commit the given metric to the current trail; current thread is not identified by one");
-        }
-    }
-
-    /**
-     * Returns whether there are {@link Metric}s that are enqueued and waiting for any of the current {@link Thread}
-     * {@link MetricsTrail}'s {@link MetricsTrailConsumer.MetricsTrailConsumerQueue} gates to open so they can be delivered.
+     * Returns whether there are {@link Metric}s that are enqueued and waiting for any of this {@link MetricsTrail}'s
+     * {@link MetricsTrailConsumer.MetricsTrailConsumerQueue} gates to open so they can be delivered.
      *
      * @return True if there is at least one {@link Metric} currently gated, false otherwise
-     * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrail}.
      */
-    public static boolean hasGated() throws IllegalStateException {
-        if (THREADLOCAL.get() == null) {
-            throw new IllegalStateException("Cannot retrieve whether the current trail has gated metrics; current thread is not identified by one");
-        }
-        return THREADLOCAL.get().queues.stream().anyMatch(queue -> queue.hasGated());
+    public synchronized boolean hasGated() {
+        return this.queues.stream().anyMatch(queue -> queue.hasGated());
     }
 
     /**
-     * Returns whether there are {@link Metric}s of the current {@link Thread} {@link MetricsTrail}'s
+     * Returns whether there are {@link Metric}s of this {@link MetricsTrail}'s
      * {@link MetricsTrailConsumer.MetricsTrailConsumerQueue} currently being delivered to their consumer by asynchronous tasks.
      *
      * @return True if there is at least one {@link Metric} currently being delivered, false otherwise
-     * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrail}.
      */
-    public static boolean isDelivering() throws IllegalStateException {
-        if (THREADLOCAL.get() == null) {
-            throw new IllegalStateException("Cannot retrieve whether the current trail is currently delivering metrics; current thread is not identified by one");
-        }
-        return THREADLOCAL.get().queues.stream().anyMatch(queue -> queue.isDelivering());
+    public synchronized boolean isDelivering() {
+        return this.queues.stream().anyMatch(queue -> queue.isDelivering());
     }
 
     /**
-     * Ends the {@link MetricsTrail} that identifies the current {@link Thread}.
+     * Ends the {@link MetricsTrail}.
      *
      * @return The {@link UUID} of the current {@link Thread}'s trail, never null
-     * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrail}.
      */
-    public static UUID end() throws IllegalStateException {
-        if (THREADLOCAL.get() == null) {
-            throw new IllegalStateException("Cannot end trail; current thread is not identified by one");
-        }
-        MetricsTrail trail = THREADLOCAL.get();
-        trail.queues.forEach(queue -> queue.onTrailEnd());
-        trail.queues.clear();
-        THREADLOCAL.set(null);
-        return trail.trailId;
+    public synchronized UUID end() {
+        this.queues.forEach(queue -> queue.onTrailEnd());
+        this.queues.clear();
+        return this.trailId;
     }
 }
