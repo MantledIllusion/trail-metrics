@@ -17,7 +17,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.mantledillusion.metrics</groupId>
-			<artifactId>trail-metrics-queue</artifactId>
+			<artifactId>trail-metrics</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>

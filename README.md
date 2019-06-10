@@ -15,3 +15,8 @@ But what if a certain customer files a complaint, that adding an item to his car
 That's where the trail comes in. The trail identifies an arbitrary set of coherent operations as a single process. So when metrics are written along that process, they become the MetricsTrail.
 
 In the example of the customer adding an item to the cart, all of the customers actions since he or she logged in might be done in the same trail. That way, when the timeout appears in the front end, an error report containing the trail's ID can be created. Using that ID, all metrics during that trail can be analyzed individually, revealing a spike in latency in a specific sub-operation when that specific user adds items to his cart.
+
+## How do I get started?
+
+To get started, simply choose the **_support_** that fits your application. It will enable your application to create metrics and to setup consumers that consume them.
+

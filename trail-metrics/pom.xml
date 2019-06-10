@@ -8,10 +8,10 @@
 		<version>1.0.0.ALPHA1</version>
 	</parent>
 
-	<artifactId>trail-metrics-queue</artifactId>
+	<artifactId>trail-metrics</artifactId>
 
-	<name>trail-metrics-queue</name>
-	<description>Queue for Trail Metrics.</description>
+	<name>trail-metrics</name>
+	<description>Implementation of a trail of Metrics that can be consumed from a queue.</description>
 	<url>http://www.mantledillusion.com</url>
 
 	<dependencies>
