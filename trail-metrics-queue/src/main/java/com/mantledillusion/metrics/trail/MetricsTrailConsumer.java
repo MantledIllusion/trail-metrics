@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 /**
  * Represents a {@link MetricsConsumer} that can consume {@link Metric}s from a {@link MetricsTrail}.
  */
-public class MetricsTrailConsumer {
+public final class MetricsTrailConsumer {
 
     private static final long[] CONSUMER_DELIVERY_RETRY_INTERVALS = {
             // 5 Seconds

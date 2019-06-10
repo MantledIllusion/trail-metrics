@@ -63,6 +63,10 @@
 		<module>trail-metrics-adaptor-web</module>
 		<module>trail-metrics-adaptor-jpa</module>
 		<module>trail-metrics-support</module>
+		<module>trail-metrics-support-vaadin-core</module>
+		<module>trail-metrics-support-vaadin-7</module>
+		<module>trail-metrics-support-vaadin-8</module>
+		<module>trail-metrics-support-vaadin-flow</module>
 	</modules>
 
 	<dependencyManagement>
