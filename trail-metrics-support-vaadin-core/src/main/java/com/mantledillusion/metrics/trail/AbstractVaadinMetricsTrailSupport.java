@@ -41,8 +41,10 @@ abstract class AbstractVaadinMetricsTrailSupport<ServiceType, SessionType> {
             @Override
             public void accept(String path, String query) {
                 Metric metric = GeneralVaadinMetrics.NAVIGATION.build(path);
-                for (Map.Entry<String, String> param : fromParamAppender(query).entrySet()) {
-                    metric.getAttributes().add(new MetricAttribute(param.getKey(), param.getValue()));
+                if (!query.isEmpty()) {
+                    for (Map.Entry<String, String> param : fromParamAppender(query).entrySet()) {
+                        metric.getAttributes().add(new MetricAttribute(param.getKey(), param.getValue()));
+                    }
                 }
                 getSessionTrail().commit(metric);
             }
