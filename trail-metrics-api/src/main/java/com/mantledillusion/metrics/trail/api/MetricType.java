@@ -31,9 +31,10 @@ public enum MetricType {
 	 * phase is never actively closed, it ends automatically when the next phase
 	 * begins.
 	 * <p>
-	 * Operand is optional and has no enforced type.
+	 * Operand is mandatory and has to be a {@link String} value. It will be used
+	 * to identify the phase.
 	 */
-	PHASE(MetricValidator.VALIDATOR_NOOP),
+	PHASE(MetricValidator.VALIDATOR_STRING_OPERATOR),
 
 	/**
 	 * Metric that signals an absolute magnitude of a specific value at the moment

@@ -17,6 +17,9 @@ public class MetricValidator {
 	private static final Predicate<MetricAttribute> NULL_ATTRIBUTE_PREDICATE = attribute ->
 			attribute == null || attribute.getKey() == null || attribute.getValue() == null;
 
+	private static final Predicate<MetricAttribute> STRING_OPERATOR_PREDICATE = attribute ->
+			Metric.OPERATOR_ATTRIBUTE_KEY.equals(attribute.getKey()) && attribute.getValue() != null;
+
 	private static final Predicate<MetricAttribute> NUMERIC_OPERATOR_PREDICATE = attribute -> {
 		if (Metric.OPERATOR_ATTRIBUTE_KEY.equals(attribute.getKey())) {
 			try {
@@ -31,6 +34,12 @@ public class MetricValidator {
 	};
 
 	public static final Consumer<Metric> VALIDATOR_NOOP = metric -> {
+	};
+	public static final Consumer<Metric> VALIDATOR_STRING_OPERATOR = metric -> {
+		if (metric.getAttributes() == null || metric.getAttributes().stream().noneMatch(STRING_OPERATOR_PREDICATE)) {
+			throw new IllegalArgumentException("Cannot dispatch a " + metric.getType().name() + " metric without a '"
+					+ Metric.OPERATOR_ATTRIBUTE_KEY + "' attribute");
+		}
 	};
 	public static final Consumer<Metric> VALIDATOR_NUMERIC_OPERATOR = metric -> {
 		if (metric.getAttributes() == null || metric.getAttributes().stream().noneMatch(NUMERIC_OPERATOR_PREDICATE)) {
