@@ -325,7 +325,7 @@ public class MetricsSender implements MetricsConsumer {
 	@Override
 	public void consume(String consumerId, UUID trailId, Metric metric) throws Exception {
 		MetricValidator.validate(metric);
-		WebMetric webMetric = map(metric);
+		WebMetric webMetric = WebMetric.from(metric);
 
 		if (this.mode == SenderMode.SYNCHRONOUS) {
 			WebMetricTrail webMetricTrail = new WebMetricTrail(trailId.toString(), webMetric);
@@ -350,21 +350,6 @@ public class MetricsSender implements MetricsConsumer {
 				this.packLock.unlock();
 			}
 		}
-	}
-
-	private WebMetric map(Metric source) {
-		WebMetric target = new WebMetric(source.getIdentifier(), WebMetricType.valueOf(source.getType().name()));
-		target.setTimestamp(source.getTimestamp());
-
-		if (source.getAttributes() != null) {
-			target.setAttributes(source
-					.getAttributes()
-					.parallelStream()
-					.map(attribute -> new WebMetricAttribute(attribute.getKey(), attribute.getValue()))
-					.collect(Collectors.toList()));
-		}
-
-		return target;
 	}
 
 	/**

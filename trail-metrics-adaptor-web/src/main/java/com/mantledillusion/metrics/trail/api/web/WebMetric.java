@@ -1,6 +1,8 @@
 package com.mantledillusion.metrics.trail.api.web;
 
+import com.mantledillusion.metrics.trail.api.Metric;
 import com.mantledillusion.metrics.trail.api.MetricAttribute;
+import com.mantledillusion.metrics.trail.api.MetricType;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -8,6 +10,7 @@ import javax.xml.bind.annotation.XmlType;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Represents a single metric.
@@ -15,8 +18,6 @@ import java.util.List;
 @XmlRootElement
 @XmlType(propOrder = { "identifier", "type", "timestamp", "attributes" })
 public class WebMetric {
-
-	public static final String OPERATOR_ATTRIBUTE_KEY = "_operator";
 
 	@XmlElement(required = true, nillable = false)
 	private String identifier;
@@ -119,7 +120,7 @@ public class WebMetric {
 	 * Returns the list of this {@link WebMetric}'s {@link WebMetricAttribute}.
 	 * <p>
 	 * Attributes can be attached to a metric to fulfill {@link WebMetricType}
-	 * requirements by specifying a {@link #OPERATOR_ATTRIBUTE_KEY} attribute or to
+	 * requirements by specifying a {@link Metric#OPERATOR_ATTRIBUTE_KEY} attribute or to
 	 * deliver meta information.
 	 * 
 	 * @return The attribute list, might be null
@@ -132,7 +133,7 @@ public class WebMetric {
 	 * Returns the list of this {@link WebMetric}'s {@link WebMetricAttribute}.
 	 * <p>
 	 * Attributes can be attached to a metric to fulfill {@link WebMetricType}
-	 * requirements by specifying a {@link #OPERATOR_ATTRIBUTE_KEY} attribute or to
+	 * requirements by specifying a {@link Metric##OPERATOR_ATTRIBUTE_KEY} attribute or to
 	 * deliver meta information.
 	 * 
 	 * @param attributes
@@ -142,5 +143,48 @@ public class WebMetric {
 		this.attributes = attributes;
 	}
 
+	/**
+	 * Maps this {@link WebMetric} to a {@link Metric}.
+	 *
+	 * @return A new {@link Metric} instance, never null
+	 */
+	public Metric to() {
+		MetricType type = this.type != null ? MetricType.valueOf(this.type.name()) : null;
+		Metric target = new Metric(this.identifier, type);
+		target.setTimestamp(this.timestamp);
 
+		if (this.attributes != null) {
+			target.setAttributes(this.attributes
+					.parallelStream()
+					.map(attribute -> new MetricAttribute(attribute.getKey(), attribute.getValue()))
+					.collect(Collectors.toList()));
+		}
+
+		return target;
+	}
+
+	/**
+	 * Maps the given {@link Metric} to a {@link WebMetric}.
+	 *
+	 * @param source The metric to map from; might <b>not</b> be null.
+	 * @return A new {@link WebMetric} instance, never null
+	 */
+	public static WebMetric from(Metric source) {
+		if (source == null) {
+			throw new IllegalArgumentException("Cannot map a null metric");
+		}
+		WebMetricType type = source.getType() != null ? WebMetricType.valueOf(source.getType().name()) : null;
+		WebMetric target = new WebMetric(source.getIdentifier(), type);
+		target.setTimestamp(source.getTimestamp());
+
+		if (source.getAttributes() != null) {
+			target.setAttributes(source
+					.getAttributes()
+					.parallelStream()
+					.map(attribute -> new WebMetricAttribute(attribute.getKey(), attribute.getValue()))
+					.collect(Collectors.toList()));
+		}
+
+		return target;
+	}
 }

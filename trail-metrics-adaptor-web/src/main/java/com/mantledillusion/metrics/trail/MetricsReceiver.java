@@ -108,7 +108,7 @@ public class MetricsReceiver {
                         // ...and that trail's metrics...
                         trail.getMetrics().stream().forEach(metric -> {
                             // ...enqueue them to the queue...
-                            queue.enqueue(map(metric));
+                            queue.enqueue(metric.to());
                         });
                         // ...and then end the trail
                         queue.onTrailEnd();
@@ -116,20 +116,5 @@ public class MetricsReceiver {
                 }
             });
         });
-    }
-
-    private Metric map(WebMetric source) {
-        Metric target = new Metric(source.getIdentifier(), MetricType.valueOf(source.getType().name()));
-        target.setTimestamp(source.getTimestamp());
-
-        if (source.getAttributes() != null) {
-            target.setAttributes(source
-                    .getAttributes()
-                    .parallelStream()
-                    .map(attribute -> new MetricAttribute(attribute.getKey(), attribute.getValue()))
-                    .collect(Collectors.toList()));
-        }
-
-        return target;
     }
 }
