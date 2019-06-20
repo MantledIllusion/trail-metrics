@@ -154,4 +154,25 @@ public class Metric {
 	public void setAttributes(List<MetricAttribute> attributes) {
 		this.attributes = attributes;
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		Metric metric = (Metric) o;
+		return Objects.equals(identifier, metric.identifier) &&
+				type == metric.type &&
+				Objects.equals(timestamp, metric.timestamp) &&
+				Objects.equals(attributes, metric.attributes);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(identifier, type, timestamp, attributes);
+	}
+
+	@Override
+	public String toString() {
+		return this.identifier + " (" + this.type + ", " + this.timestamp + ")";
+	}
 }
