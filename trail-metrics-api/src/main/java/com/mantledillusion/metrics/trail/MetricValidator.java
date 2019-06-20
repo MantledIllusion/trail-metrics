@@ -15,7 +15,7 @@ public class MetricValidator {
 	}
 
 	private static final Predicate<MetricAttribute> NULL_ATTRIBUTE_PREDICATE = attribute ->
-			attribute == null || attribute.getKey() == null || attribute.getValue() == null;
+			attribute == null || attribute.getKey() == null;
 
 	private static final Predicate<MetricAttribute> STRING_OPERATOR_PREDICATE = attribute ->
 			Metric.OPERATOR_ATTRIBUTE_KEY.equals(attribute.getKey()) && attribute.getValue() != null;
@@ -74,7 +74,7 @@ public class MetricValidator {
 		} else if (metric.getAttributes() != null
 				&& metric.getAttributes().stream().anyMatch(NULL_ATTRIBUTE_PREDICATE)) {
 			throw new IllegalArgumentException(
-					"Cannot dispatch a metric with an attribute that is either null or contains a null key/value");
+					"Cannot dispatch a metric with an attribute that is either null or contains a null key");
 		}
 
 		metric.getType().validateOperator(metric);
