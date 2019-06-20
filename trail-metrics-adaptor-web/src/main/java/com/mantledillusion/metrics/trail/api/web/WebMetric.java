@@ -133,7 +133,7 @@ public class WebMetric {
 	 * Returns the list of this {@link WebMetric}'s {@link WebMetricAttribute}.
 	 * <p>
 	 * Attributes can be attached to a metric to fulfill {@link WebMetricType}
-	 * requirements by specifying a {@link Metric##OPERATOR_ATTRIBUTE_KEY} attribute or to
+	 * requirements by specifying a {@link Metric#OPERATOR_ATTRIBUTE_KEY} attribute or to
 	 * deliver meta information.
 	 * 
 	 * @param attributes
