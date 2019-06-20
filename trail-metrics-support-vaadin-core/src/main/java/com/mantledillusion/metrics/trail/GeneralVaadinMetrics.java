@@ -55,7 +55,7 @@ public enum GeneralVaadinMetrics implements EnumeratedMetric {
      */
     ERROR(MetricType.ALERT);
 
-    private static final String METRICS_DOMAIN = "general.";
+    private static final String METRICS_DOMAIN = "general";
 
     private final String metricId;
     private final MetricType type;
