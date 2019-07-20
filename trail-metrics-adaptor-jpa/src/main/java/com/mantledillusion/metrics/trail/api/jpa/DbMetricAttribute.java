@@ -6,7 +6,7 @@ import javax.persistence.*;
  * Represents an attribute of a {@link DbMetric}.
  */
 @Entity
-@Table(name = "attribute")
+@Table(name = "attribute", indexes = @Index(name = "IDX_ATTRIBUTE_KEY", columnList = "key"))
 public class DbMetricAttribute {
 
 	@Id
@@ -15,7 +15,7 @@ public class DbMetricAttribute {
 	private Long id;
 
 	@ManyToOne(optional = false)
-	@JoinColumn(name = "metric_identifier")
+	@JoinColumn(name = "metric_id")
 	private DbMetric metric;
 
 	@Column(name = "key")

@@ -8,7 +8,6 @@ import com.mantledillusion.metrics.trail.api.MetricType;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,11 +16,21 @@ import java.util.stream.Collectors;
  * Represents a single metric.
  */
 @Entity
-@Table(name = "metric")
+@Table(name = "metric", indexes = {
+		@Index(name = "IDX_METRIC_IDENTIFIER", columnList = "identifier"),
+		@Index(name = "IDX_METRIC_TYPE", columnList = "type")})
 public class DbMetric {
 
 	@Id
-	@Column(name = "identifier", updatable = false, nullable = false)
+	@Column(name = "id", nullable = false)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE)
+	private Long id;
+
+	@ManyToOne(optional = false, cascade = CascadeType.PERSIST)
+	@JoinColumn(name = "consumer_trail_id")
+	private DbMetricsConsumerTrail trail;
+
+	@Column(name = "identifier", nullable = false)
 	private String identifier;
 
 	@Column(name = "type", nullable = false)
@@ -35,7 +44,7 @@ public class DbMetric {
 	@Convert(converter = ZoneIdStringAttributeConverter.class)
 	private ZoneId timezone;
 
-	@OneToMany(mappedBy = "metric_identifier")
+	@OneToMany(mappedBy = "metric_id", cascade = CascadeType.ALL)
 	private List<DbMetricAttribute> attributes;
 
 	/**
@@ -54,6 +63,32 @@ public class DbMetric {
 	public DbMetric(String identifier, MetricType type) {
 		this.identifier = identifier;
 		this.type = type;
+	}
+
+	/**
+	 * Returns the database ID of this metric.
+	 *
+	 * @return The ID, may be null if the metric is not persisted yet
+	 */
+	public Long getId() {
+		return id;
+	}
+
+	/**
+	 * Sets the database ID of this metric.
+	 *
+	 * @param id The ID to set; might be null if this a new metric rather than an existing one in need to be updated.
+	 */
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public DbMetricsConsumerTrail getTrail() {
+		return trail;
+	}
+
+	public void setTrail(DbMetricsConsumerTrail trail) {
+		this.trail = trail;
 	}
 
 	/**
