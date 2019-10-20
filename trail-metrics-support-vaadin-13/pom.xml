@@ -9,10 +9,10 @@
 		<version>1.0.0.ALPHA4</version>
 	</parent>
 
-	<artifactId>trail-metrics-support-vaadin-flow</artifactId>
+	<artifactId>trail-metrics-support-vaadin-13</artifactId>
 
-	<name>trail-metrics-support-vaadin-flow</name>
-	<description>Trail Metrics support for Vaadin Flow.</description>
+	<name>trail-metrics-support-vaadin-13</name>
+	<description>Trail Metrics support for Vaadin Flow 13.</description>
 	<url>http://www.mantledillusion.com</url>
 
 	<dependencies>
@@ -22,9 +22,14 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>com.mantledillusion.essentials</groupId>
+			<artifactId>object-essentials</artifactId>
+			<version>1.2.0</version>
+		</dependency>
+		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>flow-server</artifactId>
-			<version>1.0.5</version>
+			<version>1.4.8</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>

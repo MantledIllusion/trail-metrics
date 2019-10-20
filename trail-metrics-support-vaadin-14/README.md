@@ -1,6 +1,6 @@
-# trail-metrics-support-vaadin-flow
+# trail-metrics-support-vaadin-14
 
-A _**MetricsTrail**_ support for Vaadin Flow.
+A _**MetricsTrail**_ support for Vaadin Flow 14.
 
 ## How to use
 

@@ -1,5 +1,6 @@
 package com.mantledillusion.metrics.trail;
 
+import com.mantledillusion.essentials.object.Null;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.server.ErrorHandler;
 import com.vaadin.flow.server.VaadinService;
@@ -50,8 +51,11 @@ public class VaadinMetricsTrailSupport extends AbstractVaadinMetricsTrailSupport
         BrowserInfo.BrowserType browserType = BrowserInfo.BrowserType.of(browser.isChrome(),
                 browser.isEdge(), browser.isFirefox(), browser.isIE(), browser.isOpera(), browser.isSafari());
         String browserVersion = browser.getBrowserMajorVersion() + "." + browser.getBrowserMinorVersion();
-        BrowserInfo.SystemEnvironmentType environmentType = BrowserInfo.SystemEnvironmentType.of(browser.isAndroid(), browser.isIPad(),
-                browser.isIPhone(), browser.isLinux(), browser.isMacOSX(), browser.isWindows(), browser.isWindowsPhone());
+        BrowserInfo.SystemEnvironmentType environmentType = BrowserInfo.SystemEnvironmentType.of(
+                Null.get(browser::isAndroid, false), Null.get(browser::isIPad, false),
+                Null.get(browser::isIPhone, false), Null.get(browser::isLinux, false),
+                Null.get(browser::isMacOSX, false), Null.get(browser::isWindows, false),
+                Null.get(browser::isWindowsPhone, false));
         return new BrowserInfo(application, browserType, browserVersion, environmentType);
     }
 

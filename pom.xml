@@ -66,7 +66,8 @@
 		<module>trail-metrics-support-vaadin-core</module>
 		<module>trail-metrics-support-vaadin-7</module>
 		<module>trail-metrics-support-vaadin-8</module>
-		<module>trail-metrics-support-vaadin-flow</module>
+		<module>trail-metrics-support-vaadin-13</module>
+		<module>trail-metrics-support-vaadin-14</module>
 	</modules>
 
 	<dependencyManagement>
