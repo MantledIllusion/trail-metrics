@@ -1,11 +1,9 @@
 package com.mantledillusion.metrics.trail;
 
 import com.mantledillusion.metrics.trail.api.Metric;
-import sun.awt.image.ImageWatched;
 
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.function.Consumer;
 
 /**
  * Represents a {@link MetricsConsumer} that can consume {@link Metric}s from a {@link MetricsTrail}.
