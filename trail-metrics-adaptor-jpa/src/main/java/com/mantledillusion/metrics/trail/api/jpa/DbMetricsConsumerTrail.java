@@ -10,25 +10,25 @@ import java.util.UUID;
  * Represents a trail of metrics consumed by a specific consumer.
  */
 @Entity
-@Table(name = "trail", indexes = {
-        @Index(name = "IDX_CONSUMERTRAIL_TRAILID", columnList = "trail_id"),
-        @Index(name = "IDX_CONSUMERTRAIL_CONSUMERID", columnList = "consumer_id"),
-        @Index(name = "UIDX_CONSUMERTRAIL_ID", columnList = "trail_id, consumer_id", unique = true)})
+@Table(name = "metric_trail", indexes = {
+        @Index(name = "IDX_METRIC_TRAIL_TRAIL_ID", columnList = "trail_id"),
+        @Index(name = "IDX_METRIC_TRAIL_CONSUMER_ID", columnList = "consumer_id"),
+        @Index(name = "UIDX_METRIC_TRAIL_TRAIL_ID_CONSUMER_ID", columnList = "trail_id, consumer_id", unique = true)})
 public class DbMetricsConsumerTrail {
 
     @Id
     @Column(name = "id", updatable = false, nullable = false)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "trail_id", length = 36, nullable = false)
     @Convert(converter = UUIDStringAttributeConverter.class)
     private UUID trailId;
 
-    @Column(name = "consumer_id", nullable = false)
+    @Column(name = "consumer_id", length = 256, nullable = false)
     private String consumerId;
 
-    @OneToMany(mappedBy = "trail_id")
+    @OneToMany(mappedBy = "trail")
     private List<DbMetric> metrics;
 
     /**

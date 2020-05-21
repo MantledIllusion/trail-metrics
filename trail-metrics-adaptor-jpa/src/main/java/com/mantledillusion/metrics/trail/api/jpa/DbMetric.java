@@ -23,28 +23,28 @@ public class DbMetric {
 
 	@Id
 	@Column(name = "id", nullable = false)
-	@GeneratedValue(strategy = GenerationType.SEQUENCE)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	@ManyToOne(optional = false, cascade = CascadeType.PERSIST)
-	@JoinColumn(name = "consumer_trail_id")
+	@JoinColumn(name = "metric_trail_id")
 	private DbMetricsConsumerTrail trail;
 
-	@Column(name = "identifier", nullable = false)
+	@Column(name = "identifier", length = 255, nullable = false)
 	private String identifier;
 
 	@Column(name = "type", nullable = false)
 	@Enumerated(EnumType.STRING)
 	private MetricType type;
 
-	@Column(name = "timestamp", nullable = false)
+	@Column(name = "time_stamp", nullable = false)
 	private LocalDateTime timestamp;
 
-	@Column(name = "timezone", nullable = false)
+	@Column(name = "time_zone", nullable = false)
 	@Convert(converter = ZoneIdStringAttributeConverter.class)
 	private ZoneId timezone;
 
-	@OneToMany(mappedBy = "metric_id", cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "metric", cascade = CascadeType.ALL)
 	private List<DbMetricAttribute> attributes;
 
 	/**

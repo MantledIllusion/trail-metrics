@@ -6,22 +6,25 @@ import javax.persistence.*;
  * Represents an attribute of a {@link DbMetric}.
  */
 @Entity
-@Table(name = "attribute", indexes = @Index(name = "IDX_ATTRIBUTE_KEY", columnList = "key"))
+@Table(name = "metric_attribute", indexes = {
+		@Index(name = "IDX_ATTRIBUTE_KEY", columnList = "attribute_key"),
+		@Index(name = "IDX_ATTRIBUTE_VALUE", columnList = "attribute_value"),
+		@Index(name = "UIDX_METRIC_ATTRIBUTE_METRIC_ID_ATTRIBUTE_KEY", columnList = "metric_id, attribute_key", unique = true)})
 public class DbMetricAttribute {
 
 	@Id
 	@Column(name = "id", updatable = false, nullable = false)
-	@GeneratedValue(strategy = GenerationType.SEQUENCE)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	@ManyToOne(optional = false)
 	@JoinColumn(name = "metric_id")
 	private DbMetric metric;
 
-	@Column(name = "key")
+	@Column(name = "attribute_key", length = 255, nullable = false)
 	private String key;
 
-	@Column(name = "value")
+	@Column(name = "attribute_value", length = 255)
 	private String value;
 
 	/**

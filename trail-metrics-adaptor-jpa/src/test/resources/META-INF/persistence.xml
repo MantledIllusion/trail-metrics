@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence" version="1.0">
+    <persistence-unit name="jpaPersistenceUnit">
+        <provider>org.hibernate.ejb.HibernatePersistence</provider>
+        <class>com.mantledillusion.metrics.trail.api.jpa.DbMetric</class>
+        <class>com.mantledillusion.metrics.trail.api.jpa.DbMetricAttribute</class>
+        <class>com.mantledillusion.metrics.trail.api.jpa.DbMetricsConsumerTrail</class>
+        <properties>
+            <property name="javax.persistence.jdbc.driver" value="org.h2.Driver" />
+            <property name="javax.persistence.jdbc.url"    value="jdbc:h2:mem:test;MODE=MySQL" />
+            <property name="javax.persistence.jdbc.user" value="sa" />
+            <property name="javax.persistence.jdbc.password" value="" />
+        </properties>
+    </persistence-unit>
+</persistence>

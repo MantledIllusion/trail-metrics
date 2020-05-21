@@ -7,22 +7,21 @@ import com.mantledillusion.metrics.trail.api.jpa.DbMetricsConsumerTrail;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.UUID;
 
 /**
  * {@link MetricsConsumer} implementation that is able to persist consumed {@link Metric}s into a JPA database.
  */
 public class MetricsPersistor implements MetricsConsumer {
-
-    private static final String QUERY_SELECT_CONSUMER_TRAIL_BY_CONSUMERID_AND_TRAILID =
-            "SELECT ct " +
-                    "FROM DbMetricsConsumerTrail ct " +
-                    "WHERE ct.consumerId = :consumerId " +
-                    "AND ct.trailId = :trailId";
 
     private final EntityManager em;
 
@@ -31,24 +30,33 @@ public class MetricsPersistor implements MetricsConsumer {
     }
 
     @Override
-    public void consume(String consumerId, UUID trailId, Metric metric) throws Exception {
+    public void consume(String consumerId, UUID trailId, Metric metric) {
         EntityTransaction tx = this.em.getTransaction();
         tx.begin();
 
         try {
+            CriteriaBuilder builder = this.em.getCriteriaBuilder();
+            CriteriaQuery<DbMetricsConsumerTrail> query = builder.createQuery(DbMetricsConsumerTrail.class);
+            Root<DbMetricsConsumerTrail> root = query.from(DbMetricsConsumerTrail.class);
+
+            query.select(root).where(builder.and(
+                    builder.equal(root.get("consumerId"), consumerId),
+                    builder.equal(root.get("trailId"), trailId)
+            ));
+            TypedQuery<DbMetricsConsumerTrail> trailTypedQuery = this.em.createQuery(query);
+
             DbMetricsConsumerTrail dbConsumerTrail;
             try {
-                dbConsumerTrail = this.em.
-                        createQuery(QUERY_SELECT_CONSUMER_TRAIL_BY_CONSUMERID_AND_TRAILID, DbMetricsConsumerTrail.class).
-                        setParameter("trailId", trailId).
-                        setParameter("consumerId", consumerId).
-                        getSingleResult();
+                dbConsumerTrail = trailTypedQuery.getSingleResult();
             } catch (NoResultException e) {
                 dbConsumerTrail = new DbMetricsConsumerTrail(trailId, consumerId);
             }
 
             DbMetric dbMetric = DbMetric.from(metric);
             dbMetric.setTrail(dbConsumerTrail);
+
+            dbConsumerTrail.setMetrics(dbConsumerTrail.getMetrics() != null ? dbConsumerTrail.getMetrics() : new ArrayList<>());
+            dbConsumerTrail.getMetrics().add(dbMetric);
 
             this.em.persist(dbMetric);
             tx.commit();
