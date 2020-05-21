@@ -2,16 +2,61 @@ package com.mantledillusion.metrics.trail;
 
 import com.mantledillusion.metrics.trail.api.Metric;
 
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.util.*;
+import java.util.function.Supplier;
 
 /**
  * Universal support for {@link Thread} based {@link MetricsTrail}s using {@link ThreadLocal}.
  */
 public final class MetricsTrailSupport {
 
-    private static ThreadLocal<MetricsTrail> THREADLOCAL = new ThreadLocal<>();
+    private static final ThreadLocal<MetricsTrail> THREAD_LOCAL = new ThreadLocal<>();
+    private static final Map<Integer, Supplier<MetricsTrailListener>> TRAIL_LISTENERS = new HashMap<>();
 
     private MetricsTrailSupport() {}
+
+    /**
+     * Adds a listener to announce the begin and end of a trail to.
+     *
+     * @param listener The listener to add; might <b>not</b> be null.
+     * @param mode The mode in which the listener should be statically referenced; might <b>not</b> be null.
+     */
+    public static void addListener(MetricsTrailListener listener, MetricsTrailListener.ReferenceMode mode) {
+        synchronized (TRAIL_LISTENERS) {
+            if (listener == null) {
+                throw new IllegalArgumentException("Cannot add a null listener.");
+            } else  if (mode == null) {
+                throw new IllegalArgumentException("Cannot add a listener with a null mode.");
+            }
+            Supplier<MetricsTrailListener> listenerSupplier;
+            switch (mode) {
+                case HARD:
+                    listenerSupplier = () -> listener;
+                    break;
+                case WEAK:
+                    WeakReference<MetricsTrailListener> weakReference =  new WeakReference<>(listener);
+                    listenerSupplier = weakReference::get;
+                    break;
+                default:
+                    throw new IllegalStateException("Unexpected reference mode: " + mode);
+            }
+            TRAIL_LISTENERS.put(System.identityHashCode(listener), listenerSupplier);
+        }
+    }
+
+    /**
+     * Removes a previously added listener.
+     *
+     * @param listener The listener, might be null.
+     */
+    public static void removeListener(MetricsTrailListener listener) {
+        synchronized (TRAIL_LISTENERS) {
+            TRAIL_LISTENERS.remove(System.identityHashCode(listener));
+        }
+    }
 
     /**
      * Returns whether the calling {@link Thread} is identified by a {@link MetricsTrailSupport}.
@@ -19,7 +64,7 @@ public final class MetricsTrailSupport {
      * @return True if the current {@link Thread} is identified by a {@link MetricsTrailSupport}, false otherwise
      */
     public static boolean has() {
-        return THREADLOCAL.get() != null;
+        return THREAD_LOCAL.get() != null;
     }
 
     /**
@@ -40,13 +85,14 @@ public final class MetricsTrailSupport {
      * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrailSupport}.
      */
     public static void begin(UUID trailId) throws IllegalStateException {
-        if (THREADLOCAL.get() != null) {
+        if (THREAD_LOCAL.get() != null) {
             throw new IllegalStateException("Cannot begin trail " + trailId + " for thread " + Thread.currentThread() +
-                    "; the current thread is already identified by trail " + THREADLOCAL.get().getTrailId());
+                    "; the current thread is already identified by trail " + THREAD_LOCAL.get().getTrailId());
         } else if (trailId == null) {
             throw new IllegalArgumentException("Cannot begin trail using a null thread id");
         }
-        THREADLOCAL.set(new MetricsTrail(trailId));
+        THREAD_LOCAL.set(new MetricsTrail(trailId));
+        announce(trailId, true);
     }
 
     /**
@@ -56,10 +102,10 @@ public final class MetricsTrailSupport {
      * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrailSupport}.
      */
     public static UUID get() throws IllegalStateException {
-        if (THREADLOCAL.get() == null) {
+        if (THREAD_LOCAL.get() == null) {
             throw new IllegalStateException("Cannot retrieve the ID of the current trail; current thread is not identified by one");
         }
-        return THREADLOCAL.get().getTrailId();
+        return THREAD_LOCAL.get().getTrailId();
     }
 
     /**
@@ -76,10 +122,10 @@ public final class MetricsTrailSupport {
      * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrailSupport}.
      */
     public static MetricsTrailConsumer.MetricsTrailConsumerQueue hook(MetricsTrailConsumer consumer) throws IllegalStateException {
-        if (THREADLOCAL.get() == null) {
+        if (THREAD_LOCAL.get() == null) {
             throw new IllegalStateException("Cannot retrieve whether the current trail has gated metrics; current thread is not identified by one");
         }
-        return THREADLOCAL.get().hook(consumer);
+        return THREAD_LOCAL.get().hook(consumer);
     }
 
     /**
@@ -100,7 +146,7 @@ public final class MetricsTrailSupport {
      * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrailSupport} and the commit is forced.
      */
     public static void commit(Metric metric, boolean forced) throws IllegalStateException {
-        MetricsTrail trail = THREADLOCAL.get();
+        MetricsTrail trail = THREAD_LOCAL.get();
         if (trail != null) {
             trail.commit(metric);
         } else if (forced) {
@@ -116,10 +162,10 @@ public final class MetricsTrailSupport {
      * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrailSupport}.
      */
     public static boolean hasGated() throws IllegalStateException {
-        if (THREADLOCAL.get() == null) {
+        if (THREAD_LOCAL.get() == null) {
             throw new IllegalStateException("Cannot retrieve whether the current trail has gated metrics; current thread is not identified by one");
         }
-        return THREADLOCAL.get().hasGated();
+        return THREAD_LOCAL.get().hasGated();
     }
 
     /**
@@ -130,10 +176,10 @@ public final class MetricsTrailSupport {
      * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrailSupport}.
      */
     public static boolean isDelivering() throws IllegalStateException {
-        if (THREADLOCAL.get() == null) {
+        if (THREAD_LOCAL.get() == null) {
             throw new IllegalStateException("Cannot retrieve whether the current trail is currently delivering metrics; current thread is not identified by one");
         }
-        return THREADLOCAL.get().isDelivering();
+        return THREAD_LOCAL.get().isDelivering();
     }
 
     /**
@@ -143,11 +189,32 @@ public final class MetricsTrailSupport {
      * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrailSupport}.
      */
     public static UUID end() throws IllegalStateException {
-        if (THREADLOCAL.get() == null) {
+        if (THREAD_LOCAL.get() == null) {
             throw new IllegalStateException("Cannot end trail; current thread is not identified by one");
         }
-        UUID trailId = THREADLOCAL.get().end();
-        THREADLOCAL.set(null);
+        UUID trailId = THREAD_LOCAL.get().end();
+        THREAD_LOCAL.set(null);
+        announce(trailId, false);
         return trailId;
+    }
+
+    private static void announce(UUID trailId, boolean beginning) {
+        synchronized (TRAIL_LISTENERS) {
+            Iterator<Supplier<MetricsTrailListener>> iterator = TRAIL_LISTENERS.values().iterator();
+            while (iterator.hasNext()) {
+                MetricsTrailListener listener = iterator.next().get();
+                if (listener == null) {
+                    iterator.remove();
+                } else {
+                    try {
+                        listener.announce(trailId, beginning);
+                    } catch (Exception e) {
+                        System.out.println("Encountered an error while trying to announce " +
+                                (beginning ? "beginning" : "ending") + " trail " + trailId + " to listener " +
+                                listener + ": " + e.getMessage());
+                    }
+                }
+            }
+        }
     }
 }

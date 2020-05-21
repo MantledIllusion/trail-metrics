@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public class MetricsTrailSupportTest {
@@ -103,5 +105,24 @@ public class MetricsTrailSupportTest {
     @Test
     public void endWithoutExisting() {
         Assertions.assertThrows(IllegalStateException.class, () -> MetricsTrailSupport.end());
+    }
+
+    @Test
+    public void listenTrail() {
+        Map<UUID, Boolean> trails = new HashMap<>();
+        MetricsTrailListener listener = trails::put;
+
+        MetricsTrailSupport.addListener(listener, MetricsTrailListener.ReferenceMode.HARD);
+        UUID trailId = MetricsTrailSupport.begin();
+        Assertions.assertTrue(trails.containsKey(trailId));
+        Assertions.assertTrue(trails.get(trailId));
+        MetricsTrailSupport.end();
+        Assertions.assertFalse(trails.get(trailId));
+
+        MetricsTrailSupport.removeListener(listener);
+        trailId = MetricsTrailSupport.begin();
+        Assertions.assertFalse(trails.containsKey(trailId));
+        MetricsTrailSupport.end();
+        Assertions.assertFalse(trails.containsKey(trailId));
     }
 }
