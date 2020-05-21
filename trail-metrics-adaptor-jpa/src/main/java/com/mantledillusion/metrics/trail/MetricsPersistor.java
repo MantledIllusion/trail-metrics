@@ -6,6 +6,11 @@ import com.mantledillusion.metrics.trail.api.jpa.DbMetricsConsumerTrail;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
+import javax.persistence.NoResultException;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.UUID;
 
 /**
@@ -13,7 +18,7 @@ import java.util.UUID;
  */
 public class MetricsPersistor implements MetricsConsumer {
 
-    private static final String QUERY_SELECT_CONSUMER_TRAIL_BY_CONSUMERID_AND_TRAILD =
+    private static final String QUERY_SELECT_CONSUMER_TRAIL_BY_CONSUMERID_AND_TRAILID =
             "SELECT ct " +
                     "FROM DbMetricsConsumerTrail ct " +
                     "WHERE ct.consumerId = :consumerId " +
@@ -31,16 +36,18 @@ public class MetricsPersistor implements MetricsConsumer {
         tx.begin();
 
         try {
-            DbMetricsConsumerTrail dbConsumerTrail = (DbMetricsConsumerTrail) this.em.
-                    createQuery(QUERY_SELECT_CONSUMER_TRAIL_BY_CONSUMERID_AND_TRAILD).
-                    setParameter("trailId", trailId).
-                    setParameter("consumerId", consumerId).
-                    getSingleResult();
-
-            DbMetric dbMetric = DbMetric.from(metric);
-            if (dbConsumerTrail == null) {
+            DbMetricsConsumerTrail dbConsumerTrail;
+            try {
+                dbConsumerTrail = this.em.
+                        createQuery(QUERY_SELECT_CONSUMER_TRAIL_BY_CONSUMERID_AND_TRAILID, DbMetricsConsumerTrail.class).
+                        setParameter("trailId", trailId).
+                        setParameter("consumerId", consumerId).
+                        getSingleResult();
+            } catch (NoResultException e) {
                 dbConsumerTrail = new DbMetricsConsumerTrail(trailId, consumerId);
             }
+
+            DbMetric dbMetric = DbMetric.from(metric);
             dbMetric.setTrail(dbConsumerTrail);
 
             this.em.persist(dbMetric);
