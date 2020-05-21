@@ -8,22 +8,28 @@
 		<version>1.0.0.ALPHA5</version>
 	</parent>
 
-	<artifactId>trail-metrics-adaptor-slf4j</artifactId>
+	<artifactId>trail-metrics-support-slf4j</artifactId>
 
-	<name>trail-metrics-adaptor-slf4j</name>
-	<description>SLF4J based logging adaptor for the trail-metrics-api.</description>
+	<name>trail-metrics-support-slf4j</name>
+	<description>Trail Metrics support for SLF4J.</description>
 	<url>http://www.mantledillusion.com</url>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.mantledillusion.metrics</groupId>
-			<artifactId>trail-metrics-api</artifactId>
+			<artifactId>trail-metrics-support</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 			<version>${slf4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.2.3</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>
