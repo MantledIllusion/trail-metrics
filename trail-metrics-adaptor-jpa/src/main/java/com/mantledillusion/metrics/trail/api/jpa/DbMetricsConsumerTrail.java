@@ -28,7 +28,7 @@ public class DbMetricsConsumerTrail {
     @Column(name = "consumer_id", length = 256, nullable = false)
     private String consumerId;
 
-    @OneToMany(mappedBy = "trail")
+    @OneToMany(mappedBy = "trail", cascade = CascadeType.PERSIST)
     private List<DbMetric> metrics;
 
     /**
