@@ -20,3 +20,4 @@ In the example of the customer adding an item to the cart, all of the customers 
 
 To get started, simply choose the **_support_** that fits your application. It will enable your application to create metrics and to setup consumers that consume them.
 
+Refer to the **_adaptor_** packages for base implementations of such metric consumers.

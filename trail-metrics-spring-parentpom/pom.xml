@@ -21,6 +21,7 @@
 
 	<modules>
 		<module>trail-metrics-adaptor-spring-boot-data-jpa</module>
+		<module>trail-metrics-support-spring-web</module>
 	</modules>
 
 	<dependencyManagement>
