@@ -5,15 +5,20 @@
 
 	<parent>
 		<groupId>com.mantledillusion.metrics</groupId>
-		<artifactId>trail-metrics-parentpom</artifactId>
+		<artifactId>trail-metrics-vaadin-parentpom</artifactId>
 		<version>1.0.0.ALPHA5</version>
 	</parent>
 
-	<artifactId>trail-metrics-support-vaadin-14</artifactId>
+	<artifactId>trail-metrics-support-vaadin-13</artifactId>
 
-	<name>trail-metrics-support-vaadin-14</name>
-	<description>Trail Metrics support for Vaadin Flow 14.</description>
+	<name>trail-metrics-support-vaadin-13</name>
+	<description>Trail Metrics support for Vaadin Flow 13.</description>
 	<url>http://www.mantledillusion.com</url>
+
+	<properties>
+		<vaadin.version>1.4.8</vaadin.version>
+		<object-essentials.version>1.2.0</object-essentials.version>
+	</properties>
 
 	<dependencies>
 		<dependency>
@@ -22,15 +27,15 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.mantledillusion.essentials</groupId>
-			<artifactId>object-essentials</artifactId>
-			<version>1.2.0</version>
-		</dependency>
-		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>flow-server</artifactId>
-			<version>2.1.9</version>
+			<version>${vaadin.version}</version>
 			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.mantledillusion.essentials</groupId>
+			<artifactId>object-essentials</artifactId>
+			<version>${object-essentials.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId>

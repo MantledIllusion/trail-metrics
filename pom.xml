@@ -67,11 +67,7 @@
 		<module>trail-metrics-support</module>
 		<module>trail-metrics-support-slf4j</module>
 		<module>trail-metrics-spring-parentpom</module>
-		<module>trail-metrics-support-vaadin-core</module>
-		<module>trail-metrics-support-vaadin-7</module>
-		<module>trail-metrics-support-vaadin-8</module>
-		<module>trail-metrics-support-vaadin-13</module>
-		<module>trail-metrics-support-vaadin-14</module>
+		<module>trail-metrics-vaadin-parentpom</module>
 	</modules>
 
 	<dependencyManagement>

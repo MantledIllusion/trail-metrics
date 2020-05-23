@@ -1,0 +1,25 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.mantledillusion.metrics</groupId>
+		<artifactId>trail-metrics-parentpom</artifactId>
+		<version>1.0.0.ALPHA5</version>
+	</parent>
+
+	<artifactId>trail-metrics-vaadin-parentpom</artifactId>
+	<packaging>pom</packaging>
+
+	<name>trail-metrics-vaadin</name>
+	<description>Vaadin packages for the trail-metrics-api.</description>
+	<url>http://www.mantledillusion.com</url>
+
+	<modules>
+		<module>trail-metrics-support-vaadin-core</module>
+		<module>trail-metrics-support-vaadin-7</module>
+		<module>trail-metrics-support-vaadin-8</module>
+		<module>trail-metrics-support-vaadin-13</module>
+		<module>trail-metrics-support-vaadin-14</module>
+	</modules>
+</project>
