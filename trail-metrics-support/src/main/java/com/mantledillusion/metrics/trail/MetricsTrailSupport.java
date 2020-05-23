@@ -59,18 +59,19 @@ public final class MetricsTrailSupport {
     }
 
     /**
-     * Returns whether the calling {@link Thread} is identified by a {@link MetricsTrailSupport}.
+     * Returns whether the calling {@link Thread} is identified by a {@link MetricsTrail}.
      *
-     * @return True if the current {@link Thread} is identified by a {@link MetricsTrailSupport}, false otherwise
+     * @return True if the current {@link Thread} is identified by a {@link MetricsTrail}, false otherwise
      */
     public static boolean has() {
         return THREAD_LOCAL.get() != null;
     }
 
     /**
-     * Begins a {@link MetricsTrailSupport} on the current thread using a random {@link UUID}.
+     * Begins a {@link MetricsTrail} on the current thread using a random {@link UUID}.
      *
-     * @throws IllegalStateException If the current {@link Thread} already is identified by a {@link MetricsTrailSupport}, which can be checked using {@link #has()}.
+     * @return The random UUID of the newly created {@link MetricsTrail}, never null
+     * @throws IllegalStateException If the current {@link Thread} already is identified by a {@link MetricsTrail}, which can be checked using {@link #has()}.
      */
     public static synchronized UUID begin() throws IllegalStateException {
         UUID trailId = UUID.randomUUID();
@@ -79,10 +80,10 @@ public final class MetricsTrailSupport {
     }
 
     /**
-     * Begins a {@link MetricsTrailSupport} on the current thread using the given {@link UUID}.
+     * Begins a {@link MetricsTrail} on the current thread using the given {@link UUID}.
      *
-     * @param trailId The {@link UUID} to identify the new {@link MetricsTrailSupport} by; might <b>not</b> be null.
-     * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrailSupport}.
+     * @param trailId The {@link UUID} to identify the new {@link MetricsTrail} by; might <b>not</b> be null.
+     * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrail}.
      */
     public static void begin(UUID trailId) throws IllegalStateException {
         if (THREAD_LOCAL.get() != null) {
@@ -96,10 +97,10 @@ public final class MetricsTrailSupport {
     }
 
     /**
-     * Returns the {@link UUID} of the {@link MetricsTrailSupport} that identifies the current {@link Thread}.
+     * Returns the {@link UUID} of the {@link MetricsTrail} that identifies the current {@link Thread}.
      *
-     * @return The ID of the current {@link MetricsTrailSupport}, never null
-     * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrailSupport}.
+     * @return The ID of the current {@link MetricsTrail}, never null
+     * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrail}.
      */
     public static UUID get() throws IllegalStateException {
         if (THREAD_LOCAL.get() == null) {
@@ -109,9 +110,9 @@ public final class MetricsTrailSupport {
     }
 
     /**
-     * Hooks the given {@link MetricsTrailConsumer} to the current {@link Thread}s {@link MetricsTrailSupport}.
+     * Hooks the given {@link MetricsTrailConsumer} to the current {@link Thread}s {@link MetricsTrail}.
      * <p>
-     * To hook the given {@link MetricsTrailConsumer} to the {@link MetricsTrailSupport}, a new
+     * To hook the given {@link MetricsTrailConsumer} to the {@link MetricsTrail}, a new
      * {@link MetricsTrailConsumer.MetricsTrailConsumerQueue} is created that will receive the trail's {@link Metric}s
      * and enqueue them for delivery for the consumer.
      * <p>
@@ -119,7 +120,7 @@ public final class MetricsTrailSupport {
      *
      * @param consumer The {@link MetricsTrailConsumer} hook; might <b>not</b> be null.
      * @return A new {@link MetricsTrailConsumer.MetricsTrailConsumerQueue}, never null
-     * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrailSupport}.
+     * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrail}.
      */
     public static MetricsTrailConsumer.MetricsTrailConsumerQueue hook(MetricsTrailConsumer consumer) throws IllegalStateException {
         if (THREAD_LOCAL.get() == null) {
@@ -129,21 +130,21 @@ public final class MetricsTrailSupport {
     }
 
     /**
-     * Commits the given {@link Metric} to all {@link MetricsTrailConsumer.MetricsTrailConsumerQueue}s hooked to the current {@link Thread}'s {@link MetricsTrailSupport}.
+     * Commits the given {@link Metric} to all {@link MetricsTrailConsumer.MetricsTrailConsumerQueue}s hooked to the current {@link Thread}'s {@link MetricsTrail}.
      *
      * @param metric The metric to commit; might <b>not</b> be null.
-     * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrailSupport}.
+     * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrail}.
      */
     public static void commit(Metric metric) throws IllegalStateException {
         commit(metric, true);
     }
 
     /**
-     * Commits the given {@link Metric} to all {@link MetricsTrailConsumer.MetricsTrailConsumerQueue}s hooked to the current {@link Thread}'s {@link MetricsTrailSupport}.
+     * Commits the given {@link Metric} to all {@link MetricsTrailConsumer.MetricsTrailConsumerQueue}s hooked to the current {@link Thread}'s {@link MetricsTrail}.
      *
      * @param metric The metric to commit; might <b>not</b> be null.
      * @param forced True if committing the given {@link Metric} is inevitable, so if the current {@link Thread} is not identified by a trail, an {@link IllegalStateException} has to be thrown.
-     * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrailSupport} and the commit is forced.
+     * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrail} and the commit is forced.
      */
     public static void commit(Metric metric, boolean forced) throws IllegalStateException {
         MetricsTrail trail = THREAD_LOCAL.get();
@@ -156,10 +157,10 @@ public final class MetricsTrailSupport {
 
     /**
      * Returns whether there are {@link Metric}s that are enqueued and waiting for any of the current {@link Thread}
-     * {@link MetricsTrailSupport}'s {@link MetricsTrailConsumer.MetricsTrailConsumerQueue} gates to open so they can be delivered.
+     * {@link MetricsTrail}'s {@link MetricsTrailConsumer.MetricsTrailConsumerQueue} gates to open so they can be delivered.
      *
      * @return True if there is at least one {@link Metric} currently gated, false otherwise
-     * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrailSupport}.
+     * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrail}.
      */
     public static boolean hasGated() throws IllegalStateException {
         if (THREAD_LOCAL.get() == null) {
@@ -169,11 +170,11 @@ public final class MetricsTrailSupport {
     }
 
     /**
-     * Returns whether there are {@link Metric}s of the current {@link Thread} {@link MetricsTrailSupport}'s
+     * Returns whether there are {@link Metric}s of the current {@link Thread} {@link MetricsTrail}'s
      * {@link MetricsTrailConsumer.MetricsTrailConsumerQueue} currently being delivered to their consumer by asynchronous tasks.
      *
      * @return True if there is at least one {@link Metric} currently being delivered, false otherwise
-     * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrailSupport}.
+     * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrail}.
      */
     public static boolean isDelivering() throws IllegalStateException {
         if (THREAD_LOCAL.get() == null) {
@@ -183,10 +184,10 @@ public final class MetricsTrailSupport {
     }
 
     /**
-     * Ends the {@link MetricsTrailSupport} that identifies the current {@link Thread}.
+     * Ends the {@link MetricsTrail} that identifies the current {@link Thread}.
      *
      * @return The {@link UUID} of the current {@link Thread}'s trail, never null
-     * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrailSupport}.
+     * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrail}.
      */
     public static UUID end() throws IllegalStateException {
         if (THREAD_LOCAL.get() == null) {
