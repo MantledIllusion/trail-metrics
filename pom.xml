@@ -37,7 +37,7 @@
 
 		<!-- dependency versions -->
 		<slf4j.version>1.7.30</slf4j.version>
-		<junit.version>5.4.2</junit.version>
+		<junit.version>5.6.2</junit.version>
 		<javax-servlet.version>4.0.1</javax-servlet.version>
 	</properties>
 
@@ -66,6 +66,7 @@
 		<module>trail-metrics-adaptor-web</module>
 		<module>trail-metrics-support</module>
 		<module>trail-metrics-support-slf4j</module>
+		<module>trail-metrics-spring-parentpom</module>
 		<module>trail-metrics-support-vaadin-core</module>
 		<module>trail-metrics-support-vaadin-7</module>
 		<module>trail-metrics-support-vaadin-8</module>
