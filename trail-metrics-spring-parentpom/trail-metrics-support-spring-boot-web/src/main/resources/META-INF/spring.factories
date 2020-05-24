@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.mantledillusion.metrics.trail.TrailMetricsWebAutoConfiguration
+com.mantledillusion.metrics.trail.TrailMetricsWebMvcAutoConfiguration
