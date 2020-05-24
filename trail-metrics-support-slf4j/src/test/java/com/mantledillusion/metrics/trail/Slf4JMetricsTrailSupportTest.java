@@ -14,7 +14,7 @@ public class Slf4JMetricsTrailSupportTest {
     private static final Logger LOG = LoggerFactory.getLogger(Slf4JMetricsTrailSupportTest.class);
 
     @Test
-    public void t() throws IOException {
+    public void testLogMDC() throws IOException {
         UUID trailId = UUID.randomUUID();
 
         try (PipedOutputStream os = new PipedOutputStream();

@@ -3,7 +3,6 @@ package com.mantledillusion.metrics.trail;
 import com.mantledillusion.metrics.trail.api.Metric;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -109,20 +108,26 @@ public class MetricsTrailSupportTest {
 
     @Test
     public void listenTrail() {
-        Map<UUID, Boolean> trails = new HashMap<>();
-        MetricsTrailListener listener = trails::put;
+        Map<UUID, MetricsTrailListener.EventType> trails = new HashMap<>();
+        MetricsTrailListener listener = (trail, eventType) -> trails.put(trail.getTrailId(), eventType);
 
         MetricsTrailSupport.addListener(listener, MetricsTrailListener.ReferenceMode.HARD);
         UUID trailId = MetricsTrailSupport.begin();
         Assertions.assertTrue(trails.containsKey(trailId));
-        Assertions.assertTrue(trails.get(trailId));
+        Assertions.assertEquals(MetricsTrailListener.EventType.BEGIN, trails.get(trailId));
         MetricsTrailSupport.end();
-        Assertions.assertFalse(trails.get(trailId));
+        Assertions.assertEquals(MetricsTrailListener.EventType.END, trails.get(trailId));
+
+        trailId = UUID.randomUUID();
+        MetricsTrail trail = new MetricsTrail(trailId);
+        MetricsTrailSupport.bind(trail);
+        Assertions.assertTrue(trails.containsKey(trailId));
+        Assertions.assertEquals(MetricsTrailListener.EventType.BIND, trails.get(trailId));
+        Assertions.assertSame(trail, MetricsTrailSupport.release());
+        Assertions.assertEquals(MetricsTrailListener.EventType.RELEASE, trails.get(trailId));
 
         MetricsTrailSupport.removeListener(listener);
         trailId = MetricsTrailSupport.begin();
-        Assertions.assertFalse(trails.containsKey(trailId));
-        MetricsTrailSupport.end();
         Assertions.assertFalse(trails.containsKey(trailId));
     }
 }

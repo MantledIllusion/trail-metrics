@@ -11,9 +11,9 @@ public class Slf4JMetricsTrailSupport {
 
     public static final String TRAIL_ID = "trailId";
 
-    private static final MetricsTrailListener METRICS_TRAIL_LISTENER = (trailId, beginning) -> {
-        if (beginning) {
-            MDC.put(TRAIL_ID, trailId.toString());
+    private static final MetricsTrailListener METRICS_TRAIL_LISTENER = (trail, eventType) -> {
+        if (eventType.isTrailActive()) {
+            MDC.put(TRAIL_ID, trail.getTrailId().toString());
         } else {
             MDC.remove(TRAIL_ID);
         }
