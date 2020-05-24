@@ -1,5 +1,6 @@
 package com.mantledillusion.metrics.trail;
 
+import com.mantledillusion.metrics.trail.MetricsPersistor;
 import com.mantledillusion.metrics.trail.api.jpa.DbMetric;
 import com.mantledillusion.metrics.trail.api.jpa.DbMetricAttribute;
 import com.mantledillusion.metrics.trail.api.jpa.DbMetricsConsumerTrail;
