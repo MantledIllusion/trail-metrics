@@ -1,6 +1,5 @@
 package com.mantledillusion.metrics.trail;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
 import java.util.UUID;
