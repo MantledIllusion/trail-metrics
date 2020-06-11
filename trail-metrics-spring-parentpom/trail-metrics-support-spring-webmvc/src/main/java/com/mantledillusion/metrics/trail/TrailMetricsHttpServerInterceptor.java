@@ -65,11 +65,15 @@ public class TrailMetricsHttpServerInterceptor implements HandlerInterceptor {
 
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
-        response.addHeader(this.headerName, MetricsTrailSupport.get().toString());
+        if (MetricsTrailSupport.has()) {
+            response.addHeader(this.headerName, MetricsTrailSupport.get().toString());
+        }
     }
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
-        MetricsTrailSupport.end();
+        if (MetricsTrailSupport.has()) {
+            MetricsTrailSupport.end();
+        }
     }
 }
