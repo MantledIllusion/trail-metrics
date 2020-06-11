@@ -1,0 +1,50 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.mantledillusion.metrics</groupId>
+		<artifactId>trail-metrics-spring-parentpom</artifactId>
+		<version>1.0.0.ALPHA5</version>
+	</parent>
+
+	<artifactId>trail-metrics-support-spring-jms</artifactId>
+
+	<name>trail-metrics-support-spring-jms</name>
+	<description>Spring JMS based support for the trail-metrics-api.</description>
+	<url>http://www.mantledillusion.com</url>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.mantledillusion.metrics</groupId>
+			<artifactId>trail-metrics-support</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-jms</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.jms</groupId>
+			<artifactId>javax.jms-api</artifactId>
+			<version>2.0.1</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-broker</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+</project>
