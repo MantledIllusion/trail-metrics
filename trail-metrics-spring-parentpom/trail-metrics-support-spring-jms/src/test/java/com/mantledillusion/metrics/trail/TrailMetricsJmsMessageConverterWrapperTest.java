@@ -30,8 +30,8 @@ public class TrailMetricsJmsMessageConverterWrapperTest {
 
     @Test
     public void testSendStrict() {
-        this.wrapper.setIncomingMode(JmsTrailMode.OPTIONAL);
-        this.wrapper.setOutgoingMode(JmsTrailMode.STRICT);
+        this.wrapper.setIncomingMode(TrailBehaviourMode.OPTIONAL);
+        this.wrapper.setOutgoingMode(TrailBehaviourMode.STRICT);
 
         String testName = determineTestName();
         Assertions.assertThrows(MessageConversionException.class,
@@ -40,8 +40,8 @@ public class TrailMetricsJmsMessageConverterWrapperTest {
 
     @Test
     public void testSendLenient() {
-        this.wrapper.setIncomingMode(JmsTrailMode.OPTIONAL);
-        this.wrapper.setOutgoingMode(JmsTrailMode.LENIENT);
+        this.wrapper.setIncomingMode(TrailBehaviourMode.OPTIONAL);
+        this.wrapper.setOutgoingMode(TrailBehaviourMode.LENIENT);
 
         String testName = determineTestName();
         this.jmsTemplate.convertAndSend(TestJmsReceiver.QUEUE, testName);
@@ -50,8 +50,8 @@ public class TrailMetricsJmsMessageConverterWrapperTest {
 
     @Test
     public void testSendOptional() {
-        this.wrapper.setIncomingMode(JmsTrailMode.OPTIONAL);
-        this.wrapper.setOutgoingMode(JmsTrailMode.OPTIONAL);
+        this.wrapper.setIncomingMode(TrailBehaviourMode.OPTIONAL);
+        this.wrapper.setOutgoingMode(TrailBehaviourMode.OPTIONAL);
 
         String testName = determineTestName();
         this.jmsTemplate.convertAndSend(TestJmsReceiver.QUEUE, testName);
@@ -60,8 +60,8 @@ public class TrailMetricsJmsMessageConverterWrapperTest {
 
     @Test
     public void testReceiveLenient() {
-        this.wrapper.setIncomingMode(JmsTrailMode.LENIENT);
-        this.wrapper.setOutgoingMode(JmsTrailMode.OPTIONAL);
+        this.wrapper.setIncomingMode(TrailBehaviourMode.LENIENT);
+        this.wrapper.setOutgoingMode(TrailBehaviourMode.OPTIONAL);
 
         String testName = determineTestName();
         this.jmsTemplate.convertAndSend(TestJmsReceiver.QUEUE, testName);

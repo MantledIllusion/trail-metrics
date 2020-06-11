@@ -14,7 +14,7 @@ import java.util.UUID;
  * with the ID set as JMS correlation ID.
  * <p>
  * The behaviour regarding missing {@link MetricsTrail}s/JMS correlation IDs on incoming/outgoing messages can be
- * modified using {@link #setIncomingMode(JmsTrailMode)} / {@link #setOutgoingMode(JmsTrailMode)}.
+ * modified using {@link #setIncomingMode(TrailBehaviourMode)} / {@link #setOutgoingMode(TrailBehaviourMode)}.
  *
  * @see Message#getJMSCorrelationID()
  * @see Message#setJMSCorrelationID(String)
@@ -22,19 +22,19 @@ import java.util.UUID;
 public class TrailMetricsJmsMessageConverterWrapper implements MessageConverter {
 
     private final MessageConverter wrappedConverter;
-    private JmsTrailMode incomingMode;
-    private JmsTrailMode outgoingMode;
+    private TrailBehaviourMode incomingMode;
+    private TrailBehaviourMode outgoingMode;
 
     /**
      * Default constructor.
      * <p>
-     * Sets the mode for incoming messages to {@link JmsTrailMode#LENIENT} and the one for outgoing messages to
-     * {@link JmsTrailMode#OPTIONAL}.
+     * Sets the mode for incoming messages to {@link TrailBehaviourMode#LENIENT} and the one for outgoing messages to
+     * {@link TrailBehaviourMode#OPTIONAL}.
      *
      * @param wrappedConverter The {@link MessageConverter} to wrap; might <b>not</b> be null.
      */
     public TrailMetricsJmsMessageConverterWrapper(MessageConverter wrappedConverter) {
-        this(wrappedConverter, JmsTrailMode.LENIENT, JmsTrailMode.OPTIONAL);
+        this(wrappedConverter, TrailBehaviourMode.LENIENT, TrailBehaviourMode.OPTIONAL);
     }
 
     /**
@@ -45,7 +45,7 @@ public class TrailMetricsJmsMessageConverterWrapper implements MessageConverter 
      * @param outgoingMode The behaviour mode for outgoing messages; might <b>not</b> be null.
      */
     public TrailMetricsJmsMessageConverterWrapper(MessageConverter wrappedConverter,
-                                                  JmsTrailMode incomingMode, JmsTrailMode outgoingMode) {
+                                                  TrailBehaviourMode incomingMode, TrailBehaviourMode outgoingMode) {
         if (wrappedConverter == null) {
             throw new IllegalArgumentException("Cannot wrap a null converter");
         }
@@ -59,7 +59,7 @@ public class TrailMetricsJmsMessageConverterWrapper implements MessageConverter 
      *
      * @return The current mode, never null
      */
-    public JmsTrailMode getIncomingMode() {
+    public TrailBehaviourMode getIncomingMode() {
         return incomingMode;
     }
 
@@ -68,7 +68,7 @@ public class TrailMetricsJmsMessageConverterWrapper implements MessageConverter 
      *
      * @param incomingMode The behaviour mode for incoming messages; might <b>not</b> be null.
      */
-    public void setIncomingMode(JmsTrailMode incomingMode) {
+    public void setIncomingMode(TrailBehaviourMode incomingMode) {
         if (incomingMode == null) {
             throw new IllegalArgumentException("Cannot set a null mode");
         }
@@ -80,7 +80,7 @@ public class TrailMetricsJmsMessageConverterWrapper implements MessageConverter 
      *
      * @return The current mode, never null
      */
-    public JmsTrailMode getOutgoingMode() {
+    public TrailBehaviourMode getOutgoingMode() {
         return outgoingMode;
     }
 
@@ -89,7 +89,7 @@ public class TrailMetricsJmsMessageConverterWrapper implements MessageConverter 
      *
      * @param outgoingMode The behaviour mode for outgoing messages; might <b>not</b> be null.
      */
-    public void setOutgoingMode(JmsTrailMode outgoingMode) {
+    public void setOutgoingMode(TrailBehaviourMode outgoingMode) {
         if (outgoingMode == null) {
             throw new IllegalArgumentException("Cannot set a null mode");
         }
