@@ -22,6 +22,7 @@
 	<modules>
 		<module>trail-metrics-support-spring5-jms</module>
 		<module>trail-metrics-support-spring5-messaging</module>
+		<module>trail-metrics-support-spring5-scheduling</module>
 		<module>trail-metrics-support-spring5-web</module>
 		<module>trail-metrics-support-spring5-webmvc</module>
 		<module>trail-metrics-support-spring5-boot-jms</module>

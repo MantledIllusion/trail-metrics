@@ -10,7 +10,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = { TestJmsConfiguration.class })
+@ContextConfiguration(classes = TestJmsConfiguration.class)
 public class TrailMetricsJmsMessageConverterWrapperTest {
 
     private static final String MESSAGE = "message";
