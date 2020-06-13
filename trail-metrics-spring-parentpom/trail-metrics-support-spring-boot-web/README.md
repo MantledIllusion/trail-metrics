@@ -1,4 +1,4 @@
-# trail-metrics-adaptor-spring-boot-web
+# trail-metrics-support-spring-boot-web
 
 Contains a Spring Boot auto configurations that automatically configures interceptors for in and outgoing web service calls.
 
