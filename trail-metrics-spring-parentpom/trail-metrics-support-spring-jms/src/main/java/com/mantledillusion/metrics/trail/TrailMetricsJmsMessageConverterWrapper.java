@@ -1,5 +1,6 @@
 package com.mantledillusion.metrics.trail;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.support.converter.MessageConversionException;
 import org.springframework.jms.support.converter.MessageConverter;
 
@@ -21,6 +22,13 @@ import java.util.UUID;
  */
 public class TrailMetricsJmsMessageConverterWrapper implements MessageConverter {
 
+    public static final String PRTY_MESSAGE_CONVERTER = "trailMetrics.jms.messageConverter";
+    public static final String PRTY_INCOMING_MODE = "trailMetrics.jms.incomingMode";
+    public static final String PRTY_OUTGOING_MODE = "trailMetrics.jms.outgoingMode";
+    public static final String DEFAULT_MESSAGE_CONVERTER = "messageConverter";
+    public static final String DEFAULT_INCOMING_MODE = "LENIENT";
+    public static final String DEFAULT_OUTGOING_MODE = "OPTIONAL";
+
     private final MessageConverter wrappedConverter;
     private TrailBehaviourMode incomingMode;
     private TrailBehaviourMode outgoingMode;
@@ -35,6 +43,20 @@ public class TrailMetricsJmsMessageConverterWrapper implements MessageConverter 
      */
     public TrailMetricsJmsMessageConverterWrapper(MessageConverter wrappedConverter) {
         this(wrappedConverter, TrailBehaviourMode.LENIENT, TrailBehaviourMode.OPTIONAL);
+    }
+
+    /**
+     * Default constructor.
+     * <p>
+     * Sets the mode for incoming messages to {@link TrailBehaviourMode#LENIENT} and the one for outgoing messages to
+     * {@link TrailBehaviourMode#OPTIONAL}.
+     *
+     * @param wrappedConverter The {@link MessageConverter} to wrap; might <b>not</b> be null.
+     */
+    public TrailMetricsJmsMessageConverterWrapper(@Value("${"+ PRTY_MESSAGE_CONVERTER +":"+ DEFAULT_MESSAGE_CONVERTER +"}") MessageConverter wrappedConverter,
+                                                  @Value("${"+ PRTY_INCOMING_MODE +":"+ DEFAULT_INCOMING_MODE +"}") String incomingMode,
+                                                  @Value("${"+PRTY_OUTGOING_MODE+":"+DEFAULT_OUTGOING_MODE+"}") String outgoingMode) {
+        this(wrappedConverter, TrailBehaviourMode.valueOf(incomingMode), TrailBehaviourMode.valueOf(outgoingMode));
     }
 
     /**

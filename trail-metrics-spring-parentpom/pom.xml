@@ -24,6 +24,7 @@
 		<module>trail-metrics-support-spring-messaging</module>
 		<module>trail-metrics-support-spring-web</module>
 		<module>trail-metrics-support-spring-webmvc</module>
+		<module>trail-metrics-support-spring-boot-jms</module>
 		<module>trail-metrics-support-spring-boot-web</module>
 		<module>trail-metrics-adaptor-spring-boot-data-jpa</module>
 	</modules>

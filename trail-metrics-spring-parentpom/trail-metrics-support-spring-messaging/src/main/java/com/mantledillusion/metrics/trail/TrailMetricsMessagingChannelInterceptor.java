@@ -29,8 +29,8 @@ import java.util.UUID;
 public class TrailMetricsMessagingChannelInterceptor implements ChannelInterceptor {
 
     public static final String PRTY_HEADER_NAME = "trailMetrics.message.trailIdHeaderName";
-    public static final String PRTY_INCOMING_MODE = "trailMetrics.http.incomingMode";
-    public static final String PRTY_OUTGOING_MODE = "trailMetrics.http.outgoingMode";
+    public static final String PRTY_INCOMING_MODE = "trailMetrics.message.incomingMode";
+    public static final String PRTY_OUTGOING_MODE = "trailMetrics.message.outgoingMode";
     public static final String DEFAULT_HEADER_NAME = "trailId";
     public static final String DEFAULT_INCOMING_MODE = "LENIENT";
     public static final String DEFAULT_OUTGOING_MODE = "OPTIONAL";
