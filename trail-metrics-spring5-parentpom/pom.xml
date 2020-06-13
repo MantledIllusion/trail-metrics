@@ -8,11 +8,11 @@
 		<version>1.0.0.ALPHA5</version>
 	</parent>
 
-	<artifactId>trail-metrics-spring-parentpom</artifactId>
+	<artifactId>trail-metrics-spring5-parentpom</artifactId>
 	<packaging>pom</packaging>
 
-	<name>trail-metrics-spring</name>
-	<description>Spring packages for the trail-metrics-api.</description>
+	<name>trail-metrics-spring5-parentpom</name>
+	<description>Spring 5 packages for the trail-metrics-api.</description>
 	<url>http://www.mantledillusion.com</url>
 
 	<properties>
@@ -20,13 +20,13 @@
 	</properties>
 
 	<modules>
-		<module>trail-metrics-support-spring-jms</module>
-		<module>trail-metrics-support-spring-messaging</module>
-		<module>trail-metrics-support-spring-web</module>
-		<module>trail-metrics-support-spring-webmvc</module>
-		<module>trail-metrics-support-spring-boot-jms</module>
-		<module>trail-metrics-support-spring-boot-web</module>
-		<module>trail-metrics-adaptor-spring-boot-data-jpa</module>
+		<module>trail-metrics-support-spring5-jms</module>
+		<module>trail-metrics-support-spring5-messaging</module>
+		<module>trail-metrics-support-spring5-web</module>
+		<module>trail-metrics-support-spring5-webmvc</module>
+		<module>trail-metrics-support-spring5-boot-jms</module>
+		<module>trail-metrics-support-spring5-boot-web</module>
+		<module>trail-metrics-adaptor-spring5-boot-data-jpa</module>
 	</modules>
 
 	<dependencyManagement>

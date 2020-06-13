@@ -66,7 +66,7 @@
 		<module>trail-metrics-adaptor-web</module>
 		<module>trail-metrics-support</module>
 		<module>trail-metrics-support-slf4j</module>
-		<module>trail-metrics-spring-parentpom</module>
+		<module>trail-metrics-spring5-parentpom</module>
 		<module>trail-metrics-vaadin-parentpom</module>
 	</modules>
 

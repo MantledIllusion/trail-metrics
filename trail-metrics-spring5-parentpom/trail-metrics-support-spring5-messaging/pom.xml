@@ -4,14 +4,14 @@
 
 	<parent>
 		<groupId>com.mantledillusion.metrics</groupId>
-		<artifactId>trail-metrics-spring-parentpom</artifactId>
+		<artifactId>trail-metrics-spring5-parentpom</artifactId>
 		<version>1.0.0.ALPHA5</version>
 	</parent>
 
-	<artifactId>trail-metrics-support-spring-messaging</artifactId>
+	<artifactId>trail-metrics-support-spring5-messaging</artifactId>
 
-	<name>trail-metrics-support-spring-messaging</name>
-	<description>Spring Messaging based support for the trail-metrics-api.</description>
+	<name>trail-metrics-support-spring5-messaging</name>
+	<description>Spring 5 Messaging based support for the trail-metrics-api.</description>
 	<url>http://www.mantledillusion.com</url>
 
 	<dependencies>

@@ -52,6 +52,8 @@ public class TrailMetricsJmsMessageConverterWrapper implements MessageConverter 
      * {@link TrailBehaviourMode#OPTIONAL}.
      *
      * @param wrappedConverter The {@link MessageConverter} to wrap; might <b>not</b> be null.
+     * @param incomingMode The behaviour mode for incoming messages; might <b>not</b> be null.
+     * @param outgoingMode The behaviour mode for outgoing messages; might <b>not</b> be null.
      */
     public TrailMetricsJmsMessageConverterWrapper(@Value("${"+ PRTY_MESSAGE_CONVERTER +":"+ DEFAULT_MESSAGE_CONVERTER +"}") MessageConverter wrappedConverter,
                                                   @Value("${"+ PRTY_INCOMING_MODE +":"+ DEFAULT_INCOMING_MODE +"}") String incomingMode,

@@ -4,35 +4,35 @@
 
 	<parent>
 		<groupId>com.mantledillusion.metrics</groupId>
-		<artifactId>trail-metrics-spring-parentpom</artifactId>
+		<artifactId>trail-metrics-spring5-parentpom</artifactId>
 		<version>1.0.0.ALPHA5</version>
 	</parent>
 
-	<artifactId>trail-metrics-adaptor-spring-boot-data-jpa</artifactId>
+	<artifactId>trail-metrics-support-spring5-web</artifactId>
 
-	<name>trail-metrics-adaptor-spring-boot-data-jpa</name>
-	<description>Spring Boot Data JPA based database adaptor for the trail-metrics-api.</description>
+	<name>trail-metrics-support-spring5-web</name>
+	<description>Spring 5 Web based support for the trail-metrics-api.</description>
 	<url>http://www.mantledillusion.com</url>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.mantledillusion.metrics</groupId>
-			<artifactId>trail-metrics-adaptor-jpa</artifactId>
+			<artifactId>trail-metrics-support</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jpa</artifactId>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

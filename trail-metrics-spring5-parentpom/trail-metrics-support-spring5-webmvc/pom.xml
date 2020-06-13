@@ -4,25 +4,30 @@
 
 	<parent>
 		<groupId>com.mantledillusion.metrics</groupId>
-		<artifactId>trail-metrics-spring-parentpom</artifactId>
+		<artifactId>trail-metrics-spring5-parentpom</artifactId>
 		<version>1.0.0.ALPHA5</version>
 	</parent>
 
-	<artifactId>trail-metrics-support-spring-web</artifactId>
+	<artifactId>trail-metrics-support-spring5-webmvc</artifactId>
 
-	<name>trail-metrics-support-spring-web</name>
-	<description>Spring Web based support for the trail-metrics-api.</description>
+	<name>trail-metrics-support-spring5-webmvc</name>
+	<description>Spring 5 WebMVC based support for the trail-metrics-api.</description>
 	<url>http://www.mantledillusion.com</url>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.mantledillusion.metrics</groupId>
-			<artifactId>trail-metrics-support</artifactId>
+			<artifactId>trail-metrics-support-spring5-web</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
-			<artifactId>spring-web</artifactId>
+			<artifactId>spring-webmvc</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
