@@ -12,7 +12,7 @@ import org.springframework.scheduling.annotation.Scheduled;
  * <p>
  * Requires Spring AOP's @{@link EnableAspectJAutoProxy} to be active.
  * <p>
- * Use {@link TrailMetricsSchedulingInterceptor(String, TrailBehaviourMode)}} or the {@value #PRTY_TRAIL_END_MODE}
+ * Use {@link #TrailMetricsSchedulingInterceptor(SchedulingTrailEndMode)}} or the {@value #PRTY_TRAIL_END_MODE}
  * property to set the header name to use, which is {@value #DEFAULT_TRAIL_END_MODE} by default.
  */
 @Aspect

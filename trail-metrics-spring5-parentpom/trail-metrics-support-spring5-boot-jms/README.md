@@ -1,6 +1,6 @@
 # trail-metrics-support-spring-boot-jms
 
-Contains a Spring Boot auto configurations that automatically configures message converter wrappers for in and outgoing jms messages.
+Contains Spring Boot auto configurations that automatically configures message converter wrappers for in and outgoing jms messages.
 
 ## How to use
 
