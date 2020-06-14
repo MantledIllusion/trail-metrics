@@ -18,7 +18,7 @@ public class TestJmsReceiver {
 
     @JmsListener(destination = QUEUE)
     public void receive(String msg) {
-        recreate(msg).complete(MetricsTrailSupport.has() ? MetricsTrailSupport.get() : null);
+        recreate(msg).complete(MetricsTrailSupport.has() ? MetricsTrailSupport.id() : null);
         if (MetricsTrailSupport.has()) {
             MetricsTrailSupport.end();
         }

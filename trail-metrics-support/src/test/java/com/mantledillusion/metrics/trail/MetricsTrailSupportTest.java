@@ -27,7 +27,7 @@ public class MetricsTrailSupportTest {
         MetricsTrailSupport.begin();
 
         Assertions.assertTrue(MetricsTrailSupport.has());
-        Assertions.assertNotNull(MetricsTrailSupport.get());
+        Assertions.assertNotNull(MetricsTrailSupport.id());
 
         MetricsTrailSupport.end();
 
@@ -41,7 +41,7 @@ public class MetricsTrailSupportTest {
         MetricsTrailSupport.begin(TRAIL_ID);
 
         Assertions.assertTrue(MetricsTrailSupport.has());
-        Assertions.assertEquals(TRAIL_ID, MetricsTrailSupport.get());
+        Assertions.assertEquals(TRAIL_ID, MetricsTrailSupport.id());
 
         MetricsTrailSupport.end();
 
@@ -61,7 +61,7 @@ public class MetricsTrailSupportTest {
 
     @Test
     public void getTrailWithoutExisting() {
-        Assertions.assertThrows(IllegalStateException.class, () -> MetricsTrailSupport.get());
+        Assertions.assertThrows(IllegalStateException.class, () -> MetricsTrailSupport.id());
     }
 
     @Test

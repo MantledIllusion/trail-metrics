@@ -20,9 +20,9 @@ public class TestTask {
         synchronized (this.futures) {
             Optional<CompletableFuture<UUID>> future = this.futures.stream().filter(f -> !f.isDone()).findFirst();
             if (future.isPresent()) {
-                future.get().complete(MetricsTrailSupport.has() ? MetricsTrailSupport.get() : null);
+                future.get().complete(MetricsTrailSupport.has() ? MetricsTrailSupport.id() : null);
             } else {
-                this.futures.add(CompletableFuture.completedFuture(MetricsTrailSupport.has() ? MetricsTrailSupport.get() : null));
+                this.futures.add(CompletableFuture.completedFuture(MetricsTrailSupport.has() ? MetricsTrailSupport.id() : null));
             }
         }
     }

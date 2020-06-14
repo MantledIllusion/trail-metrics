@@ -101,7 +101,7 @@ public class TrailMetricsHttpClientInterceptor implements ClientHttpRequestInter
     @Override
     public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution) throws IOException {
         if (MetricsTrailSupport.has()) {
-            request.getHeaders().add(this.headerName, MetricsTrailSupport.get().toString());
+            request.getHeaders().add(this.headerName, MetricsTrailSupport.id().toString());
         } else {
             switch (this.outgoingMode) {
                 case STRICT:

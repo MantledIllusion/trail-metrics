@@ -17,7 +17,7 @@ public class TestTask {
 
     @Scheduled(fixedDelay = Long.MAX_VALUE)
     public void execute() {
-        this.future.complete(MetricsTrailSupport.has() ? MetricsTrailSupport.get() : null);
+        this.future.complete(MetricsTrailSupport.has() ? MetricsTrailSupport.id() : null);
     }
 
     public UUID waitForTask() {

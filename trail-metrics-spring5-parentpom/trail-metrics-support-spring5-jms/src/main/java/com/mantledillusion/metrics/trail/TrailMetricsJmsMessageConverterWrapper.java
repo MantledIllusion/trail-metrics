@@ -148,7 +148,7 @@ public class TrailMetricsJmsMessageConverterWrapper implements MessageConverter 
     public Message toMessage(Object object, Session session) throws JMSException, MessageConversionException {
         Message message = this.wrappedConverter.toMessage(object, session);
         if (MetricsTrailSupport.has()) {
-            message.setJMSCorrelationID(MetricsTrailSupport.get().toString());
+            message.setJMSCorrelationID(MetricsTrailSupport.id().toString());
         } else {
             switch (this.outgoingMode) {
                 case STRICT:

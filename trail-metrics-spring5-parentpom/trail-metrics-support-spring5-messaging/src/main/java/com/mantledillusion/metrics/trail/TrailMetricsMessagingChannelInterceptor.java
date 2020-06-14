@@ -125,7 +125,7 @@ public class TrailMetricsMessagingChannelInterceptor implements ChannelIntercept
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         if (MetricsTrailSupport.has()) {
-            message.getHeaders().put(this.headerName, MetricsTrailSupport.get().toString());
+            message.getHeaders().put(this.headerName, MetricsTrailSupport.id().toString());
         } else {
             switch (this.outgoingMode) {
                 case STRICT:

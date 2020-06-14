@@ -2,8 +2,6 @@ package com.mantledillusion.metrics.trail;
 
 import com.mantledillusion.metrics.trail.api.Metric;
 
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.function.Supplier;
@@ -129,11 +127,21 @@ public final class MetricsTrailSupport {
      * @return The ID of the current {@link MetricsTrail}, never null
      * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrail}.
      */
-    public static UUID get() throws IllegalStateException {
+    public static UUID id() throws IllegalStateException {
+        return get().getTrailId();
+    }
+
+    /**
+     * Returns the {@link MetricsTrail} that identifies the current {@link Thread}.
+     *
+     * @return Th current {@link MetricsTrail}, never null
+     * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrail}.
+     */
+    public static MetricsTrail get() throws IllegalStateException {
         if (THREAD_LOCAL.get() == null) {
             throw new IllegalStateException("Cannot retrieve the ID of the current trail; current thread is not identified by one");
         }
-        return THREAD_LOCAL.get().getTrailId();
+        return THREAD_LOCAL.get();
     }
 
     /**
@@ -219,7 +227,29 @@ public final class MetricsTrailSupport {
      * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrail}.
      */
     public static UUID end() throws IllegalStateException {
-        return release(MetricsTrailListener.EventType.END).end();
+        if (THREAD_LOCAL.get() == null) {
+            throw new IllegalStateException("Cannot end trail; current thread is not identified by one");
+        }
+        MetricsTrail metricsTrail = THREAD_LOCAL.get();
+        end(metricsTrail);
+        THREAD_LOCAL.set(null);
+        return metricsTrail.getTrailId();
+    }
+
+    /**
+     * Ends the {@link MetricsTrail} that identifies the current {@link Thread}.
+     * <p>
+     * Will cause a {@link MetricsTrailListener.EventType#END} event to be dispatched.
+     *
+     * @param metricsTrail The trail to release; might <b>not</b> be null.
+     * @throws IllegalStateException If the given {@link MetricsTrail} is null.
+     */
+    public static void end(MetricsTrail metricsTrail) throws IllegalStateException {
+        if (metricsTrail == null) {
+            throw new IllegalArgumentException("Cannot release a null trail");
+        }
+        announce(metricsTrail, MetricsTrailListener.EventType.END);
+        metricsTrail.end();
     }
 
     /**
@@ -231,17 +261,28 @@ public final class MetricsTrailSupport {
      * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrail}.
      */
     public static MetricsTrail release() throws IllegalStateException {
-        return release(MetricsTrailListener.EventType.RELEASE);
-    }
-
-    private static MetricsTrail release(MetricsTrailListener.EventType eventType) {
         if (THREAD_LOCAL.get() == null) {
             throw new IllegalStateException("Cannot end trail; current thread is not identified by one");
         }
         MetricsTrail metricsTrail = THREAD_LOCAL.get();
-        announce(metricsTrail, eventType);
+        release(metricsTrail);
         THREAD_LOCAL.set(null);
         return metricsTrail;
+    }
+
+    /**
+     * Releases the {@link MetricsTrail} that identifies the current {@link Thread} without ending it.
+     * <p>
+     * Will cause a {@link MetricsTrailListener.EventType#RELEASE} event to be dispatched.
+     *
+     * @param metricsTrail The trail to release; might <b>not</b> be null.
+     * @throws IllegalStateException If the given {@link MetricsTrail} is null.
+     */
+    public static void release(MetricsTrail metricsTrail) throws IllegalStateException {
+        if (metricsTrail == null) {
+            throw new IllegalArgumentException("Cannot release a null trail");
+        }
+        announce(metricsTrail, MetricsTrailListener.EventType.RELEASE);
     }
 
     private static void announce(MetricsTrail metricsTrail, MetricsTrailListener.EventType eventType) {
