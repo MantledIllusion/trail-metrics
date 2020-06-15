@@ -3,7 +3,6 @@ package com.mantledillusion.metrics.trail;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.jms.JmsAutoConfiguration;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.core.JmsTemplate;
@@ -13,7 +12,6 @@ import javax.annotation.PostConstruct;
 import java.util.List;
 
 @Configuration
-@ConditionalOnBean(JmsTemplate.class)
 @AutoConfigureAfter(JmsAutoConfiguration.class)
 public class TrailMetricsJmsTemplateAutoConfiguration {
 

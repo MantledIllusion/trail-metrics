@@ -16,7 +16,6 @@ import java.util.List;
  * available in the application's context.
  */
 @Configuration
-@ConditionalOnBean(RestTemplate.class)
 @AutoConfigureAfter(RestTemplateAutoConfiguration.class)
 public class TrailMetricsWebAutoConfiguration {
 
