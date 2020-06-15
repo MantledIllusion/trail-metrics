@@ -23,6 +23,45 @@ public final class MetricsTrailSupport {
      * @param mode The mode in which the listener should be statically referenced; might <b>not</b> be null.
      */
     public static void addListener(MetricsTrailListener listener, MetricsTrailListener.ReferenceMode mode) {
+        registerListener(System.identityHashCode(listener), listener, mode);
+    }
+
+    /**
+     * Removes a previously added listener.
+     *
+     * @param listener The listener, might be null.
+     */
+    public static void removeListener(MetricsTrailListener listener) {
+        unregisterListener(System.identityHashCode(listener));
+    }
+
+    /**
+     * Adds the given consumer as a permanent consumer to hook to all trails occurring.
+     *
+     * @param consumer The consumer to add; might <b>not</b> be null.
+     * @param mode The mode in which the listener should be statically referenced; might <b>not</b> be null.
+     */
+    public static void addPersistentHook(MetricsTrailConsumer consumer, MetricsTrailListener.ReferenceMode mode) {
+        if (consumer == null) {
+            throw new IllegalArgumentException("Cannot hook a null consumer");
+        }
+        registerListener(System.identityHashCode(consumer), (trail, eventType) -> {
+            if (eventType == MetricsTrailListener.EventType.BEGIN) {
+                trail.hook(consumer);
+            }
+        }, mode);
+    }
+
+    /**
+     * Removes a previously added consumer.
+     *
+     * @param consumer The consumer, might be null.
+     */
+    public static void removePersistentHook(MetricsTrailConsumer consumer) {
+        unregisterListener(System.identityHashCode(consumer));
+    }
+
+    private static void registerListener(Integer id, MetricsTrailListener listener, MetricsTrailListener.ReferenceMode mode) {
         synchronized (TRAIL_LISTENERS) {
             if (listener == null) {
                 throw new IllegalArgumentException("Cannot add a null listener.");
@@ -41,18 +80,13 @@ public final class MetricsTrailSupport {
                 default:
                     throw new IllegalStateException("Unexpected reference mode: " + mode);
             }
-            TRAIL_LISTENERS.put(System.identityHashCode(listener), listenerSupplier);
+            TRAIL_LISTENERS.put(id, listenerSupplier);
         }
     }
 
-    /**
-     * Removes a previously added listener.
-     *
-     * @param listener The listener, might be null.
-     */
-    public static void removeListener(MetricsTrailListener listener) {
+    private static void unregisterListener(Integer id) {
         synchronized (TRAIL_LISTENERS) {
-            TRAIL_LISTENERS.remove(System.identityHashCode(listener));
+            TRAIL_LISTENERS.remove(id);
         }
     }
 
