@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.servlet.HandlerInterceptor;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -114,14 +113,10 @@ public class TrailMetricsHttpServerInterceptor implements HandlerInterceptor {
                     MetricsTrailSupport.begin();
             }
         }
-        return true;
-    }
-
-    @Override
-    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
         if (MetricsTrailSupport.has()) {
             response.addHeader(this.headerName, MetricsTrailSupport.id().toString());
         }
+        return true;
     }
 
     @Override

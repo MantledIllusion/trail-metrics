@@ -44,7 +44,7 @@ public class TrailMetricsHttpServerInterceptorTest {
 
     @BeforeEach
     public void setup() throws Exception {
-        this.mockMvc = MockMvcBuilders.webAppContextSetup(wac).build();
+        this.mockMvc = MockMvcBuilders.webAppContextSetup(this.wac).build();
     }
 
     @Test
