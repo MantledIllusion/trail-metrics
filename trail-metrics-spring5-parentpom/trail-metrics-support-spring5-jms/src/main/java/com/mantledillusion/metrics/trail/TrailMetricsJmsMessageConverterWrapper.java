@@ -125,7 +125,7 @@ public class TrailMetricsJmsMessageConverterWrapper implements MessageConverter 
         if (message.getJMSCorrelationID() == null) {
             switch (this.incomingMode) {
                 case STRICT:
-                    throw new MessageConversionException("");
+                    throw new MessageConversionException("Incoming JMS message does not contain correlationId.");
                 case LENIENT:
                     MetricsTrailSupport.begin();
             }
@@ -135,7 +135,7 @@ public class TrailMetricsJmsMessageConverterWrapper implements MessageConverter 
             } catch (IllegalArgumentException e) {
                 switch (this.incomingMode) {
                     case STRICT:
-                        throw new MessageConversionException("");
+                        throw new MessageConversionException("Incoming JMS message contains a non-UUID correlationId");
                     case LENIENT:
                         MetricsTrailSupport.begin();
                 }
@@ -152,7 +152,7 @@ public class TrailMetricsJmsMessageConverterWrapper implements MessageConverter 
         } else {
             switch (this.outgoingMode) {
                 case STRICT:
-                    throw new MessageConversionException("");
+                    throw new MessageConversionException("The current thread does not have a trail whose ID could be used as JMS correlationId");
                 case LENIENT:
                     message.setJMSCorrelationID(UUID.randomUUID().toString());
             }
