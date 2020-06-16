@@ -6,6 +6,8 @@ import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.jms.JmsAutoConfiguration;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.context.annotation.Import;
 import org.springframework.jms.config.AbstractJmsListenerContainerFactory;
 import org.springframework.jms.support.converter.MessageConverter;
 import org.springframework.jms.support.converter.SimpleMessageConverter;
@@ -16,6 +18,8 @@ import java.util.Collections;
 import java.util.List;
 
 @Configuration
+@EnableAspectJAutoProxy
+@Import(TrailMetricsJmsInterceptor.class)
 @Conditional(ContainerFactoryConverterRetrievalCondition.class)
 @AutoConfigureAfter(JmsAutoConfiguration.class)
 public class TrailMetricsJmsListenerContainerFactoryAutoConfiguration {

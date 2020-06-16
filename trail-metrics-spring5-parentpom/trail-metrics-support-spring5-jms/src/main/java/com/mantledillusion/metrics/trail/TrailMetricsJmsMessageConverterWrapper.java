@@ -46,10 +46,7 @@ public class TrailMetricsJmsMessageConverterWrapper implements MessageConverter 
     }
 
     /**
-     * Default constructor.
-     * <p>
-     * Sets the mode for incoming messages to {@link TrailBehaviourMode#LENIENT} and the one for outgoing messages to
-     * {@link TrailBehaviourMode#OPTIONAL}.
+     * Advanced constructor.
      *
      * @param wrappedConverter The {@link MessageConverter} to wrap; might <b>not</b> be null.
      * @param incomingMode The behaviour mode for incoming messages; might <b>not</b> be null.
