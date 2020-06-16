@@ -25,7 +25,7 @@ public class TrailMetricsHttpClientInterceptor implements ClientHttpRequestInter
 
     public static final String PRTY_HEADER_NAME = "trailMetrics.http.trailIdHeaderName";
     public static final String PRTY_OUTGOING_MODE = "trailMetrics.http.outgoingMode";
-    public static final String DEFAULT_HEADER_NAME = "trailId";
+    public static final String DEFAULT_HEADER_NAME = "correlationId";
     public static final String DEFAULT_OUTGOING_MODE = "OPTIONAL";
 
     private final String headerName;

@@ -28,7 +28,7 @@ public class TrailMetricsHttpServerInterceptor implements HandlerInterceptor {
 
     public static final String PRTY_HEADER_NAME = "trailMetrics.http.trailIdHeaderName";
     public static final String PRTY_INCOMING_MODE = "trailMetrics.http.incomingMode";
-    public static final String DEFAULT_HEADER_NAME = "trailId";
+    public static final String DEFAULT_HEADER_NAME = "correlationId";
     public static final String DEFAULT_INCOMING_MODE = "LENIENT";
 
     private final String headerName;
