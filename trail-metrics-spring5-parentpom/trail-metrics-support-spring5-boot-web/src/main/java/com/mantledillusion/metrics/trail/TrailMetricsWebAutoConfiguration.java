@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -21,8 +22,9 @@ public class TrailMetricsWebAutoConfiguration {
 
     @Value("${"+TrailMetricsHttpClientInterceptor.PRTY_HEADER_NAME+ ":"+TrailMetricsHttpClientInterceptor.DEFAULT_HEADER_NAME+"}")
     private String headerName;
-    @Autowired
-    private List<RestTemplate> restTemplates;
+
+    @Autowired(required = false)
+    private List<RestTemplate> restTemplates = Collections.emptyList();
 
     @PostConstruct
     public void interceptRestTemplates() {

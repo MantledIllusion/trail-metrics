@@ -9,6 +9,7 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.support.converter.SimpleMessageConverter;
 
 import javax.annotation.PostConstruct;
+import java.util.Collections;
 import java.util.List;
 
 @Configuration
@@ -19,8 +20,9 @@ public class TrailMetricsJmsTemplateAutoConfiguration {
     private String incomingMode;
     @Value("${"+TrailMetricsJmsMessageConverterWrapper.PRTY_OUTGOING_MODE+":"+TrailMetricsJmsMessageConverterWrapper.DEFAULT_OUTGOING_MODE+"}")
     private String outgoingMode;
-    @Autowired
-    private List<JmsTemplate> jmsTemplates;
+
+    @Autowired(required = false)
+    private List<JmsTemplate> jmsTemplates = Collections.emptyList();
 
     @PostConstruct
     public void interceptJmsTemplates() {

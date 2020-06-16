@@ -12,6 +12,7 @@ import org.springframework.jms.support.converter.SimpleMessageConverter;
 
 import javax.annotation.PostConstruct;
 import java.lang.reflect.Field;
+import java.util.Collections;
 import java.util.List;
 
 @Configuration
@@ -24,8 +25,8 @@ public class TrailMetricsJmsListenerContainerFactoryAutoConfiguration {
     @Value("${"+TrailMetricsJmsMessageConverterWrapper.PRTY_OUTGOING_MODE+":"+TrailMetricsJmsMessageConverterWrapper.DEFAULT_OUTGOING_MODE+"}")
     private String outgoingMode;
 
-    @Autowired
-    private List<AbstractJmsListenerContainerFactory<?>> containerFactories;
+    @Autowired(required = false)
+    private List<AbstractJmsListenerContainerFactory<?>> containerFactories = Collections.emptyList();
 
     @PostConstruct
     public void interceptContainerFactories() {
