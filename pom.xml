@@ -4,7 +4,7 @@
 
 	<groupId>com.mantledillusion.metrics</groupId>
 	<artifactId>trail-metrics-parentpom</artifactId>
-	<version>1.0.0.ALPHA8</version>
+	<version>1.0.0.ALPHA9</version>
 	<packaging>pom</packaging>
 
 	<name>trail-metrics-parentpom</name>

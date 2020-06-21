@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.mantledillusion.metrics</groupId>
 		<artifactId>trail-metrics-vaadin-parentpom</artifactId>
-		<version>1.0.0.ALPHA8</version>
+		<version>1.0.0.ALPHA9</version>
 	</parent>
 
 	<artifactId>trail-metrics-support-vaadin-core</artifactId>
