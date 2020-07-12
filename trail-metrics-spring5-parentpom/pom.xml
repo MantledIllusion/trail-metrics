@@ -23,12 +23,14 @@
 		<module>trail-metrics-support-spring5-jms</module>
 		<module>trail-metrics-support-spring5-messaging</module>
 		<module>trail-metrics-support-spring5-scheduling</module>
+		<module>trail-metrics-support-spring5-security</module>
 		<module>trail-metrics-support-spring5-web</module>
 		<module>trail-metrics-support-spring5-webmvc</module>
+		<module>trail-metrics-adaptor-spring5-boot-data-jpa</module>
 		<module>trail-metrics-support-spring5-boot-jms</module>
 		<module>trail-metrics-support-spring5-boot-scheduling</module>
+		<module>trail-metrics-support-spring5-boot-security</module>
 		<module>trail-metrics-support-spring5-boot-web</module>
-		<module>trail-metrics-adaptor-spring5-boot-data-jpa</module>
 	</modules>
 
 	<dependencyManagement>
