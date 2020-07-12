@@ -13,25 +13,25 @@ public class MockConsumer implements MetricsConsumer {
 	private int failLevel = 0;
 	
 	@Override
-	public void consume(String consumerId, UUID trailId, Metric metric) throws Exception {
+	public void consume(String consumerId, UUID correlationId, Metric metric) throws Exception {
 		this.semaphore.acquire();
 		if (this.failLevel == 2) {
-			this.fails.put(trailId, this.fails.computeIfAbsent(trailId, id -> Integer.valueOf(0))+1);
+			this.fails.put(correlationId, this.fails.computeIfAbsent(correlationId, id -> Integer.valueOf(0))+1);
 			throw new Error();
 		} else if (this.failLevel == 1) {
-			this.fails.put(trailId, this.fails.computeIfAbsent(trailId, id -> Integer.valueOf(0))+1);
+			this.fails.put(correlationId, this.fails.computeIfAbsent(correlationId, id -> Integer.valueOf(0))+1);
 			throw new IllegalStateException();
 		} else {
-			this.queues.computeIfAbsent(trailId, id -> new LinkedBlockingQueue<>()).add(metric);
+			this.queues.computeIfAbsent(correlationId, id -> new LinkedBlockingQueue<>()).add(metric);
 		}
 	}
 
-	int size(UUID trailId) {
-		return this.queues.computeIfAbsent(trailId, id -> new LinkedBlockingQueue<>()).size();
+	int size(UUID correlationId) {
+		return this.queues.computeIfAbsent(correlationId, id -> new LinkedBlockingQueue<>()).size();
 	}
 
-	int fails(UUID trailId) {
-		return this.fails.computeIfAbsent(trailId, id -> Integer.valueOf(0));
+	int fails(UUID correlationId) {
+		return this.fails.computeIfAbsent(correlationId, id -> Integer.valueOf(0));
 	}
 
 	void block() {
@@ -58,7 +58,7 @@ public class MockConsumer implements MetricsConsumer {
 		this.failLevel = 0;
 	}
 	
-	Metric dequeueOne(UUID trailId) {
-		return this.queues.computeIfAbsent(trailId, id -> new LinkedBlockingQueue<>()).remove();
+	Metric dequeueOne(UUID correlationId) {
+		return this.queues.computeIfAbsent(correlationId, id -> new LinkedBlockingQueue<>()).remove();
 	}
 }

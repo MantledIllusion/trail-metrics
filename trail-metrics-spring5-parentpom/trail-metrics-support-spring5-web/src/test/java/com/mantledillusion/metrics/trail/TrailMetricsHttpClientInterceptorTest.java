@@ -23,12 +23,12 @@ public class TrailMetricsHttpClientInterceptorTest {
     }
 
     @Test
-    public void testSendTrailId() {
-        UUID trailId = UUID.randomUUID();
+    public void testSendCorrelationId() {
+        UUID correlationId = UUID.randomUUID();
 
-        MetricsTrailSupport.begin(trailId);
+        MetricsTrailSupport.begin(correlationId);
         MOCK_REST_SERVER.
-                expect(MockRestRequestMatchers.header(TrailMetricsHttpClientInterceptor.DEFAULT_HEADER_NAME, trailId.toString())).
+                expect(MockRestRequestMatchers.header(TrailMetricsHttpClientInterceptor.DEFAULT_HEADER_NAME, correlationId.toString())).
                 andRespond(MockRestResponseCreators.withSuccess());
         REST_TEMPLATE.getForObject("/", Void.class);
 

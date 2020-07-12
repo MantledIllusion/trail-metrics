@@ -9,7 +9,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
-import java.util.stream.Collectors;
 
 import com.mantledillusion.metrics.trail.api.Metric;
 import com.mantledillusion.metrics.trail.api.web.*;
@@ -66,7 +65,7 @@ public class MetricsSender implements MetricsConsumer {
 		private final Map<String, WebMetricConsumer> consumerMapping = new HashMap<>();
 		private final Map<String, Map<UUID, WebMetricTrail>> trailMapping = new HashMap<>();
 
-		private void add(String consumerId, UUID trailId, WebMetric metric) {
+		private void add(String consumerId, UUID correlationId, WebMetric metric) {
 
 			boolean beginTransfer = this.consumerMapping.isEmpty();
 
@@ -76,9 +75,9 @@ public class MetricsSender implements MetricsConsumer {
 				this.request.getConsumers().add(c);
 				this.consumerMapping.put(cid, c);
 				return new HashMap<>();
-			}).computeIfAbsent(trailId, sid -> {
+			}).computeIfAbsent(correlationId, sid -> {
 				WebMetricTrail s = new WebMetricTrail();
-				s.setTrailId(sid.toString());
+				s.setCorrelationId(sid.toString());
 				this.consumerMapping.get(consumerId).getTrails().add(s);
 				return s;
 			});
@@ -323,12 +322,12 @@ public class MetricsSender implements MetricsConsumer {
 	}
 
 	@Override
-	public void consume(String consumerId, UUID trailId, Metric metric) throws Exception {
+	public void consume(String consumerId, UUID correlationId, Metric metric) throws Exception {
 		MetricValidator.validate(metric);
 		WebMetric webMetric = WebMetric.from(metric);
 
 		if (this.mode == SenderMode.SYNCHRONOUS) {
-			WebMetricTrail webMetricTrail = new WebMetricTrail(trailId.toString(), webMetric);
+			WebMetricTrail webMetricTrail = new WebMetricTrail(correlationId.toString(), webMetric);
 			WebMetricConsumer webMetricConsumer = new WebMetricConsumer(consumerId, webMetricTrail);
 			WebMetricRequest webMetricRequest = new WebMetricRequest(webMetricConsumer);
 
@@ -345,7 +344,7 @@ public class MetricsSender implements MetricsConsumer {
 							+ WebMetricRequest.class.getSimpleName());
 				}
 
-				this.pack.add(consumerId, trailId, webMetric);
+				this.pack.add(consumerId, correlationId, webMetric);
 			} finally {
 				this.packLock.unlock();
 			}

@@ -16,7 +16,7 @@ public class Slf4JMetricsTrailSupport {
         @Override
         public void announce(MetricsTrail trail, EventType eventType) throws Exception {
             if (eventType.isTrailActive()) {
-                MDC.put(key, trail.getTrailId().toString());
+                MDC.put(key, trail.getCorrelationId().toString());
             } else {
                 MDC.remove(key);
             }

@@ -54,7 +54,7 @@ public class MetricsPersistorTest {
     @Test
     public void consumeMetricIntoDb() {
         // TRAIL #1
-        UUID trailId = UUID.randomUUID();
+        UUID correlationId = UUID.randomUUID();
 
         // METRIC #1 (TRAIL #1)
         Metric metric = new Metric();
@@ -62,29 +62,29 @@ public class MetricsPersistorTest {
         metric.setTimestamp(ZonedDateTime.now());
         metric.setIdentifier(METRIC_IDENTIFIER_PREFIX+1);
 
-        PERSISTOR.consume(CONSUMER_ID, trailId, metric);
-        assertMatching(trailId, metric, 1, 1, 0, 1, 0);
+        PERSISTOR.consume(CONSUMER_ID, correlationId, metric);
+        assertMatching(correlationId, metric, 1, 1, 0, 1, 0);
 
         // METRIC #2 (TRAIL #1)
         metric.setIdentifier(METRIC_IDENTIFIER_PREFIX+2);
         metric.getAttributes().add(new MetricAttribute(METRIC_ATTRIBUTE_KEY, METRIC_ATTRIBUTE_VALUE));
 
-        PERSISTOR.consume(CONSUMER_ID, trailId, metric);
-        assertMatching(trailId, metric, 2, 1, 0, 2, 1);
+        PERSISTOR.consume(CONSUMER_ID, correlationId, metric);
+        assertMatching(correlationId, metric, 2, 1, 0, 2, 1);
 
         // TRAIL #2
-        trailId = UUID.randomUUID();
+        correlationId = UUID.randomUUID();
 
         // METRIC #3 (TRAIL #2)
         metric.setIdentifier(METRIC_IDENTIFIER_PREFIX+3);
         metric.getAttributes().clear();
 
-        PERSISTOR.consume(CONSUMER_ID, trailId, metric);
-        assertMatching(trailId, metric, 3, 2, 1, 1, 0);
+        PERSISTOR.consume(CONSUMER_ID, correlationId, metric);
+        assertMatching(correlationId, metric, 3, 2, 1, 1, 0);
     }
 
-    private void assertMatching(UUID trailId, Metric metric, int metricNumber,
-                                int expectedTrailCount, int matchingTrailIdx,
+    private void assertMatching(UUID correlationId, Metric metric, int metricNumber,
+                                int expectedTrailCount, int matchingCorrelationIdx,
                                 int expectedMetricCount, int matchingMetricIdx) {
         List<DbMetricsConsumerTrail> dbTrails = ENTITY_MANAGER.
                 createQuery("SELECT t FROM DbMetricsConsumerTrail t", DbMetricsConsumerTrail.class).getResultList();
@@ -92,9 +92,9 @@ public class MetricsPersistorTest {
         Assertions.assertNotNull(dbTrails);
         Assertions.assertEquals(expectedTrailCount, dbTrails.size());
 
-        DbMetricsConsumerTrail dbTrail = dbTrails.get(matchingTrailIdx);
+        DbMetricsConsumerTrail dbTrail = dbTrails.get(matchingCorrelationIdx);
         Assertions.assertEquals(CONSUMER_ID, dbTrail.getConsumerId());
-        Assertions.assertEquals(trailId, dbTrail.getTrailId());
+        Assertions.assertEquals(correlationId, dbTrail.getCorrelationId());
         Assertions.assertNotNull(dbTrail.getMetrics());
         Assertions.assertEquals(expectedMetricCount, dbTrail.getMetrics().size());
 

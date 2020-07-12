@@ -8,7 +8,7 @@ public class MetricsTrailTest extends AbstractMetricsTest {
     @Test
     public void createTrailTest() {
         MetricsTrail trail = new MetricsTrail(TRAIL_ID);
-        Assertions.assertEquals(TRAIL_ID, trail.getTrailId());
+        Assertions.assertEquals(TRAIL_ID, trail.getCorrelationId());
     }
 
     @Test

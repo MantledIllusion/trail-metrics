@@ -31,7 +31,7 @@ public class MockEnvironment {
 		MockSession session = new MockSession(sessionId);
 		this.sessions.add(session);
 		this.sessionListener.accept(session);
-		return ((MetricsTrail) session.get(MetricsTrail.class)).getTrailId();
+		return ((MetricsTrail) session.get(MetricsTrail.class)).getCorrelationId();
 	}
 	
 	public void mockDispatch(Metric metric) {

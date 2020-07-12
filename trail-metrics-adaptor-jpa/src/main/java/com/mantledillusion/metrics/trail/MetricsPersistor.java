@@ -26,7 +26,7 @@ public class MetricsPersistor implements MetricsConsumer {
     }
 
     @Override
-    public void consume(String consumerId, UUID trailId, Metric metric) {
+    public void consume(String consumerId, UUID correlationId, Metric metric) {
         EntityTransaction tx = this.em.getTransaction();
         tx.begin();
 
@@ -37,7 +37,7 @@ public class MetricsPersistor implements MetricsConsumer {
 
             query.select(root).where(builder.and(
                     builder.equal(root.get("consumerId"), consumerId),
-                    builder.equal(root.get("trailId"), trailId)
+                    builder.equal(root.get("correlationId"), correlationId)
             ));
             TypedQuery<DbMetricsConsumerTrail> trailTypedQuery = this.em.createQuery(query);
 
@@ -45,7 +45,7 @@ public class MetricsPersistor implements MetricsConsumer {
             try {
                 dbConsumerTrail = trailTypedQuery.getSingleResult();
             } catch (NoResultException e) {
-                dbConsumerTrail = new DbMetricsConsumerTrail(trailId, consumerId);
+                dbConsumerTrail = new DbMetricsConsumerTrail(correlationId, consumerId);
             }
 
             DbMetric dbMetric = DbMetric.from(metric);

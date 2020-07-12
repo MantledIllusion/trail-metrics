@@ -16,9 +16,9 @@ public interface TestConstants {
 		consume(sender, null, null);
 	}
 	
-	default void consume(MetricsSender sender, String consumerId, UUID trailId, Metric... metrics) throws Exception {
+	default void consume(MetricsSender sender, String consumerId, UUID correlationId, Metric... metrics) throws Exception {
 		for (Metric metric: metrics) {
-			sender.consume(consumerId, trailId, metric);
+			sender.consume(consumerId, correlationId, metric);
 		}
 		
 		while (true) {

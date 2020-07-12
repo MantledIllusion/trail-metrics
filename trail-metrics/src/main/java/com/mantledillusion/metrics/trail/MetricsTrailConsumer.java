@@ -52,7 +52,7 @@ public final class MetricsTrailConsumer {
             }
         }
 
-        private final UUID trailId;
+        private final UUID correlationId;
         private final MetricsPredicate gate;
         private final MetricsPredicate filter;
 
@@ -60,8 +60,8 @@ public final class MetricsTrailConsumer {
         private LinkedMetric current;
         private LinkedMetric last;
 
-        private MetricsTrailConsumerQueue(UUID trailId) {
-            this.trailId = trailId;
+        private MetricsTrailConsumerQueue(UUID correlationId) {
+            this.correlationId = correlationId;
             this.gate = MetricsTrailConsumer.this.gate != null ? MetricsTrailConsumer.this.gate.functionalClone() : null;
             this.filter = MetricsTrailConsumer.this.filter != null ? MetricsTrailConsumer.this.filter.functionalClone() : null;
         }
@@ -104,7 +104,7 @@ public final class MetricsTrailConsumer {
             while (this.current != null) {
                 LinkedMetric linkedMetric = this.current;
                 this.current = this.current.next;
-                MetricsTrailConsumer.this.deliverHead(this.trailId, linkedMetric);
+                MetricsTrailConsumer.this.deliverHead(this.correlationId, linkedMetric);
             }
         }
 
@@ -113,8 +113,8 @@ public final class MetricsTrailConsumer {
          *
          * @return The trail's ID, never null
          */
-        public UUID getTrailId() {
-            return this.trailId;
+        public UUID getCorrelationId() {
+            return this.correlationId;
         }
 
         /**
@@ -184,13 +184,13 @@ public final class MetricsTrailConsumer {
         this.filter = filter != null ? filter.functionalClone() : null;
     }
 
-    private synchronized void deliverHead(UUID trailId, MetricsTrailConsumerQueue.LinkedMetric linkedMetric) {
+    private synchronized void deliverHead(UUID correlationId, MetricsTrailConsumerQueue.LinkedMetric linkedMetric) {
         if (!MetricsTrailConsumer.this.delivererService.isShutdown()) {
             MetricsTrailConsumer.this.delivererService.execute(() -> {
                 int tries = 0;
                 while (true) {
                     try {
-                        MetricsTrailConsumer.this.consumer.consume(MetricsTrailConsumer.this.consumerId, trailId, linkedMetric.metric);
+                        MetricsTrailConsumer.this.consumer.consume(MetricsTrailConsumer.this.consumerId, correlationId, linkedMetric.metric);
                         linkedMetric.delivered();
                         break;
                     } catch (Exception e) {
@@ -235,8 +235,8 @@ public final class MetricsTrailConsumer {
         MetricsTrailConsumer.this.delivererService.shutdownNow();
     }
 
-    MetricsTrailConsumerQueue queueFor(UUID trailId) {
-        return new MetricsTrailConsumerQueue(trailId);
+    MetricsTrailConsumerQueue queueFor(UUID correlationId) {
+        return new MetricsTrailConsumerQueue(correlationId);
     }
 
     /**

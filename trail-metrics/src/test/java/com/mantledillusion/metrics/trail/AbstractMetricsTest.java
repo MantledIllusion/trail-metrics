@@ -35,7 +35,7 @@ public abstract class AbstractMetricsTest {
     }
 
     protected void waitUntilFailed(int expectedFailCount) {
-        while (this.consumer.fails(this.queue.getTrailId()) < expectedFailCount) {
+        while (this.consumer.fails(this.queue.getCorrelationId()) < expectedFailCount) {
             try {
                 Thread.sleep(50);
             } catch (InterruptedException e) {

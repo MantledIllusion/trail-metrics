@@ -44,7 +44,7 @@ public class TrailMetricsHibernateJpaAutoConfigurationTest {
     public void test() {
         this.transactionTemplate.executeWithoutResult(transactionStatus -> {
             DbMetricsConsumerTrail trail = new DbMetricsConsumerTrail();
-            trail.setTrailId(TRAIL_ID);
+            trail.setCorrelationId(TRAIL_ID);
             trail.setConsumerId(TRAIL_CONSUMER_ID);
 
             DbMetric metric = new DbMetric();
@@ -70,7 +70,7 @@ public class TrailMetricsHibernateJpaAutoConfigurationTest {
             DbMetricsConsumerTrail trail = this.metricsConsumerRepository.findAll().iterator().next();
             Assertions.assertNotNull(trail.getId());
             Assertions.assertEquals(TRAIL_CONSUMER_ID, trail.getConsumerId());
-            Assertions.assertEquals(TRAIL_ID, trail.getTrailId());
+            Assertions.assertEquals(TRAIL_ID, trail.getCorrelationId());
 
             Assertions.assertEquals(1, trail.getMetrics().size());
             DbMetric metric = trail.getMetrics().iterator().next();

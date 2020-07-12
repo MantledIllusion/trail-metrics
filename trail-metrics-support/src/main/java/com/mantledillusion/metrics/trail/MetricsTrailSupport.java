@@ -109,9 +109,9 @@ public final class MetricsTrailSupport {
      * which can be checked using {@link #has()}.
      */
     public static synchronized UUID begin() throws IllegalStateException {
-        UUID trailId = UUID.randomUUID();
-        begin(trailId);
-        return trailId;
+        UUID correlationId = UUID.randomUUID();
+        begin(correlationId);
+        return correlationId;
     }
 
     /**
@@ -119,15 +119,15 @@ public final class MetricsTrailSupport {
      * <p>
      * Will cause a {@link MetricsTrailListener.EventType#BEGIN} event to be dispatched.
      *
-     * @param trailId The {@link UUID} to identify the new {@link MetricsTrail} by; might <b>not</b> be null.
+     * @param correlationId The {@link UUID} to identify the new {@link MetricsTrail} by; might <b>not</b> be null.
      * @throws IllegalStateException If the current {@link Thread} is already identified by a {@link MetricsTrail},
      * which can be checked using {@link #has()}.
      */
-    public static void begin(UUID trailId) throws IllegalStateException {
-        if (trailId == null) {
+    public static void begin(UUID correlationId) throws IllegalStateException {
+        if (correlationId == null) {
             throw new IllegalArgumentException("Cannot begin trail using a null thread id");
         }
-        bind(new MetricsTrail(trailId), MetricsTrailListener.EventType.BEGIN);
+        bind(new MetricsTrail(correlationId), MetricsTrailListener.EventType.BEGIN);
     }
 
     /**
@@ -147,9 +147,9 @@ public final class MetricsTrailSupport {
         if (metricsTrail == null) {
             throw new IllegalArgumentException("Cannot hook a null metrics trail.");
         } else if (THREAD_LOCAL.get() != null) {
-            throw new IllegalStateException("Cannot begin trail " + metricsTrail.getTrailId() + " for thread " +
+            throw new IllegalStateException("Cannot begin trail " + metricsTrail.getCorrelationId() + " for thread " +
                     Thread.currentThread() + "; the current thread is already identified by trail " +
-                    THREAD_LOCAL.get().getTrailId());
+                    THREAD_LOCAL.get().getCorrelationId());
         }
         THREAD_LOCAL.set(metricsTrail);
         announce(metricsTrail, eventType);
@@ -162,7 +162,7 @@ public final class MetricsTrailSupport {
      * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrail}.
      */
     public static UUID id() throws IllegalStateException {
-        return get().getTrailId();
+        return get().getCorrelationId();
     }
 
     /**
@@ -267,7 +267,7 @@ public final class MetricsTrailSupport {
         MetricsTrail metricsTrail = THREAD_LOCAL.get();
         end(metricsTrail);
         THREAD_LOCAL.set(null);
-        return metricsTrail.getTrailId();
+        return metricsTrail.getCorrelationId();
     }
 
     /**
@@ -331,7 +331,7 @@ public final class MetricsTrailSupport {
                         listener.announce(metricsTrail, eventType);
                     } catch (Exception e) {
                         System.out.println("Encountered an error while trying to announce a " + eventType.name() +
-                                " trail " + metricsTrail.getTrailId() + " to listener " + listener + ": " + e.getMessage());
+                                " trail " + metricsTrail.getCorrelationId() + " to listener " + listener + ": " + e.getMessage());
                     }
                 }
             }

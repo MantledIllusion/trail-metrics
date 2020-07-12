@@ -28,7 +28,7 @@ import java.util.UUID;
  */
 public class TrailMetricsMessagingChannelInterceptor implements ChannelInterceptor {
 
-    public static final String PRTY_HEADER_NAME = "trailMetrics.message.trailIdHeaderName";
+    public static final String PRTY_HEADER_NAME = "trailMetrics.message.correlationIdHeaderName";
     public static final String PRTY_INCOMING_MODE = "trailMetrics.message.incomingMode";
     public static final String PRTY_OUTGOING_MODE = "trailMetrics.message.outgoingMode";
     public static final String DEFAULT_HEADER_NAME = "correlationId";
@@ -139,13 +139,13 @@ public class TrailMetricsMessagingChannelInterceptor implements ChannelIntercept
 
     @Override
     public Message<?> postReceive(Message<?> message, MessageChannel channel) {
-        UUID trailId;
+        UUID correlationId;
         try {
-            trailId = UUID.fromString(Objects.toString(message.getHeaders().get(this.headerName)));
+            correlationId = UUID.fromString(Objects.toString(message.getHeaders().get(this.headerName)));
         } catch (NullPointerException | IllegalArgumentException e) {
-            trailId = UUID.randomUUID();
+            correlationId = UUID.randomUUID();
         }
-        MetricsTrailSupport.begin(trailId);
+        MetricsTrailSupport.begin(correlationId);
         return message;
     }
 

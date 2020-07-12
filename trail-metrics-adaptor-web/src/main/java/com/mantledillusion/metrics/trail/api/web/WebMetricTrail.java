@@ -2,7 +2,6 @@ package com.mantledillusion.metrics.trail.api.web;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -12,11 +11,11 @@ import javax.xml.bind.annotation.XmlType;
  * Represents a trail whose context a {@link WebMetricConsumer} received at least 1 {@link WebMetric}.
  */
 @XmlRootElement
-@XmlType(propOrder = { "trailId, metrics" })
+@XmlType(propOrder = { "correlationId, metrics" })
 public class WebMetricTrail {
 
 	@XmlElement(required = true, nillable = false)
-	private String trailId;
+	private String correlationId;
 	@XmlElement(required = false, nillable = false)
 	private List<WebMetric> metrics = new ArrayList<>();
 
@@ -29,23 +28,23 @@ public class WebMetricTrail {
 	/**
 	 * Constructor.
 	 * 
-	 * @param trailId
+	 * @param correlationId
 	 *            The id; might be null.
 	 */
-	public WebMetricTrail(String trailId) {
-		this.trailId = trailId;
+	public WebMetricTrail(String correlationId) {
+		this.correlationId = correlationId;
 	}
 
 	/**
 	 * Constructor.
 	 * 
-	 * @param trailId
+	 * @param correlationId
 	 *            The id; might be null.
 	 * @param metric
 	 *            The first metric; might be null.
 	 */
-	public WebMetricTrail(String trailId, WebMetric metric) {
-		this.trailId = trailId;
+	public WebMetricTrail(String correlationId, WebMetric metric) {
+		this.correlationId = correlationId;
 		if (metric != null) {
 			this.metrics.add(metric);
 		}
@@ -56,18 +55,18 @@ public class WebMetricTrail {
 	 * 
 	 * @return The id, might be null
 	 */
-	public String getTrailId() {
-		return trailId;
+	public String getCorrelationId() {
+		return correlationId;
 	}
 
 	/**
 	 * Sets the session's ID.
 	 * 
-	 * @param trailId
+	 * @param correlationId
 	 *            The id; might be null.
 	 */
-	public void setTrailId(String trailId) {
-		this.trailId = trailId;
+	public void setCorrelationId(String correlationId) {
+		this.correlationId = correlationId;
 	}
 
 	/**

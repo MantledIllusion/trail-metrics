@@ -23,7 +23,7 @@ public class DbMetricsConsumerTrail {
 
     @Column(name = "trail_id", length = 36, nullable = false)
     @Convert(converter = UUIDStringAttributeConverter.class)
-    private UUID trailId;
+    private UUID correlationId;
 
     @Column(name = "consumer_id", length = 256, nullable = false)
     private String consumerId;
@@ -40,11 +40,11 @@ public class DbMetricsConsumerTrail {
     /**
      * Constructor.
      *
-     * @param trailId The ID of the trail; might be null.
+     * @param correlationId The ID of the trail; might be null.
      * @param consumerId The ID of the consumer; might be null.
      */
-    public DbMetricsConsumerTrail(UUID trailId, String consumerId) {
-        this.trailId = trailId;
+    public DbMetricsConsumerTrail(UUID correlationId, String consumerId) {
+        this.correlationId = correlationId;
         this.consumerId = consumerId;
     }
 
@@ -71,17 +71,17 @@ public class DbMetricsConsumerTrail {
      *
      * @return The ID, might be null
      */
-    public UUID getTrailId() {
-        return trailId;
+    public UUID getCorrelationId() {
+        return correlationId;
     }
 
     /**
      * Sets the ID of this trail.
      *
-     * @param trailId The ID to set; might be null.
+     * @param correlationId The ID to set; might be null.
      */
-    public void setTrailId(UUID trailId) {
-        this.trailId = trailId;
+    public void setCorrelationId(UUID correlationId) {
+        this.correlationId = correlationId;
     }
 
     /**

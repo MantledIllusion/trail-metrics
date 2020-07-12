@@ -167,10 +167,10 @@ public class MetricsLogger implements MetricsConsumer {
     }
 
     @Override
-    public void consume(String consumerId, UUID trailId, Metric metric) throws Exception {
+    public void consume(String consumerId, UUID correlationId, Metric metric) throws Exception {
         StringBuilder msgBuilder = new StringBuilder(String.format(MSG_HEAD,
                 consumerId,
-                trailId.toString(),
+                correlationId.toString(),
                 metric.getType().name(),
                 metric.getIdentifier(),
                 this.dateTimeRenderer.apply(metric.getTimestamp())));

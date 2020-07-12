@@ -39,7 +39,7 @@ public class MetricsSenderTransferTest implements TestConstants {
 		
 		assertEquals(1, consumer.getTrails().size());
 		WebMetricTrail trail = consumer.getTrails().get(0);
-		assertEquals(TRAIL_ID, UUID.fromString(trail.getTrailId()));
+		assertEquals(TRAIL_ID, UUID.fromString(trail.getCorrelationId()));
 
 		assertEquals(1, trail.getMetrics().size());
 		assertTrue(equals(metric, trail.getMetrics().get(0)));
@@ -73,7 +73,7 @@ public class MetricsSenderTransferTest implements TestConstants {
 		
 		assertEquals(1, consumer.getTrails().size());
 		WebMetricTrail trail = consumer.getTrails().get(0);
-		assertEquals(TRAIL_ID, UUID.fromString(trail.getTrailId()));
+		assertEquals(TRAIL_ID, UUID.fromString(trail.getCorrelationId()));
 
 		assertEquals(2, trail.getMetrics().size());
 	}

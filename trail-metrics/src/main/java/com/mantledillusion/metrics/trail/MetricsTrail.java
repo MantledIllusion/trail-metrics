@@ -9,20 +9,20 @@ import java.util.*;
  */
 public final class MetricsTrail {
 
-    private final UUID trailId;
+    private final UUID correlationId;
     private final Set<MetricsTrailConsumer.MetricsTrailConsumerQueue> queues =
             Collections.newSetFromMap(new IdentityHashMap<>());
 
     /**
      * {@link java.lang.reflect.Constructor}.
      *
-     * @param trailId The ID that identifies the trail; might <b>not</b> be null.
+     * @param correlationId The ID that identifies the trail; might <b>not</b> be null.
      */
-    public MetricsTrail(UUID trailId) {
-        if (trailId == null) {
+    public MetricsTrail(UUID correlationId) {
+        if (correlationId == null) {
             throw new IllegalArgumentException("Cannot begin trail using a null thread id");
         }
-        this.trailId = trailId;
+        this.correlationId = correlationId;
     }
 
     /**
@@ -30,8 +30,8 @@ public final class MetricsTrail {
      *
      * @return The trail ID, never null
      */
-    public UUID getTrailId() {
-        return trailId;
+    public UUID getCorrelationId() {
+        return correlationId;
     }
 
     /**
@@ -50,7 +50,7 @@ public final class MetricsTrail {
         if (consumer == null) {
             throw new IllegalArgumentException("Cannot hook a null consumer to a trail");
         }
-        MetricsTrailConsumer.MetricsTrailConsumerQueue queue = consumer.queueFor(this.trailId);
+        MetricsTrailConsumer.MetricsTrailConsumerQueue queue = consumer.queueFor(this.correlationId);
         this.queues.add(queue);
         return queue;
     }
@@ -93,6 +93,6 @@ public final class MetricsTrail {
     public synchronized UUID end() {
         this.queues.forEach(queue -> queue.onTrailEnd());
         this.queues.clear();
-        return this.trailId;
+        return this.correlationId;
     }
 }

@@ -15,7 +15,7 @@ public class Slf4JMetricsTrailSupportTest {
 
     @Test
     public void testLogMDC() throws IOException {
-        UUID trailId = UUID.randomUUID();
+        UUID correlationId = UUID.randomUUID();
 
         try (PipedOutputStream os = new PipedOutputStream();
              PipedInputStream is = new PipedInputStream();
@@ -24,21 +24,21 @@ public class Slf4JMetricsTrailSupportTest {
             os.connect(is);
             System.setOut(ps);
 
-            Assertions.assertFalse(logAndSnatch(in, trailId));
+            Assertions.assertFalse(logAndSnatch(in, correlationId));
 
             Slf4JMetricsTrailSupport.activatePublishToMdc();
-            Assertions.assertTrue(logAndSnatch(in, trailId));
+            Assertions.assertTrue(logAndSnatch(in, correlationId));
 
             Slf4JMetricsTrailSupport.deactivatePublishToMdc();
-            Assertions.assertFalse(logAndSnatch(in, trailId));
+            Assertions.assertFalse(logAndSnatch(in, correlationId));
         }
     }
 
-    private boolean logAndSnatch(Scanner in, UUID trailId) {
-        MetricsTrailSupport.begin(trailId);
+    private boolean logAndSnatch(Scanner in, UUID correlationId) {
+        MetricsTrailSupport.begin(correlationId);
         LOG.warn("Warning");
         String log = in.nextLine();
         MetricsTrailSupport.end();
-        return log.contains(trailId.toString());
+        return log.contains(correlationId.toString());
     }
 }

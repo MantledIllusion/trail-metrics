@@ -1,14 +1,10 @@
 package com.mantledillusion.metrics.trail;
 
 import com.mantledillusion.metrics.trail.api.Metric;
-import com.mantledillusion.metrics.trail.api.MetricAttribute;
-import com.mantledillusion.metrics.trail.api.MetricType;
-import com.mantledillusion.metrics.trail.api.web.WebMetric;
 import com.mantledillusion.metrics.trail.api.web.WebMetricRequest;
 
 import java.util.*;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * A receiver for {@link WebMetricRequest}s that is able to deliver them to registered {@link MetricsConsumer}s.
@@ -25,8 +21,8 @@ public class MetricsReceiver {
             this.consumer = consumer;
         }
 
-        private MetricsTrailConsumer.MetricsTrailConsumerQueue queueFor(UUID trailId) {
-            return this.consumer.queueFor(trailId);
+        private MetricsTrailConsumer.MetricsTrailConsumerQueue queueFor(UUID correlationId) {
+            return this.consumer.queueFor(correlationId);
         }
     }
 
@@ -103,8 +99,8 @@ public class MetricsReceiver {
                 if (requestConsumer.getConsumerId().matches(consumer.matcher)) {
                     // ...go over the request consumer's trails...
                     requestConsumer.getTrails().parallelStream().forEach(trail -> {
-                        UUID trailId = UUID.fromString(trail.getTrailId());
-                        MetricsTrailConsumer.MetricsTrailConsumerQueue queue = consumer.queueFor(trailId);
+                        UUID correlationId = UUID.fromString(trail.getCorrelationId());
+                        MetricsTrailConsumer.MetricsTrailConsumerQueue queue = consumer.queueFor(correlationId);
                         // ...and that trail's metrics...
                         trail.getMetrics().stream().forEach(metric -> {
                             // ...enqueue them to the queue...

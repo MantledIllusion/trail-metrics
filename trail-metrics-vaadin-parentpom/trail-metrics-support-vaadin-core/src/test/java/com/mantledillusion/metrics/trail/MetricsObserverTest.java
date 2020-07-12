@@ -33,28 +33,28 @@ public class MetricsObserverTest {
 		this.support.hook(MetricsTrailConsumer.from("testConsumer", this.consumer));
 		
 		// USER A VISITS
-		UUID trailId = this.env.mockUserVisit(SESSION_ID);
+		UUID correlationId = this.env.mockUserVisit(SESSION_ID);
 		
 		waitUntilConsumed();
-		assertEquals(2, this.consumer.size(trailId));
+		assertEquals(2, this.consumer.size(correlationId));
 		
-		Metric e1 = this.consumer.dequeueOne(trailId);
+		Metric e1 = this.consumer.dequeueOne(correlationId);
 		assertEquals(GeneralVaadinMetrics.SESSION_BEGIN.getMetricId(), e1.getIdentifier());
 
-		e1 = this.consumer.dequeueOne(trailId);
+		e1 = this.consumer.dequeueOne(correlationId);
 		assertEquals(GeneralVaadinMetrics.BROWSER_INFO.getMetricId(), e1.getIdentifier());
 
 		// USER B VISITS
-		UUID trailIdAlt = this.env.mockUserVisit(SESSION_ID_ALT);
+		UUID correlationIdAlt = this.env.mockUserVisit(SESSION_ID_ALT);
 		
 		waitUntilConsumed();
-		assertEquals(0, this.consumer.size(trailId));
-		assertEquals(2, this.consumer.size(trailIdAlt));
+		assertEquals(0, this.consumer.size(correlationId));
+		assertEquals(2, this.consumer.size(correlationIdAlt));
 		
-		Metric e2 = this.consumer.dequeueOne(trailIdAlt);
+		Metric e2 = this.consumer.dequeueOne(correlationIdAlt);
 		assertEquals(GeneralVaadinMetrics.SESSION_BEGIN.getMetricId(), e2.getIdentifier());
 
-		e2 = this.consumer.dequeueOne(trailIdAlt);
+		e2 = this.consumer.dequeueOne(correlationIdAlt);
 		assertEquals(GeneralVaadinMetrics.BROWSER_INFO.getMetricId(), e2.getIdentifier());
 		
 		// USER B CAUSES 1 METRIC
@@ -62,9 +62,9 @@ public class MetricsObserverTest {
 		this.env.mockDispatch(metricA);
 
 		waitUntilConsumed();
-		assertEquals(1, this.consumer.size(trailIdAlt));
+		assertEquals(1, this.consumer.size(correlationIdAlt));
 
-		Metric e3 = this.consumer.dequeueOne(trailIdAlt);
+		Metric e3 = this.consumer.dequeueOne(correlationIdAlt);
 		assertSame(metricA, e3);
 		
 		// USER B CAUSES 2 METRICS
@@ -74,11 +74,11 @@ public class MetricsObserverTest {
 		this.env.mockDispatch(metricC);
 
 		waitUntilConsumed();
-		assertEquals(2, this.consumer.size(trailIdAlt));
+		assertEquals(2, this.consumer.size(correlationIdAlt));
 
-		Metric e4 = this.consumer.dequeueOne(trailIdAlt);
+		Metric e4 = this.consumer.dequeueOne(correlationIdAlt);
 		assertSame(metricB, e4);
-		Metric e5 = this.consumer.dequeueOne(trailIdAlt);
+		Metric e5 = this.consumer.dequeueOne(correlationIdAlt);
 		assertSame(metricC, e5);
 	}
 	

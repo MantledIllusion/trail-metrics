@@ -109,25 +109,25 @@ public class MetricsTrailSupportTest {
     @Test
     public void listenTrail() {
         Map<UUID, MetricsTrailListener.EventType> trails = new HashMap<>();
-        MetricsTrailListener listener = (trail, eventType) -> trails.put(trail.getTrailId(), eventType);
+        MetricsTrailListener listener = (trail, eventType) -> trails.put(trail.getCorrelationId(), eventType);
 
         MetricsTrailSupport.addListener(listener, MetricsTrailListener.ReferenceMode.HARD);
-        UUID trailId = MetricsTrailSupport.begin();
-        Assertions.assertTrue(trails.containsKey(trailId));
-        Assertions.assertEquals(MetricsTrailListener.EventType.BEGIN, trails.get(trailId));
+        UUID correlationId = MetricsTrailSupport.begin();
+        Assertions.assertTrue(trails.containsKey(correlationId));
+        Assertions.assertEquals(MetricsTrailListener.EventType.BEGIN, trails.get(correlationId));
         MetricsTrailSupport.end();
-        Assertions.assertEquals(MetricsTrailListener.EventType.END, trails.get(trailId));
+        Assertions.assertEquals(MetricsTrailListener.EventType.END, trails.get(correlationId));
 
-        trailId = UUID.randomUUID();
-        MetricsTrail trail = new MetricsTrail(trailId);
+        correlationId = UUID.randomUUID();
+        MetricsTrail trail = new MetricsTrail(correlationId);
         MetricsTrailSupport.bind(trail);
-        Assertions.assertTrue(trails.containsKey(trailId));
-        Assertions.assertEquals(MetricsTrailListener.EventType.BIND, trails.get(trailId));
+        Assertions.assertTrue(trails.containsKey(correlationId));
+        Assertions.assertEquals(MetricsTrailListener.EventType.BIND, trails.get(correlationId));
         Assertions.assertSame(trail, MetricsTrailSupport.release());
-        Assertions.assertEquals(MetricsTrailListener.EventType.RELEASE, trails.get(trailId));
+        Assertions.assertEquals(MetricsTrailListener.EventType.RELEASE, trails.get(correlationId));
 
         MetricsTrailSupport.removeListener(listener);
-        trailId = MetricsTrailSupport.begin();
-        Assertions.assertFalse(trails.containsKey(trailId));
+        correlationId = MetricsTrailSupport.begin();
+        Assertions.assertFalse(trails.containsKey(correlationId));
     }
 }

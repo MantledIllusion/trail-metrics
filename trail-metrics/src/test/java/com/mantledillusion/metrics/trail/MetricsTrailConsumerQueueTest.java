@@ -38,7 +38,7 @@ public class MetricsTrailConsumerQueueTest extends AbstractMetricsTest {
     public void testHookedToCorrectTrail() {
         this.queue = this.trail.hook(MetricsTrailConsumer.from(TEST_CONSUMER, this.consumer));
 
-        assertEquals(TRAIL_ID, queue.getTrailId());
+        assertEquals(TRAIL_ID, queue.getCorrelationId());
     }
 
     @Test
