@@ -13,3 +13,5 @@ For incoming messages...:
 
 ## Metrics dispatched
 - ALERT spring.jms.message.receive: When a message is received.
+  - destination: The destination the message was received on.
+  - originalCorrelationId: The correlation ID of the incoming message if it could not be used.
