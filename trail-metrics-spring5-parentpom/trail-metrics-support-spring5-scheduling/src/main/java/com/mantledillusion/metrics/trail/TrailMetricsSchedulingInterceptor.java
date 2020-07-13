@@ -102,7 +102,7 @@ public class TrailMetricsSchedulingInterceptor {
     /**
      * Returns whether to dispatch a metric when a task begins its run.
      *
-     * @return True if a message is dispatched, false otherwise.
+     * @return True if a metric is dispatched, false otherwise.
      */
     public boolean isDispatchBeginTask() {
         return this.dispatchBeginTask;
@@ -111,7 +111,7 @@ public class TrailMetricsSchedulingInterceptor {
     /**
      * Sets whether to dispatch a metric when a task begins its run.
      *
-     * @param dispatchBeginTask True if a message should be dispatched, false otherwise.
+     * @param dispatchBeginTask True if a metric should be dispatched, false otherwise.
      */
     public void setDispatchBeginTask(boolean dispatchBeginTask) {
         this.dispatchBeginTask = dispatchBeginTask;
@@ -120,7 +120,7 @@ public class TrailMetricsSchedulingInterceptor {
     /**
      * Returns whether to dispatch a metric when a task ends its run.
      *
-     * @return True if a message is dispatched, false otherwise.
+     * @return True if a metric is dispatched, false otherwise.
      */
     public boolean isDispatchEndTask() {
         return dispatchEndTask;
@@ -129,7 +129,7 @@ public class TrailMetricsSchedulingInterceptor {
     /**
      * Sets whether to dispatch a metric when a task ends its run.
      *
-     * @param dispatchEndTask True if a message should be dispatched, false otherwise.
+     * @param dispatchEndTask True if a metric should be dispatched, false otherwise.
      */
     public void setDispatchEndTask(boolean dispatchEndTask) {
         this.dispatchEndTask = dispatchEndTask;

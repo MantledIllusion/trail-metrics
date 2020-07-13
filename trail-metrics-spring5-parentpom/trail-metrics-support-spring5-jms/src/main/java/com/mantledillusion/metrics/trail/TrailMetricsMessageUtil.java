@@ -9,9 +9,9 @@ import javax.jms.Message;
 
 public class TrailMetricsMessageUtil {
 
-    static final String MID_RECEIVED = "spring.jms.message.receive";
-    static final String AKEY_DESTINATION = "destination";
-    static final String AKEY_ORIGINAL_CORRELATION_ID = "originalCorrelationId";
+    private static final String MID_RECEIVED = "spring.jms.message.receive";
+    private static final String AKEY_DESTINATION = "destination";
+    private static final String AKEY_ORIGINAL_CORRELATION_ID = "originalCorrelationId";
 
     static void writeReceiveMetric(Message message, String originalDestinationId) {
         Metric metric = new Metric(MID_RECEIVED, MetricType.ALERT);
