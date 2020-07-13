@@ -58,6 +58,7 @@ public class TrailMetricsSchedulingInterceptor {
      *
      * @param mode The mode to end trails with; may <b>not</b> be null.
      * @param dispatchBeginTask Whether or not to write a metric when a task begins.
+     * @param dispatchBeginTask Whether or not to write a metric when a task ends.
      */
     @Autowired
     public TrailMetricsSchedulingInterceptor(@Value("${"+PRTY_TRAIL_END_MODE+":"+DEFAULT_TRAIL_END_MODE+"}") String mode,
@@ -71,6 +72,7 @@ public class TrailMetricsSchedulingInterceptor {
      *
      * @param mode The mode to end trails with; may <b>not</b> be null.
      * @param dispatchBeginTask Whether or not to write a metric when a task begins.
+     * @param dispatchBeginTask Whether or not to write a metric when a task ends.
      */
     public TrailMetricsSchedulingInterceptor(SchedulingTrailEndMode mode, boolean dispatchBeginTask, boolean dispatchEndTask) {
         setMode(mode);
