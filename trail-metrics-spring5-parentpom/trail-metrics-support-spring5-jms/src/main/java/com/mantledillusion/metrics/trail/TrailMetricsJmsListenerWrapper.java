@@ -20,6 +20,7 @@ public class TrailMetricsJmsListenerWrapper implements MessageListener {
 
     private final MessageListener wrappedListener;
     private TrailBehaviourMode incomingMode;
+    private boolean dispatchReceiveMessage;
 
     /**
      * Default constructor.
@@ -29,7 +30,7 @@ public class TrailMetricsJmsListenerWrapper implements MessageListener {
      * @param wrappedListener The {@link MessageListener} to wrap; might <b>not</b> be null.
      */
     public TrailMetricsJmsListenerWrapper(MessageListener wrappedListener) {
-        this(wrappedListener, TrailBehaviourMode.LENIENT);
+        this(wrappedListener, TrailBehaviourMode.LENIENT, true);
     }
 
     /**
@@ -37,13 +38,16 @@ public class TrailMetricsJmsListenerWrapper implements MessageListener {
      *
      * @param wrappedListener The {@link MessageListener} to wrap; might <b>not</b> be null.
      * @param incomingMode The behaviour mode for incoming messages; might <b>not</b> be null.
+     * @param dispatchReceiveMessage Whether or not to write a metric when a message is received.
      */
-    public TrailMetricsJmsListenerWrapper(MessageListener wrappedListener, TrailBehaviourMode incomingMode) {
+    public TrailMetricsJmsListenerWrapper(MessageListener wrappedListener, TrailBehaviourMode incomingMode,
+                                          boolean dispatchReceiveMessage) {
         if (wrappedListener == null) {
             throw new IllegalArgumentException("Cannot wrap a null listener");
         }
         this.wrappedListener = wrappedListener;
         setIncomingMode(incomingMode);
+        this.dispatchReceiveMessage = dispatchReceiveMessage;
     }
 
     /**
@@ -67,6 +71,24 @@ public class TrailMetricsJmsListenerWrapper implements MessageListener {
         this.incomingMode = incomingMode;
     }
 
+    /**
+     * Returns whether to dispatch a metric when receiving a message.
+     *
+     * @return True if a message is dispatched, false otherwise.
+     */
+    public boolean isDispatchReceiveMessage() {
+        return dispatchReceiveMessage;
+    }
+
+    /**
+     * Sets whether to dispatch a metric when receiving a message.
+     *
+     * @param dispatchReceiveMessage True if a message should be dispatched, false otherwise.
+     */
+    public void setDispatchReceiveMessage(boolean dispatchReceiveMessage) {
+        this.dispatchReceiveMessage = dispatchReceiveMessage;
+    }
+
     @Override
     public void onMessage(Message message) {
         String jmsCorrelationId;
@@ -82,6 +104,9 @@ public class TrailMetricsJmsListenerWrapper implements MessageListener {
                     throw new MessageConversionException("Incoming JMS message does not contain correlationId.");
                 case LENIENT:
                     MetricsTrailSupport.begin();
+                    if (this.dispatchReceiveMessage) {
+                        TrailMetricsMessageUtil.writeReceiveMetric(message, null);
+                    }
             }
         } else {
             try {
@@ -92,6 +117,9 @@ public class TrailMetricsJmsListenerWrapper implements MessageListener {
                         throw new MessageConversionException("Incoming JMS message contains a non-UUID correlationId");
                     case LENIENT:
                         MetricsTrailSupport.begin();
+                        if (this.dispatchReceiveMessage) {
+                            TrailMetricsMessageUtil.writeReceiveMetric(message, jmsCorrelationId);
+                        }
                 }
             }
         }

@@ -10,3 +10,6 @@ For incoming messages...:
 - ...on _@JmsListener_ annotated methods, add your wrapped **_MessageConverter_** to your **_AbstractJmsListenerContainerFactory_** implementation and add a **_TrailMetricsJmsInterceptor_** instance as a bean to your Spring context...
 - ...on custom **_JmsListener_** implementations, wrap your implementation into a **_TrailMetricsListenerWrapper_** instance...
 ...to extract the trail ID from an incoming message and automatically start / end a trail.
+
+## Metrics dispatched
+- ALERT spring.jms.message.receive: When a message is received.

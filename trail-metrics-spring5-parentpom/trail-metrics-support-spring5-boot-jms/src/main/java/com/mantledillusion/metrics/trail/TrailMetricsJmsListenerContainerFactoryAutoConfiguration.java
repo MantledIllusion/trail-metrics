@@ -28,6 +28,8 @@ public class TrailMetricsJmsListenerContainerFactoryAutoConfiguration {
     private String incomingMode;
     @Value("${"+TrailMetricsJmsMessageConverterWrapper.PRTY_OUTGOING_MODE+":"+TrailMetricsJmsMessageConverterWrapper.DEFAULT_OUTGOING_MODE+"}")
     private String outgoingMode;
+    @Value("${"+TrailMetricsJmsMessageConverterWrapper.PRTY_DISPATCH_RECEIVE+":"+TrailMetricsJmsMessageConverterWrapper.DEFAULT_DISPATCH_RECEIVE+"}")
+    private boolean dispatchReceiveMessage;
 
     @Autowired(required = false)
     private List<AbstractJmsListenerContainerFactory<?>> containerFactories = Collections.emptyList();
@@ -35,8 +37,8 @@ public class TrailMetricsJmsListenerContainerFactoryAutoConfiguration {
     @PostConstruct
     public void interceptContainerFactories() {
         this.containerFactories.forEach(factory -> factory.setMessageConverter(
-                new TrailMetricsJmsMessageConverterWrapper(extract(factory),
-                        TrailBehaviourMode.valueOf(this.incomingMode), TrailBehaviourMode.valueOf(this.outgoingMode))));
+                new TrailMetricsJmsMessageConverterWrapper(extract(factory), TrailBehaviourMode.valueOf(this.incomingMode),
+                        TrailBehaviourMode.valueOf(this.outgoingMode), this.dispatchReceiveMessage)));
     }
 
     static MessageConverter extract(AbstractJmsListenerContainerFactory<?> factory) {

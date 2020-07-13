@@ -20,6 +20,8 @@ public class TrailMetricsJmsTemplateAutoConfiguration {
     private String incomingMode;
     @Value("${"+TrailMetricsJmsMessageConverterWrapper.PRTY_OUTGOING_MODE+":"+TrailMetricsJmsMessageConverterWrapper.DEFAULT_OUTGOING_MODE+"}")
     private String outgoingMode;
+    @Value("${"+TrailMetricsJmsMessageConverterWrapper.PRTY_DISPATCH_RECEIVE+":"+TrailMetricsJmsMessageConverterWrapper.DEFAULT_DISPATCH_RECEIVE+"}")
+    private boolean dispatchReceiveMessage;
 
     @Autowired(required = false)
     private List<JmsTemplate> jmsTemplates = Collections.emptyList();
@@ -28,6 +30,6 @@ public class TrailMetricsJmsTemplateAutoConfiguration {
     public void interceptJmsTemplates() {
         this.jmsTemplates.forEach(jmsTemplate -> jmsTemplate.setMessageConverter(
                 new TrailMetricsJmsMessageConverterWrapper(jmsTemplate.getMessageConverter() == null ? new SimpleMessageConverter() : jmsTemplate.getMessageConverter(),
-                        TrailBehaviourMode.valueOf(this.incomingMode), TrailBehaviourMode.valueOf(this.outgoingMode))));
+                        TrailBehaviourMode.valueOf(this.incomingMode), TrailBehaviourMode.valueOf(this.outgoingMode), this.dispatchReceiveMessage)));
     }
 }

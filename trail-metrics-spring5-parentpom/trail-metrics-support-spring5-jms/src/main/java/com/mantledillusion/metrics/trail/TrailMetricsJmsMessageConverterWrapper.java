@@ -25,24 +25,27 @@ public class TrailMetricsJmsMessageConverterWrapper implements MessageConverter 
     public static final String PRTY_MESSAGE_CONVERTER = "trailMetrics.jms.messageConverter";
     public static final String PRTY_INCOMING_MODE = "trailMetrics.jms.incomingMode";
     public static final String PRTY_OUTGOING_MODE = "trailMetrics.jms.outgoingMode";
+    public static final String PRTY_DISPATCH_RECEIVE = "trailMetrics.jms.dispatchReceive";
     public static final String DEFAULT_MESSAGE_CONVERTER = "messageConverter";
     public static final String DEFAULT_INCOMING_MODE = "LENIENT";
     public static final String DEFAULT_OUTGOING_MODE = "OPTIONAL";
+    public static final boolean DEFAULT_DISPATCH_RECEIVE = true;
 
     private final MessageConverter wrappedConverter;
     private TrailBehaviourMode incomingMode;
     private TrailBehaviourMode outgoingMode;
+    private boolean dispatchReceiveMessage;
 
     /**
      * Default constructor.
      * <p>
-     * Sets the mode for incoming messages to {@link TrailBehaviourMode#LENIENT} and the one for outgoing messages to
-     * {@link TrailBehaviourMode#OPTIONAL}.
+     * Sets the mode for incoming messages to {@link TrailBehaviourMode#LENIENT}, the one for outgoing messages to
+     * {@link TrailBehaviourMode#OPTIONAL} and dispatching metrics on receiving messages to <code>true</code>.
      *
      * @param wrappedConverter The {@link MessageConverter} to wrap; might <b>not</b> be null.
      */
     public TrailMetricsJmsMessageConverterWrapper(MessageConverter wrappedConverter) {
-        this(wrappedConverter, TrailBehaviourMode.LENIENT, TrailBehaviourMode.OPTIONAL);
+        this(wrappedConverter, TrailBehaviourMode.LENIENT, TrailBehaviourMode.OPTIONAL, true);
     }
 
     /**
@@ -51,11 +54,13 @@ public class TrailMetricsJmsMessageConverterWrapper implements MessageConverter 
      * @param wrappedConverter The {@link MessageConverter} to wrap; might <b>not</b> be null.
      * @param incomingMode The behaviour mode for incoming messages; might <b>not</b> be null.
      * @param outgoingMode The behaviour mode for outgoing messages; might <b>not</b> be null.
+     * @param dispatchReceiveMessage Whether or not to write a metric when a message is received.
      */
     public TrailMetricsJmsMessageConverterWrapper(@Value("${"+ PRTY_MESSAGE_CONVERTER +":"+ DEFAULT_MESSAGE_CONVERTER +"}") MessageConverter wrappedConverter,
                                                   @Value("${"+ PRTY_INCOMING_MODE +":"+ DEFAULT_INCOMING_MODE +"}") String incomingMode,
-                                                  @Value("${"+PRTY_OUTGOING_MODE+":"+DEFAULT_OUTGOING_MODE+"}") String outgoingMode) {
-        this(wrappedConverter, TrailBehaviourMode.valueOf(incomingMode), TrailBehaviourMode.valueOf(outgoingMode));
+                                                  @Value("${"+PRTY_OUTGOING_MODE+":"+DEFAULT_OUTGOING_MODE+"}") String outgoingMode,
+                                                  @Value("${"+PRTY_DISPATCH_RECEIVE+":"+DEFAULT_DISPATCH_RECEIVE+"}") boolean dispatchReceiveMessage) {
+        this(wrappedConverter, TrailBehaviourMode.valueOf(incomingMode), TrailBehaviourMode.valueOf(outgoingMode), dispatchReceiveMessage);
     }
 
     /**
@@ -64,15 +69,17 @@ public class TrailMetricsJmsMessageConverterWrapper implements MessageConverter 
      * @param wrappedConverter The {@link MessageConverter} to wrap; might <b>not</b> be null.
      * @param incomingMode The behaviour mode for incoming messages; might <b>not</b> be null.
      * @param outgoingMode The behaviour mode for outgoing messages; might <b>not</b> be null.
-     */
-    public TrailMetricsJmsMessageConverterWrapper(MessageConverter wrappedConverter,
-                                                  TrailBehaviourMode incomingMode, TrailBehaviourMode outgoingMode) {
+     * @param dispatchReceiveMessage Whether or not to write a metric when a message is received.
+     * */
+    public TrailMetricsJmsMessageConverterWrapper(MessageConverter wrappedConverter, TrailBehaviourMode incomingMode,
+                                                  TrailBehaviourMode outgoingMode, boolean dispatchReceiveMessage) {
         if (wrappedConverter == null) {
             throw new IllegalArgumentException("Cannot wrap a null converter");
         }
         this.wrappedConverter = wrappedConverter;
         setIncomingMode(incomingMode);
         setOutgoingMode(outgoingMode);
+        this.dispatchReceiveMessage = dispatchReceiveMessage;
     }
 
     /**
@@ -117,14 +124,42 @@ public class TrailMetricsJmsMessageConverterWrapper implements MessageConverter 
         this.outgoingMode = outgoingMode;
     }
 
+    /**
+     * Returns whether to dispatch a metric when receiving a message.
+     *
+     * @return True if a message is dispatched, false otherwise.
+     */
+    public boolean isDispatchReceiveMessage() {
+        return dispatchReceiveMessage;
+    }
+
+    /**
+     * Sets whether to dispatch a metric when receiving a message.
+     *
+     * @param dispatchReceiveMessage True if a message should be dispatched, false otherwise.
+     */
+    public void setDispatchReceiveMessage(boolean dispatchReceiveMessage) {
+        this.dispatchReceiveMessage = dispatchReceiveMessage;
+    }
+
     @Override
     public Object fromMessage(Message message) throws JMSException, MessageConversionException {
-        if (message.getJMSCorrelationID() == null) {
+        String jmsCorrelationId;
+        try {
+            jmsCorrelationId = message.getJMSCorrelationID();
+        } catch (JMSException e) {
+            jmsCorrelationId = null;
+        }
+
+        if (jmsCorrelationId == null) {
             switch (this.incomingMode) {
                 case STRICT:
                     throw new MessageConversionException("Incoming JMS message does not contain correlationId.");
                 case LENIENT:
                     MetricsTrailSupport.begin();
+                    if (this.dispatchReceiveMessage) {
+                        TrailMetricsMessageUtil.writeReceiveMetric(message, null);
+                    }
             }
         } else {
             try {
@@ -135,6 +170,9 @@ public class TrailMetricsJmsMessageConverterWrapper implements MessageConverter 
                         throw new MessageConversionException("Incoming JMS message contains a non-UUID correlationId");
                     case LENIENT:
                         MetricsTrailSupport.begin();
+                        if (this.dispatchReceiveMessage) {
+                            TrailMetricsMessageUtil.writeReceiveMetric(message, jmsCorrelationId);
+                        }
                 }
             }
         }
