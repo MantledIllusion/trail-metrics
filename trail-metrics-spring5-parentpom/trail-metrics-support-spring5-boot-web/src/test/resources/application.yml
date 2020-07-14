@@ -1,0 +1,4 @@
+trailMetrics:
+  http:
+    server:
+      mode: INTERCEPTOR

@@ -13,6 +13,8 @@ The **_TrailMetricsHttpServerInterceptor_** will activate automatically if a **_
 ```yaml
 trailMetrics:
   http:
+    server:
+      mode: <The mode how to handle request on server side, one of [FILTER, INTERCEPTOR], FILTER by default>
     correlationIdHeaderName: <The name of the HTTP header to use when sending correlationIds, 'correlationId' by default>
     incomingMode: <The mode of how to handle incoming trails, one of [STRICT, LENIENT, OPTIONAL], LENIENT by default>
     outgoingMode: <The mode of how to handle outgoing trails, one of [STRICT, LENIENT, OPTIONAL], OPTIONAL by default>

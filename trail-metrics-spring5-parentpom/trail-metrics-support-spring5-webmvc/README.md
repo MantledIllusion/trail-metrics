@@ -4,7 +4,9 @@ Contains a Spring WebMVC interceptor for automatically beginning / ending a **_M
 
 ## How to use
 
-Instances of **_TrailMetricsHttpServerInterceptor_** can be added to the **_InterceptorRegistry_** given when implementing _**WebMvcConfigurer**.addInterceptors()_.
+An instance of **_TrailMetricsHttpServerInterceptor_** can be added to the **_InterceptorRegistry_** given when implementing _**WebMvcConfigurer**.addInterceptors()_.
+
+Alternatively, an instance of **_TrailMetricsHttpServerFilter_** can be added to the servlet as a more native approach.
 
 ## Config
 
