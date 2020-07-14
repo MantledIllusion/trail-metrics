@@ -11,9 +11,9 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "metric_trail", indexes = {
-        @Index(name = "IDX_METRIC_TRAIL_TRAIL_ID", columnList = "trail_id"),
+        @Index(name = "IDX_METRIC_TRAIL_CORRELATION_ID", columnList = "correlation_id"),
         @Index(name = "IDX_METRIC_TRAIL_CONSUMER_ID", columnList = "consumer_id"),
-        @Index(name = "UIDX_METRIC_TRAIL_TRAIL_ID_CONSUMER_ID", columnList = "trail_id, consumer_id", unique = true)})
+        @Index(name = "UIDX_METRIC_TRAIL_CORRELATION_ID_CONSUMER_ID", columnList = "correlation_id, consumer_id", unique = true)})
 public class DbMetricsConsumerTrail {
 
     @Id
@@ -21,7 +21,7 @@ public class DbMetricsConsumerTrail {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "trail_id", length = 36, nullable = false)
+    @Column(name = "correlation_id", length = 36, nullable = false)
     @Convert(converter = UUIDStringAttributeConverter.class)
     private UUID correlationId;
 
