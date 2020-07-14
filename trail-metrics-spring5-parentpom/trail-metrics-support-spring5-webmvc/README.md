@@ -6,6 +6,17 @@ Contains a Spring WebMVC interceptor for automatically beginning / ending a **_M
 
 Instances of **_TrailMetricsHttpServerInterceptor_** can be added to the **_InterceptorRegistry_** given when implementing _**WebMvcConfigurer**.addInterceptors()_.
 
+## Config
+
+```yaml
+trailMetrics:
+  http:
+    correlationIdHeaderName: <The name of the HTTP header to use when sending correlationIds, 'correlationId' by default>
+    incomingMode: <The mode of how to handle incoming trails, one of [STRICT, LENIENT, OPTIONAL], LENIENT by default>
+    dispatchRequest: <Whether or not to dispatch a metric when a request is received, false by default>
+    dispatchResponse: <Whether or not to dispatch a metric when a request is responded to, false by default>
+```
+
 ## Metrics dispatched
 - ALERT spring.web.server.request: When a request begins.
   - endpoint: The endpoint the request was targeted at.

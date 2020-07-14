@@ -5,3 +5,12 @@ Contains a Spring Web interceptor for automatically adding a **_MetricTrail_**'s
 ## How to use
 
 Add an instance of **_TrailMetricsHttpClientInterceptor_** to the outgoing service, for example a **_RestTemplate_**.
+
+## Config
+
+```yaml
+trailMetrics:
+  http:
+    correlationIdHeaderName: <The name of the HTTP header to use when sending correlationIds, 'correlationId' by default>
+    outgoingMode: <The mode of how to handle outgoing trails, one of [STRICT, LENIENT, OPTIONAL], OPTIONAL by default>
+```

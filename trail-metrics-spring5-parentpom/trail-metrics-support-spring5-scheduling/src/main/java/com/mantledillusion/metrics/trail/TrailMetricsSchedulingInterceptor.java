@@ -37,8 +37,8 @@ public class TrailMetricsSchedulingInterceptor {
     public static final String PRTY_DISPATCH_BEGIN = "trailMetrics.scheduling.dispatchBegin";
     public static final String PRTY_DISPATCH_END = "trailMetrics.scheduling.dispatchEnd";
     public static final String DEFAULT_TRAIL_END_MODE = "IMMEDIATE";
-    public static final boolean DEFAULT_DISPATCH_BEGIN = true;
-    public static final boolean DEFAULT_DISPATCH_END = true;
+    public static final boolean DEFAULT_DISPATCH_BEGIN = false;
+    public static final boolean DEFAULT_DISPATCH_END = false;
 
     private SchedulingTrailEndMode mode;
     private boolean dispatchBeginTask;
@@ -50,7 +50,16 @@ public class TrailMetricsSchedulingInterceptor {
      * Uses {@link SchedulingTrailEndMode#IMMEDIATE}
      */
     public TrailMetricsSchedulingInterceptor() {
-        this(SchedulingTrailEndMode.IMMEDIATE, true, true);
+        this(SchedulingTrailEndMode.IMMEDIATE, DEFAULT_DISPATCH_BEGIN, DEFAULT_DISPATCH_END);
+    }
+
+    /**
+     * Advanced constructor.
+     *
+     * @param mode The mode to end trails with; may <b>not</b> be null.
+     */
+    public TrailMetricsSchedulingInterceptor(SchedulingTrailEndMode mode) {
+        this(mode, DEFAULT_DISPATCH_BEGIN, DEFAULT_DISPATCH_END);
     }
 
     /**
@@ -156,25 +165,26 @@ public class TrailMetricsSchedulingInterceptor {
 
     @AfterReturning(ASPECTJ_SPRING_SCHEDULED_ANNOTATION_MATCHER)
     private void afterReturning() {
+        dispatchEndMetric();
         if ((this.mode == SchedulingTrailEndMode.IMMEDIATE || this.mode == SchedulingTrailEndMode.IMMEDIATE_ON_SUCCESS)
                 && MetricsTrailSupport.has()) {
             MetricsTrailSupport.end();
         }
-        dispatchEndMetric();
     }
 
     @AfterThrowing(ASPECTJ_SPRING_SCHEDULED_ANNOTATION_MATCHER)
     private void afterThrowing() {
+        dispatchEndMetric();
         if ((this.mode == SchedulingTrailEndMode.IMMEDIATE || this.mode == SchedulingTrailEndMode.IMMEDIATE_ON_FAILURE)
                 && MetricsTrailSupport.has()) {
             MetricsTrailSupport.end();
         }
-        dispatchEndMetric();
     }
 
     private void dispatchEndMetric() {
         if (this.dispatchEndTask) {
-            MetricsTrailSupport.commit(new Metric(MID_END, MetricType.METER, TASK_DURATION.get()), false);
+            MetricsTrailSupport.commit(new Metric(MID_END, MetricType.METER, System.currentTimeMillis()-TASK_DURATION.get()), false);
         }
+        TASK_DURATION.set(null);
     }
 }

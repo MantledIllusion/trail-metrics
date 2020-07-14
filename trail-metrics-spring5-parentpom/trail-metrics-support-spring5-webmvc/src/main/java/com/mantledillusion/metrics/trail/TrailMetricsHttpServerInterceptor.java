@@ -3,6 +3,7 @@ package com.mantledillusion.metrics.trail;
 import com.mantledillusion.metrics.trail.api.Metric;
 import com.mantledillusion.metrics.trail.api.MetricAttribute;
 import com.mantledillusion.metrics.trail.api.MetricType;
+import com.sun.org.apache.regexp.internal.RE;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -43,8 +44,8 @@ public class TrailMetricsHttpServerInterceptor implements HandlerInterceptor {
     public static final String PRTY_DISPATCH_RESPONSE = "trailMetrics.http.dispatchResponse";
     public static final String DEFAULT_HEADER_NAME = "correlationId";
     public static final String DEFAULT_INCOMING_MODE = "LENIENT";
-    public static final boolean DEFAULT_DISPATCH_REQUEST = true;
-    public static final boolean DEFAULT_DISPATCH_RESPONSE = true;
+    public static final boolean DEFAULT_DISPATCH_REQUEST = false;
+    public static final boolean DEFAULT_DISPATCH_RESPONSE = false;
 
     private final String headerName;
     private TrailBehaviourMode incomingMode;
@@ -57,7 +58,7 @@ public class TrailMetricsHttpServerInterceptor implements HandlerInterceptor {
      * Uses {@link #DEFAULT_HEADER_NAME} as header name for the trail ID.
      */
     public TrailMetricsHttpServerInterceptor() {
-        this(DEFAULT_HEADER_NAME, TrailBehaviourMode.LENIENT, true, true);
+        this(DEFAULT_HEADER_NAME, TrailBehaviourMode.LENIENT, DEFAULT_DISPATCH_REQUEST, DEFAULT_DISPATCH_RESPONSE);
     }
 
     /**
@@ -68,7 +69,7 @@ public class TrailMetricsHttpServerInterceptor implements HandlerInterceptor {
      * @param headerName The name to use as header name when transmitting a {@link MetricsTrail}'s ID; might <b>not</b> be blank.
      */
     public TrailMetricsHttpServerInterceptor(String headerName) {
-        this(headerName, TrailBehaviourMode.LENIENT, true, true);
+        this(headerName, TrailBehaviourMode.LENIENT, DEFAULT_DISPATCH_REQUEST, DEFAULT_DISPATCH_RESPONSE);
     }
 
     /**
@@ -177,9 +178,12 @@ public class TrailMetricsHttpServerInterceptor implements HandlerInterceptor {
                     dispatchRequestMetric(request, request.getHeader(this.headerName));
             }
         }
+
         if (MetricsTrailSupport.has()) {
             response.addHeader(this.headerName, MetricsTrailSupport.id().toString());
         }
+
+        REQUEST_DURATION.set(System.currentTimeMillis());
         return true;
     }
 
@@ -190,18 +194,19 @@ public class TrailMetricsHttpServerInterceptor implements HandlerInterceptor {
             if (originalCorrelationId != null) {
                 metric.getAttributes().add(new MetricAttribute(AKEY_ORIGINAL_CORRELATION_ID, originalCorrelationId));
             }
-            MetricsTrailSupport.commit(metric);
+            MetricsTrailSupport.commit(metric, false);
         }
     }
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+        if (this.dispatchResponse) {
+            MetricsTrailSupport.commit(new Metric(MID_RESPONSE, MetricType.METER, System.currentTimeMillis()-REQUEST_DURATION.get()), false);
+        }
+        REQUEST_DURATION.set(null);
+
         if (MetricsTrailSupport.has()) {
             MetricsTrailSupport.end();
-        }
-
-        if (this.dispatchResponse) {
-            MetricsTrailSupport.commit(new Metric(MID_RESPONSE, MetricType.METER, REQUEST_DURATION.get()));
         }
     }
 }

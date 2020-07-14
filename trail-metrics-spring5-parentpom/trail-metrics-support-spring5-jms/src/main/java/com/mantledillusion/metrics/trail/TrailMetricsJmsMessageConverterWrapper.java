@@ -29,7 +29,7 @@ public class TrailMetricsJmsMessageConverterWrapper implements MessageConverter 
     public static final String DEFAULT_MESSAGE_CONVERTER = "messageConverter";
     public static final String DEFAULT_INCOMING_MODE = "LENIENT";
     public static final String DEFAULT_OUTGOING_MODE = "OPTIONAL";
-    public static final boolean DEFAULT_DISPATCH_RECEIVE = true;
+    public static final boolean DEFAULT_DISPATCH_RECEIVE = false;
 
     private final MessageConverter wrappedConverter;
     private TrailBehaviourMode incomingMode;

@@ -20,15 +20,17 @@ import java.util.List;
 @AutoConfigureAfter(RestTemplateAutoConfiguration.class)
 public class TrailMetricsWebAutoConfiguration {
 
-    @Value("${"+TrailMetricsHttpClientInterceptor.PRTY_HEADER_NAME+ ":"+TrailMetricsHttpClientInterceptor.DEFAULT_HEADER_NAME+"}")
+    @Value("${"+TrailMetricsHttpClientInterceptor.PRTY_HEADER_NAME+":"+TrailMetricsHttpClientInterceptor.DEFAULT_HEADER_NAME+"}")
     private String headerName;
+    @Value("${"+TrailMetricsHttpClientInterceptor.PRTY_OUTGOING_MODE+":"+TrailMetricsHttpClientInterceptor.DEFAULT_OUTGOING_MODE+"}")
+    private String outgoingMode;
 
     @Autowired(required = false)
     private List<RestTemplate> restTemplates = Collections.emptyList();
 
     @PostConstruct
     public void interceptRestTemplates() {
-        TrailMetricsHttpClientInterceptor clientInterceptor = new TrailMetricsHttpClientInterceptor(headerName);
+        TrailMetricsHttpClientInterceptor clientInterceptor = new TrailMetricsHttpClientInterceptor(this.headerName, this.outgoingMode);
         this.restTemplates.forEach(restTemplate -> restTemplate.getInterceptors().add(clientInterceptor));
     }
 }
