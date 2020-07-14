@@ -21,19 +21,22 @@ public class TrailMetricsWebMvcAutoConfiguration implements WebMvcConfigurer {
 
     @Value("${"+PRTY_MODE+":FILTER}")
     private String mode;
-    @Value("${"+TrailMetricsHttpServerInterceptor.PRTY_HEADER_NAME+":"+TrailMetricsHttpServerInterceptor.DEFAULT_HEADER_NAME+"}")
+    @Value("${"+AbstractTrailMetricsHttpServerHandler.PRTY_HEADER_NAME+":"+AbstractTrailMetricsHttpServerHandler.DEFAULT_HEADER_NAME+"}")
     private String headerName;
-    @Value("${"+TrailMetricsHttpServerInterceptor.PRTY_INCOMING_MODE+":"+TrailMetricsHttpServerInterceptor.DEFAULT_INCOMING_MODE+"}")
+    @Value("${"+AbstractTrailMetricsHttpServerHandler.PRTY_INCOMING_MODE+":"+AbstractTrailMetricsHttpServerHandler.DEFAULT_INCOMING_MODE+"}")
     private String incomingMode;
-    @Value("${"+TrailMetricsHttpServerInterceptor.PRTY_DISPATCH_REQUEST+":"+TrailMetricsHttpServerInterceptor.DEFAULT_DISPATCH_REQUEST+"}")
+    @Value("${"+ AbstractTrailMetricsHttpServerHandler.PRTY_FOLLOW_SESSIONS+":"+AbstractTrailMetricsHttpServerHandler.DEFAULT_FOLLOW_SESSIONS +"}")
+    private boolean followSessions;
+    @Value("${"+AbstractTrailMetricsHttpServerHandler.PRTY_DISPATCH_REQUEST+":"+AbstractTrailMetricsHttpServerHandler.DEFAULT_DISPATCH_REQUEST+"}")
     private boolean dispatchRequest;
-    @Value("${"+TrailMetricsHttpServerInterceptor.PRTY_DISPATCH_RESPONSE+":"+TrailMetricsHttpServerInterceptor.DEFAULT_DISPATCH_RESPONSE+"}")
+    @Value("${"+AbstractTrailMetricsHttpServerHandler.PRTY_DISPATCH_RESPONSE+":"+AbstractTrailMetricsHttpServerHandler.DEFAULT_DISPATCH_RESPONSE+"}")
     private boolean dispatchResponse;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         if ("INTERCEPTOR".equals(this.mode)) {
-            registry.addInterceptor(new TrailMetricsHttpServerInterceptor(this.headerName, this.incomingMode, this.dispatchRequest, this.dispatchResponse));
+            registry.addInterceptor(new TrailMetricsHttpServerInterceptor(this.headerName, this.incomingMode,
+                    this.followSessions, this.dispatchRequest, this.dispatchResponse));
         }
     }
 
@@ -41,7 +44,7 @@ public class TrailMetricsWebMvcAutoConfiguration implements WebMvcConfigurer {
     @ConditionalOnProperty(name = PRTY_MODE, havingValue = "FILTER", matchIfMissing = true)
     public FilterRegistrationBean<TrailMetricsHttpServerFilter> trailMetricsHttpServerFilter() {
         TrailMetricsHttpServerFilter filter = new TrailMetricsHttpServerFilter(this.headerName, this.incomingMode,
-                this.dispatchRequest, this.dispatchResponse);
+                this.followSessions, this.dispatchRequest, this.dispatchResponse);
 
         FilterRegistrationBean<TrailMetricsHttpServerFilter> filterRegistrationBean = new FilterRegistrationBean<>(filter);
         filterRegistrationBean.setOrder(-1);
