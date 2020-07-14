@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS metric_attribute (
     id BIGINT NOT NULL AUTO_INCREMENT,
     metric_id BIGINT NOT NULL,
     attribute_key VARCHAR(255) NOT NULL,
-    attribute_value VARCHAR(255) NULL,
+    attribute_value VARCHAR(2047) NULL,
     PRIMARY KEY (id),
     CONSTRAINT FK_METRIC_ATTRIBUTE_TO_METRIC FOREIGN KEY (metric_id) REFERENCES metric (id)
 );

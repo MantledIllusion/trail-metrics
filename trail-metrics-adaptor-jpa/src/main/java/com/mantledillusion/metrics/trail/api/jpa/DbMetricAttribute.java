@@ -24,7 +24,7 @@ public class DbMetricAttribute {
 	@Column(name = "attribute_key", length = 255, nullable = false)
 	private String key;
 
-	@Column(name = "attribute_value", length = 255)
+	@Column(name = "attribute_value", length = 2047)
 	private String value;
 
 	/**

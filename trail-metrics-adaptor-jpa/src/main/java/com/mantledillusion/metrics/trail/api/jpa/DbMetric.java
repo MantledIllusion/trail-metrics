@@ -235,7 +235,8 @@ public class DbMetric {
 			target.setAttributes(source
 					.getAttributes()
 					.parallelStream()
-					.map(attribute -> new DbMetricAttribute(target, attribute.getKey(), attribute.getValue()))
+					.map(attribute -> new DbMetricAttribute(target, attribute.getKey(), attribute.getValue() == null ?
+							null : attribute.getValue().substring(0, Math.min(attribute.getValue().length(), 2047))))
 					.collect(Collectors.toList()));
 		}
 
