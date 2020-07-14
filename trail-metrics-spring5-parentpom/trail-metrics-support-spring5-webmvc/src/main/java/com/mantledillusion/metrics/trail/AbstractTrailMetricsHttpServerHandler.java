@@ -25,25 +25,29 @@ abstract class AbstractTrailMetricsHttpServerHandler {
 
     public static final String PRTY_HEADER_NAME = "trailMetrics.http.correlationIdHeaderName";
     public static final String PRTY_INCOMING_MODE = "trailMetrics.http.incomingMode";
+    public static final String PRTY_FOLLOW_SESSIONS = "trailMetrics.http.server.followSessions";
     public static final String PRTY_DISPATCH_REQUEST = "trailMetrics.http.dispatchRequest";
     public static final String PRTY_DISPATCH_RESPONSE = "trailMetrics.http.dispatchResponse";
     public static final String DEFAULT_HEADER_NAME = "correlationId";
     public static final String DEFAULT_INCOMING_MODE = "LENIENT";
+    public static final boolean DEFAULT_FOLLOW_SESSIONS = true;
     public static final boolean DEFAULT_DISPATCH_REQUEST = false;
     public static final boolean DEFAULT_DISPATCH_RESPONSE = false;
 
     private final String headerName;
     private TrailBehaviourMode incomingMode;
+    private boolean followSessions;
     private boolean dispatchRequest;
     private boolean dispatchResponse;
 
-    public AbstractTrailMetricsHttpServerHandler(String headerName, TrailBehaviourMode incomingMode, boolean dispatchRequest,
-                                                 boolean dispatchResponse) {
+    public AbstractTrailMetricsHttpServerHandler(String headerName, TrailBehaviourMode incomingMode, boolean followSessions,
+                                                 boolean dispatchRequest, boolean dispatchResponse) {
         if (headerName == null || StringUtils.isEmpty(headerName.trim())) {
             throw new IllegalArgumentException("Cannot use a blank header name.");
         }
         this.headerName = headerName;
         setIncomingMode(incomingMode);
+        this.followSessions = followSessions;
         this.dispatchRequest = dispatchRequest;
         this.dispatchResponse = dispatchResponse;
     }
@@ -67,6 +71,14 @@ abstract class AbstractTrailMetricsHttpServerHandler {
             throw new IllegalArgumentException("Cannot set a null mode");
         }
         this.incomingMode = incomingMode;
+    }
+
+    public boolean isFollowSessions() {
+        return followSessions;
+    }
+
+    public void setFollowSessions(boolean followSessions) {
+        this.followSessions = followSessions;
     }
 
     /**
@@ -118,7 +130,18 @@ abstract class AbstractTrailMetricsHttpServerHandler {
                 case STRICT:
                     throw new HttpClientErrorException(HttpStatus.BAD_REQUEST);
                 case LENIENT:
-                    MetricsTrailSupport.begin();
+                    if (this.followSessions && request instanceof HttpServletRequest) {
+                        try {
+                            MetricsTrailSupport.begin(UUID.fromString((String) ((HttpServletRequest) request).
+                                    getSession().getAttribute(this.headerName)));
+                        } catch (NullPointerException | IllegalArgumentException e2) {
+                            MetricsTrailSupport.begin();
+                            ((HttpServletRequest) request).getSession().setAttribute(this.headerName,
+                                    MetricsTrailSupport.get().getCorrelationId().toString());
+                        }
+                    } else {
+                        MetricsTrailSupport.begin();
+                    }
                     dispatchRequestMetric(request);
             }
         }

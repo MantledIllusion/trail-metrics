@@ -13,6 +13,8 @@ Alternatively, an instance of **_TrailMetricsHttpServerFilter_** can be added to
 ```yaml
 trailMetrics:
   http:
+    server:
+      followSessions: <Whether or not to use the same correlationId for requests of the same session that do not have a specific ID set, true by default>
     correlationIdHeaderName: <The name of the HTTP header to use when sending correlationIds, 'correlationId' by default>
     incomingMode: <The mode of how to handle incoming trails, one of [STRICT, LENIENT, OPTIONAL], LENIENT by default>
     dispatchRequest: <Whether or not to dispatch a metric when a request is received, false by default>
