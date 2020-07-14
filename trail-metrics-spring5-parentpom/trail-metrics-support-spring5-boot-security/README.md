@@ -11,7 +11,7 @@ The **_TrailMetricsSecurityAutoConfiguration_** will activate automatically and 
 ```yaml
 trailMetrics:
   security:
-    authentication:
+    auth:
       dispatchFailure: <Dispatch a metric when authentication fails, false by default>
       dispatchSuccess: <Dispatch a metric when authentication succeeds, false by default>
       dispatchClosure: <Dispatch a metric when authentication ends, false by default>
