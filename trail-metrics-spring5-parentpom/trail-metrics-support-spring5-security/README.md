@@ -14,7 +14,7 @@ Register any combination of instances of the following classes as Spring beans:
 ```yaml
 trailMetrics:
   security:
-    auth:
+    authentication:
       dispatchFailure: <Dispatch a metric when authentication fails, false by default>
       dispatchSuccess: <Dispatch a metric when authentication succeeds, false by default>
       dispatchClosure: <Dispatch a metric when authentication ends, false by default>
