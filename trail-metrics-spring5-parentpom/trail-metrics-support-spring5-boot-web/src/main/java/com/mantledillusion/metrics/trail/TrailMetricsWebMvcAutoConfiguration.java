@@ -18,9 +18,12 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class TrailMetricsWebMvcAutoConfiguration implements WebMvcConfigurer {
 
     public static final String PRTY_MODE = "trailMetrics.http.server.mode";
+    public static final String PRTY_FILTER_ORDER = "trailMetrics.http.server.filter.order";
 
     @Value("${"+PRTY_MODE+":FILTER}")
     private String mode;
+    @Value("${"+PRTY_FILTER_ORDER+":-99000}")
+    private int filterOrder;
     @Value("${"+AbstractTrailMetricsHttpServerHandler.PRTY_HEADER_NAME+":"+AbstractTrailMetricsHttpServerHandler.DEFAULT_HEADER_NAME+"}")
     private String headerName;
     @Value("${"+AbstractTrailMetricsHttpServerHandler.PRTY_INCOMING_MODE+":"+AbstractTrailMetricsHttpServerHandler.DEFAULT_INCOMING_MODE+"}")
@@ -47,7 +50,7 @@ public class TrailMetricsWebMvcAutoConfiguration implements WebMvcConfigurer {
                 this.followSessions, this.dispatchRequest, this.dispatchResponse);
 
         FilterRegistrationBean<TrailMetricsHttpServerFilter> filterRegistrationBean = new FilterRegistrationBean<>(filter);
-        filterRegistrationBean.setOrder(-1);
+        filterRegistrationBean.setOrder(this.filterOrder);
         return filterRegistrationBean;
     }
 }
