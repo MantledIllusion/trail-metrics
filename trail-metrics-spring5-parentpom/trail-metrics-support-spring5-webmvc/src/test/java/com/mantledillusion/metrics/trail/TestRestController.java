@@ -11,8 +11,13 @@ public class TestRestController {
 
     public static final UUID TRAIL_ID = UUID.randomUUID();
 
-    @GetMapping("/")
-    public void get() {
+    @GetMapping("/supported")
+    public void supported() {
         Assertions.assertTrue(MetricsTrailSupport.has());
+    }
+
+    @GetMapping("/unsupported")
+    public void unsupported() {
+        Assertions.assertFalse(MetricsTrailSupport.has());
     }
 }

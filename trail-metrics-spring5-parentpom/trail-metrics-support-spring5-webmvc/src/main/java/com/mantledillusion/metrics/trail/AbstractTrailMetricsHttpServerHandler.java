@@ -4,14 +4,22 @@ import com.mantledillusion.metrics.trail.api.Metric;
 import com.mantledillusion.metrics.trail.api.MetricAttribute;
 import com.mantledillusion.metrics.trail.api.MetricType;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.server.RequestPath;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.util.pattern.PathPattern;
+import org.springframework.web.util.pattern.PathPatternParser;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 abstract class AbstractTrailMetricsHttpServerHandler {
 
@@ -24,8 +32,10 @@ abstract class AbstractTrailMetricsHttpServerHandler {
     private static final String MID_RESPONSE = "spring.web.server.response";
 
     public static final String PRTY_HEADER_NAME = "trailMetrics.http.correlationIdHeaderName";
+    public static final String PRTY_REQUEST_PATTERNS = "trailMetrics.http.requestPatterns";
     public static final String PRTY_INCOMING_MODE = "trailMetrics.http.incomingMode";
     public static final String PRTY_FOLLOW_SESSIONS = "trailMetrics.http.server.followSessions";
+    public static final String PRTY_DISPATCH_PATTERNS = "trailMetrics.http.dispatchPatterns";
     public static final String PRTY_DISPATCH_REQUEST = "trailMetrics.http.dispatchRequest";
     public static final String PRTY_DISPATCH_RESPONSE = "trailMetrics.http.dispatchResponse";
     public static final String DEFAULT_HEADER_NAME = "correlationId";
@@ -35,8 +45,10 @@ abstract class AbstractTrailMetricsHttpServerHandler {
     public static final boolean DEFAULT_DISPATCH_RESPONSE = false;
 
     private final String headerName;
+    private List<PathPattern> requestPatterns = Collections.emptyList();
     private TrailBehaviourMode incomingMode;
     private boolean followSessions;
+    private List<PathPattern> dispatchPatterns = Collections.emptyList();
     private boolean dispatchRequest;
     private boolean dispatchResponse;
 
@@ -50,6 +62,16 @@ abstract class AbstractTrailMetricsHttpServerHandler {
         this.followSessions = followSessions;
         this.dispatchRequest = dispatchRequest;
         this.dispatchResponse = dispatchResponse;
+    }
+
+    public List<PathPattern> getRequestPatterns() {
+        return this.requestPatterns;
+    }
+
+    public void setRequestPatterns(String... requestMvcPatterns) {
+        this.requestPatterns = Arrays.asList(requestMvcPatterns).stream().
+                map(pattern -> new PathPatternParser().parse(pattern)).
+                collect(Collectors.toList());
     }
 
     /**
@@ -79,6 +101,16 @@ abstract class AbstractTrailMetricsHttpServerHandler {
 
     public void setFollowSessions(boolean followSessions) {
         this.followSessions = followSessions;
+    }
+
+    public List<PathPattern> getDispatchPatterns() {
+        return dispatchPatterns;
+    }
+
+    public void setDispatchPatterns(String... dispatchMvcPatterns) {
+        this.dispatchPatterns = Arrays.asList(dispatchMvcPatterns).stream().
+                map(pattern -> new PathPatternParser().parse(pattern)).
+                collect(Collectors.toList());
     }
 
     /**
@@ -118,63 +150,64 @@ abstract class AbstractTrailMetricsHttpServerHandler {
     }
 
     protected boolean requestStart(ServletRequest request) {
-        try {
-            if (request instanceof HttpServletRequest) {
+        if (matches(this.requestPatterns, request)) {
+            try {
                 MetricsTrailSupport.begin(UUID.fromString(((HttpServletRequest) request).getHeader(this.headerName)));
-            } else {
-                MetricsTrailSupport.begin();
+            } catch (NullPointerException | IllegalArgumentException e) {
+                switch (this.incomingMode) {
+                    case STRICT:
+                        throw new HttpClientErrorException(HttpStatus.BAD_REQUEST);
+                    case LENIENT:
+                        if (this.followSessions) {
+                            try {
+                                MetricsTrailSupport.begin(UUID.fromString((String) ((HttpServletRequest) request).
+                                        getSession().getAttribute(this.headerName)));
+                            } catch (NullPointerException | IllegalArgumentException e2) {
+                                MetricsTrailSupport.begin();
+                                ((HttpServletRequest) request).getSession().setAttribute(this.headerName,
+                                        MetricsTrailSupport.get().getCorrelationId().toString());
+                            }
+                        } else {
+                            MetricsTrailSupport.begin();
+                        }
+                }
             }
             dispatchRequestMetric(request);
-        } catch (NullPointerException | IllegalArgumentException e) {
-            switch (this.incomingMode) {
-                case STRICT:
-                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST);
-                case LENIENT:
-                    if (this.followSessions && request instanceof HttpServletRequest) {
-                        try {
-                            MetricsTrailSupport.begin(UUID.fromString((String) ((HttpServletRequest) request).
-                                    getSession().getAttribute(this.headerName)));
-                        } catch (NullPointerException | IllegalArgumentException e2) {
-                            MetricsTrailSupport.begin();
-                            ((HttpServletRequest) request).getSession().setAttribute(this.headerName,
-                                    MetricsTrailSupport.get().getCorrelationId().toString());
-                        }
-                    } else {
-                        MetricsTrailSupport.begin();
-                    }
-                    dispatchRequestMetric(request);
-            }
-        }
 
-        REQUEST_DURATION.set(System.currentTimeMillis());
+            REQUEST_DURATION.set(System.currentTimeMillis());
+        }
         return true;
     }
 
     private void dispatchRequestMetric(ServletRequest request) {
-        if (this.dispatchRequest) {
+        if (this.dispatchRequest && matches(this.dispatchPatterns, request)) {
             Metric metric = new Metric(MID_REQUEST, MetricType.ALERT);
-            if (request instanceof HttpServletRequest) {
-                metric.getAttributes().add(new MetricAttribute(AKEY_ENDPOINT, ((HttpServletRequest) request).getRequestURI()));
-                if (((HttpServletRequest) request).getHeader(this.headerName) != null) {
-                    metric.getAttributes().add(new MetricAttribute(AKEY_ORIGINAL_CORRELATION_ID,
-                            ((HttpServletRequest) request).getHeader(this.headerName)));
-                }
+            metric.getAttributes().add(new MetricAttribute(AKEY_ENDPOINT, ((HttpServletRequest) request).getRequestURI()));
+            if (((HttpServletRequest) request).getHeader(this.headerName) != null) {
+                metric.getAttributes().add(new MetricAttribute(AKEY_ORIGINAL_CORRELATION_ID,
+                        ((HttpServletRequest) request).getHeader(this.headerName)));
             }
             MetricsTrailSupport.commit(metric, false);
         }
     }
 
-    protected void requestEnd(ServletResponse response) {
-        if (this.dispatchResponse) {
-            MetricsTrailSupport.commit(new Metric(MID_RESPONSE, MetricType.METER, System.currentTimeMillis()-REQUEST_DURATION.get()), false);
-        }
-        REQUEST_DURATION.set(null);
-
+    protected void requestEnd(ServletRequest request, ServletResponse response) {
         if (MetricsTrailSupport.has()) {
-            if (response instanceof HttpServletResponse) {
+            if (matches(this.requestPatterns, request)) {
                 ((HttpServletResponse) response).addHeader(this.headerName, MetricsTrailSupport.id().toString());
+
+                if (this.dispatchResponse && matches(this.dispatchPatterns, request)) {
+                    MetricsTrailSupport.commit(new Metric(MID_RESPONSE, MetricType.METER, System.currentTimeMillis()-REQUEST_DURATION.get()), false);
+                }
+                REQUEST_DURATION.set(null);
             }
             MetricsTrailSupport.end();
         }
+    }
+
+    private boolean matches(List<PathPattern> patterns, ServletRequest request) {
+        return request instanceof HttpServletRequest && (patterns.isEmpty() || patterns.parallelStream().anyMatch(
+                pathPattern -> pathPattern.matches(RequestPath.parse(URI.create(((HttpServletRequest) request).
+                                getRequestURI()), ((HttpServletRequest) request).getContextPath()))));
     }
 }

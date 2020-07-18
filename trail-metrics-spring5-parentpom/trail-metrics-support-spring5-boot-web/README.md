@@ -19,8 +19,9 @@ trailMetrics:
       filter:
         order: <When using mode:FILTER, the priority of the filter in correlation to other filters, -99000 by default>
     correlationIdHeaderName: <The name of the HTTP header to use when sending correlationIds, 'correlationId' by default>
+    requestPatterns: <An array of MVC URI patterns to limit beginning trails on to>
     incomingMode: <The mode of how to handle incoming trails, one of [STRICT, LENIENT, OPTIONAL], LENIENT by default>
-    outgoingMode: <The mode of how to handle outgoing trails, one of [STRICT, LENIENT, OPTIONAL], OPTIONAL by default>
+    dispatchPatterns: <An array of MVC URI patterns to limit dispatching metrics to>
     dispatchRequest: <Whether or not to dispatch a metric when a request is received, false by default>
     dispatchResponse: <Whether or not to dispatch a metric when a request is responded to, false by default>
 ```

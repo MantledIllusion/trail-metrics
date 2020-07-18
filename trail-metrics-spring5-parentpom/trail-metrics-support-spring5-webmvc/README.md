@@ -16,7 +16,9 @@ trailMetrics:
     server:
       followSessions: <Whether or not to use the same correlationId for requests of the same session that do not have a specific ID set, true by default>
     correlationIdHeaderName: <The name of the HTTP header to use when sending correlationIds, 'correlationId' by default>
+    requestPatterns: <An array of MVC URI patterns to limit beginning trails on to>
     incomingMode: <The mode of how to handle incoming trails, one of [STRICT, LENIENT, OPTIONAL], LENIENT by default>
+    dispatchPatterns: <An array of MVC URI patterns to limit dispatching metrics to>
     dispatchRequest: <Whether or not to dispatch a metric when a request is received, false by default>
     dispatchResponse: <Whether or not to dispatch a metric when a request is responded to, false by default>
 ```
