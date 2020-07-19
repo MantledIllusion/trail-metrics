@@ -41,7 +41,7 @@ public class TrailMetricsHibernateJpaAutoConfigurationTest {
     private MetricAttributeRepository metricAttributeRepository;
 
     @Test
-    public void test() {
+    public void testPersist() {
         this.transactionTemplate.executeWithoutResult(transactionStatus -> {
             DbMetricsConsumerTrail trail = new DbMetricsConsumerTrail();
             trail.setCorrelationId(TRAIL_ID);
@@ -63,7 +63,6 @@ public class TrailMetricsHibernateJpaAutoConfigurationTest {
 
             this.metricsConsumerRepository.saveAndFlush(trail);
         });
-
 
         this.transactionTemplate.executeWithoutResult(transactionStatus -> {
             Assertions.assertEquals(1L, this.metricsConsumerRepository.count());
@@ -87,6 +86,38 @@ public class TrailMetricsHibernateJpaAutoConfigurationTest {
             Assert.assertSame(metric, attribute.getMetric());
             Assertions.assertEquals(ATTRIBUTE_KEY, attribute.getKey());
             Assertions.assertEquals(ATTRIBUTE_VALUE, attribute.getValue());
+        });
+    }
+
+    @Test
+    public void testClean() {
+        DbMetricsConsumerTrail trail = new DbMetricsConsumerTrail();
+        trail.setCorrelationId(UUID.randomUUID());
+        trail.setConsumerId(TRAIL_CONSUMER_ID);
+
+        DbMetric metric = new DbMetric();
+        metric.setTrail(trail);
+        metric.setIdentifier("cleanme.abc");
+        metric.setType(MetricType.ALERT);
+        metric.setTimestamp(LocalDateTime.now());
+        metric.setTimezone(METRIC_TIMEZONE);
+        trail.setMetrics(Collections.singletonList(metric));
+
+        this.metricsConsumerRepository.saveAndFlush(trail);
+
+        long ms = System.currentTimeMillis();
+        this.transactionTemplate.executeWithoutResult(transactionStatus -> {
+            while (this.metricRepository.countByIdentifier("cleanme.%") != 0) {
+                if (System.currentTimeMillis()-ms < 2000) {
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    Assertions.fail();
+                }
+            }
         });
     }
 }

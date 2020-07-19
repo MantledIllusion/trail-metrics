@@ -16,6 +16,7 @@ import org.hibernate.tool.schema.TargetType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.ApplicationContext;
@@ -25,7 +26,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -56,17 +59,22 @@ import java.util.EnumSet;
  */
 @Configuration
 @AutoConfigureAfter(HibernateJpaAutoConfiguration.class)
+@EnableScheduling
+@EnableTransactionManagement
 @EnableJpaRepositories(basePackages = "com.mantledillusion.metrics.trail.repositories",
         entityManagerFactoryRef = TrailMetricsHibernateJpaAutoConfiguration.ENTITY_MANAGER_FACTORY_QUALIFIER,
         transactionManagerRef = TrailMetricsHibernateJpaAutoConfiguration.TRANSACTION_MANAGER_QUALIFIER)
 public class TrailMetricsHibernateJpaAutoConfiguration {
 
     public static final String ENTITY_MANAGER_FACTORY_QUALIFIER = "MetricsEntityManagerFactory";
+    public static final String ENTITY_MANAGER_QUALIFIER = "MetricsEntityManager";
     public static final String TRANSACTION_MANAGER_QUALIFIER = "MetricsTransactionManager";
+    public static final String CLEANUP_TASK_QUALIFIER = "MetricsCleanupTask";
     public static final String PERSISTENCE_UNIT = "MetricsPersistenceUnit";
 
     public static final String PRTY_DATA_SOURCE_QUALIFIER = "trailMetrics.jpa.dataSourceQualifier";
     public static final String PRTY_MIGRATE_DATABASE = "trailMetrics.jpa.doMigrate";
+    public static final String PRTY_METRICS_CLEANUP = "trailMetrics.jpa.doCleanup";
     public static final String DATA_SOURCE_DEFAULT_QUALIFIER = "dataSource";
 
     @Value("${"+PRTY_MIGRATE_DATABASE+":true}")
@@ -75,10 +83,8 @@ public class TrailMetricsHibernateJpaAutoConfiguration {
     private String dataSourceQualifier;
 
     @Bean
-    public MetricsPersistor metricsPersistor(@Qualifier(ENTITY_MANAGER_FACTORY_QUALIFIER) EntityManagerFactory entityManagerFactory,
+    public MetricsPersistor metricsPersistor(@Qualifier(ENTITY_MANAGER_QUALIFIER) EntityManager entityManager,
                                              ApplicationContext applicationContext) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-
         if (this.doMigrate) {
             Session session = (Session) entityManager.getDelegate();
             SessionFactoryImpl sessionFactory = (SessionFactoryImpl) session.getSessionFactory();
@@ -103,17 +109,27 @@ public class TrailMetricsHibernateJpaAutoConfiguration {
 
     @Bean(ENTITY_MANAGER_FACTORY_QUALIFIER)
     public LocalContainerEntityManagerFactoryBean entityManagerFactory(ApplicationContext applicationContext) {
-        LocalContainerEntityManagerFactoryBean emf = new EntityManagerFactoryBuilder(
+        return new EntityManagerFactoryBuilder(
                 new HibernateJpaVendorAdapter(), Collections.emptyMap(), null).
                 dataSource(applicationContext.getBean(this.dataSourceQualifier, DataSource.class)).
                 packages("com.mantledillusion.metrics.trail.api.jpa").
                 persistenceUnit(PERSISTENCE_UNIT).
                 build();
-        return emf;
+    }
+
+    @Bean(ENTITY_MANAGER_QUALIFIER)
+    public EntityManager entityManager(@Qualifier(ENTITY_MANAGER_FACTORY_QUALIFIER) EntityManagerFactory entityManagerFactory) {
+        return entityManagerFactory.createEntityManager();
     }
 
     @Bean(TRANSACTION_MANAGER_QUALIFIER)
     public PlatformTransactionManager transactionManager(@Qualifier(ENTITY_MANAGER_FACTORY_QUALIFIER) EntityManagerFactory emf) {
         return new JpaTransactionManager(emf);
+    }
+
+    @Bean(CLEANUP_TASK_QUALIFIER)
+    @ConditionalOnProperty(name = PRTY_METRICS_CLEANUP, havingValue = "true")
+    public TrailMetricsPersistorCleanupTask trailMetricsPersistorCleanupTask() {
+        return new TrailMetricsPersistorCleanupTask();
     }
 }

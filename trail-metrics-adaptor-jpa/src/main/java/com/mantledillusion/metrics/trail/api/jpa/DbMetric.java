@@ -44,7 +44,7 @@ public class DbMetric {
 	@Convert(converter = ZoneIdStringAttributeConverter.class)
 	private ZoneId timezone;
 
-	@OneToMany(mappedBy = "metric", cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "metric", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<DbMetricAttribute> attributes;
 
 	/**

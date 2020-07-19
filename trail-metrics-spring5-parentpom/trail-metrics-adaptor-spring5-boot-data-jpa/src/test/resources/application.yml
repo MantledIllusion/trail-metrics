@@ -1,0 +1,7 @@
+trailMetrics:
+  jpa:
+    doCleanup: true
+    cleanup:
+      cron: "* * * ? * *"
+      age: 1ms
+      identifiersLike: cleanme.%
