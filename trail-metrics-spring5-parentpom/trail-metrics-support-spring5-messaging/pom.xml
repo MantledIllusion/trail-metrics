@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.mantledillusion.metrics</groupId>
 		<artifactId>trail-metrics-spring5-parentpom</artifactId>
-		<version>1.0.0.BETA3</version>
+		<version>1.0.0.BETA4</version>
 	</parent>
 
 	<artifactId>trail-metrics-support-spring5-messaging</artifactId>
