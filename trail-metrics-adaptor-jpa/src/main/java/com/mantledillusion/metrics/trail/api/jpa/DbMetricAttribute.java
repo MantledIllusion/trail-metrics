@@ -17,8 +17,9 @@ public class DbMetricAttribute {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@ManyToOne(optional = false)
-	@JoinColumn(name = "metric_id")
+	@ManyToOne(optional = false, cascade = CascadeType.ALL)
+	@JoinColumn(name = "metric_id", nullable = false, foreignKey = @ForeignKey(name = "FK_METRIC_ATTRIBUTE_TO_METRIC",
+			foreignKeyDefinition = "FOREIGN KEY (metric_id) REFERENCES metric (id) ON UPDATE CASCADE ON DELETE CASCADE"))
 	private DbMetric metric;
 
 	@Column(name = "attribute_key", length = 255, nullable = false)

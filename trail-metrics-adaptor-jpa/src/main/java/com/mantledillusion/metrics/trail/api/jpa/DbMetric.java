@@ -26,8 +26,9 @@ public class DbMetric {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@ManyToOne(optional = false, cascade = CascadeType.PERSIST)
-	@JoinColumn(name = "metric_trail_id")
+	@ManyToOne(optional = false, cascade = CascadeType.ALL)
+	@JoinColumn(name = "metric_trail_id", nullable = false, foreignKey = @ForeignKey(name = "FK_METRIC_TO_METRIC_TRAIL",
+			foreignKeyDefinition = "FOREIGN KEY (metric_trail_id) REFERENCES metric_trail (id) ON UPDATE CASCADE ON DELETE CASCADE"))
 	private DbMetricsConsumerTrail trail;
 
 	@Column(name = "identifier", length = 255, nullable = false)
