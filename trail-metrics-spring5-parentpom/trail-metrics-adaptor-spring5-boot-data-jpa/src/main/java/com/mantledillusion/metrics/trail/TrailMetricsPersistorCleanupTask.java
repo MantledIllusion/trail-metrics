@@ -14,7 +14,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
-class TrailMetricsPersistorCleanupTask {
+public class TrailMetricsPersistorCleanupTask {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TrailMetricsPersistorCleanupTask.class);
 
@@ -32,7 +32,7 @@ class TrailMetricsPersistorCleanupTask {
     private MetricRepository metricRepository;
 
     @Scheduled(cron = "${trailMetrics.jpa.cleanup.cron:0 0 */1 ? * *}")
-    private void cleanup() {
+    public void cleanup() {
         int metricCount = this.identifiersLike.stream().map(identifierLike -> this.metricRepository.
                 cleanup(LocalDateTime.now().minus(this.age), identifierLike)).
                 reduce(0, Integer::sum);
