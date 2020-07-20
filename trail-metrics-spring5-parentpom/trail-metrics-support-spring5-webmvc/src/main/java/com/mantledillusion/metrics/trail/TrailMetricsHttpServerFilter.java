@@ -84,10 +84,11 @@ public class TrailMetricsHttpServerFilter extends AbstractTrailMetricsHttpServer
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         requestStart(request);
+        dispatchResponseMetric(request, response);
         try {
             chain.doFilter(request, response);
         } finally {
-            requestEnd(request, response);
+            requestEnd();
         }
     }
 }

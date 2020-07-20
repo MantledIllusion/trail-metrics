@@ -180,7 +180,7 @@ abstract class AbstractTrailMetricsHttpServerHandler {
     }
 
     private void dispatchRequestMetric(ServletRequest request) {
-        if (this.dispatchRequest && matches(this.dispatchPatterns, request)) {
+        if (this.dispatchRequest) {
             Metric metric = new Metric(MID_REQUEST, MetricType.ALERT);
             metric.getAttributes().add(new MetricAttribute(AKEY_ENDPOINT, ((HttpServletRequest) request).getRequestURI()));
             if (((HttpServletRequest) request).getHeader(this.headerName) != null) {
@@ -191,16 +191,19 @@ abstract class AbstractTrailMetricsHttpServerHandler {
         }
     }
 
-    protected void requestEnd(ServletRequest request, ServletResponse response) {
-        if (MetricsTrailSupport.has()) {
-            if (matches(this.requestPatterns, request)) {
-                ((HttpServletResponse) response).addHeader(this.headerName, MetricsTrailSupport.id().toString());
+    protected void dispatchResponseMetric(ServletRequest request, ServletResponse response) {
+        if (matches(this.requestPatterns, request)) {
+            ((HttpServletResponse) response).addHeader(this.headerName, MetricsTrailSupport.id().toString());
 
-                if (this.dispatchResponse && matches(this.dispatchPatterns, request)) {
-                    MetricsTrailSupport.commit(new Metric(MID_RESPONSE, MetricType.METER, System.currentTimeMillis()-REQUEST_DURATION.get()), false);
-                }
-                REQUEST_DURATION.set(null);
+            if (this.dispatchResponse && matches(this.dispatchPatterns, request)) {
+                MetricsTrailSupport.commit(new Metric(MID_RESPONSE, MetricType.METER, System.currentTimeMillis()-REQUEST_DURATION.get()), false);
             }
+            REQUEST_DURATION.set(null);
+        }
+    }
+
+    protected void requestEnd() {
+        if (MetricsTrailSupport.has()) {
             MetricsTrailSupport.end();
         }
     }
