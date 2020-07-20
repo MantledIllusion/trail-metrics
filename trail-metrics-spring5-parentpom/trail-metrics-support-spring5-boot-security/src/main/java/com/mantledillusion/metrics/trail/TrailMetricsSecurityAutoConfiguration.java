@@ -8,8 +8,9 @@ import org.springframework.context.annotation.Configuration;
 /**
  * Spring Boot auto configuration registering the following {@link org.springframework.context.ApplicationListener}s:<br>
  * - {@link TrailMetricsSecurityAuthenticationFailureListener}<br>
- * - {@link TrailMetricsSecurityAuthenticationFailureListener}<br>
- * - {@link TrailMetricsSecurityAuthenticationFailureListener}<br>
+ * - {@link TrailMetricsSecurityAuthenticationSuccessListener}<br>
+ * - {@link TrailMetricsSecurityAuthenticationInteractiveSuccessListener}<br>
+ * - {@link TrailMetricsSecurityAuthenticationClosureListener}<br>
  */
 @Configuration
 @AutoConfigureAfter(SecurityAutoConfiguration.class)
@@ -23,6 +24,11 @@ public class TrailMetricsSecurityAutoConfiguration {
     @Bean
     public TrailMetricsSecurityAuthenticationSuccessListener authenticationSuccessMetricsListener() {
         return new TrailMetricsSecurityAuthenticationSuccessListener();
+    }
+
+    @Bean
+    public TrailMetricsSecurityAuthenticationInteractiveSuccessListener authenticationInteractiveSuccessListener() {
+        return new TrailMetricsSecurityAuthenticationInteractiveSuccessListener();
     }
 
     @Bean
