@@ -38,7 +38,7 @@ abstract class AbstractTrailMetricsHttpServerHandler {
     public static final String PRTY_DISPATCH_PATTERNS = "trailMetrics.http.dispatchPatterns";
     public static final String PRTY_DISPATCH_REQUEST = "trailMetrics.http.dispatchRequest";
     public static final String PRTY_DISPATCH_RESPONSE = "trailMetrics.http.dispatchResponse";
-    public static final String DEFAULT_HEADER_NAME = "correlationId";
+    public static final String DEFAULT_HEADER_NAME = MetricsTrailSupport.DEFAULT_TRAIL_ID_KEY;
     public static final String DEFAULT_INCOMING_MODE = "LENIENT";
     public static final boolean DEFAULT_FOLLOW_SESSIONS = true;
     public static final boolean DEFAULT_DISPATCH_REQUEST = false;

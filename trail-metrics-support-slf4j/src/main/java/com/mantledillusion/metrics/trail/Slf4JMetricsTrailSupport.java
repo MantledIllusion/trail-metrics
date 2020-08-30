@@ -25,7 +25,7 @@ public class Slf4JMetricsTrailSupport {
 
     private static final MDCTrailListener METRICS_TRAIL_LISTENER = new MDCTrailListener();
 
-    public static final String DEFAULT_KEY = "correlationId";
+    public static final String DEFAULT_KEY = MetricsTrailSupport.DEFAULT_TRAIL_ID_KEY;
 
     private Slf4JMetricsTrailSupport() {}
 

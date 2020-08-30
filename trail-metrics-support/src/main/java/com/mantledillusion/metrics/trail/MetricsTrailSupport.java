@@ -11,6 +11,11 @@ import java.util.function.Supplier;
  */
 public final class MetricsTrailSupport {
 
+    /**
+     * The default key when supplying a {@link MetricsTrail}'s ID in a key/value map.
+     */
+    public static final String DEFAULT_TRAIL_ID_KEY = "correlation-id";
+
     private static final ThreadLocal<MetricsTrail> THREAD_LOCAL = new ThreadLocal<>();
     private static final Map<Integer, Supplier<MetricsTrailListener>> TRAIL_LISTENERS = new HashMap<>();
 

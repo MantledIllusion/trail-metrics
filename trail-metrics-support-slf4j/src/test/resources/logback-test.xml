@@ -1,7 +1,7 @@
 <configuration>
     <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>%-4r [%t] %5p %c{1} %replace(- correlationId=%X{correlationId} - ){'- correlationId= - ', ''}%m%n</pattern>
+            <pattern>%-4r [%t] %5p %c{1} %replace(- correlationId=%X{correlation-id} - ){'- correlationId= - ', ''}%m%n</pattern>
         </encoder>
     </appender>
     <root level="TRACE">
