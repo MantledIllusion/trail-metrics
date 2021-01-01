@@ -1,0 +1,33 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.mantledillusion.metrics</groupId>
+        <artifactId>trail-metrics-parentpom</artifactId>
+        <version>1.0.0.BETA6</version>
+    </parent>
+
+    <artifactId>trail-metrics-adaptor-elasticsearch</artifactId>
+
+    <name>trail-metrics-adaptor-elasticsearch</name>
+    <description>ElasticSearch based database adaptor for the trail-metrics-api.</description>
+    <url>http://www.mantledillusion.com</url>
+
+    <properties>
+        <elastic.version>7.10.0</elastic.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.mantledillusion.metrics</groupId>
+            <artifactId>trail-metrics-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.elasticsearch.client</groupId>
+            <artifactId>elasticsearch-rest-high-level-client</artifactId>
+            <version>${elastic.version}</version>
+        </dependency>
+    </dependencies>
+</project>

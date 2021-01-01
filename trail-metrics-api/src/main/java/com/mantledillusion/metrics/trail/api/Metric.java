@@ -16,7 +16,14 @@ import com.mantledillusion.metrics.trail.MetricValidator;
  */
 public class Metric {
 
+	public static final String CONSUMER_ID_FIELD_KEY = "_consumerId";
+	public static final String CORRELATION_ID_FIELD_KEY = "_correlationId";
+	public static final String TYPE_FIELD_KEY = "_type";
+	public static final String ATTRIBUTES_KEY = "_attributes";
+	public static final String ATTRIBUTE_KEY = "_key";
+	public static final String ATTRIBUTE_VALUE_KEY = "_value";
 	public static final String OPERATOR_ATTRIBUTE_KEY = "_operator";
+	public static final String TIMESTAMP_KEY = "_timestamp";
 
 	private String identifier;
 	private MetricType type;
