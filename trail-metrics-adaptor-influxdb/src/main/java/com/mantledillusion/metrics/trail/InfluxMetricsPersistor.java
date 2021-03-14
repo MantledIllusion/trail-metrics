@@ -2,6 +2,7 @@ package com.mantledillusion.metrics.trail;
 
 import com.mantledillusion.metrics.trail.api.Metric;
 import com.mantledillusion.metrics.trail.api.MetricAttribute;
+import com.mantledillusion.metrics.trail.api.MetricFields;
 import org.influxdb.InfluxDB;
 import org.influxdb.dto.Point;
 
@@ -29,9 +30,9 @@ public class InfluxMetricsPersistor implements MetricsConsumer {
     public void consume(String consumerId, UUID correlationId, Metric metric) {
         Point.Builder pointBuilder = Point.measurement(metric.getIdentifier())
                 .time(getNanos(metric.getTimestamp()), TimeUnit.NANOSECONDS)
-                .tag(Metric.CONSUMER_ID_FIELD_KEY, consumerId)
-                .tag(Metric.CORRELATION_ID_FIELD_KEY, correlationId.toString())
-                .addField(Metric.TYPE_FIELD_KEY, metric.getType().name());
+                .tag(MetricFields.CONSUMER_ID.getName("_"), consumerId)
+                .tag(MetricFields.CORRELATION_ID.getName("_"), correlationId.toString())
+                .addField(MetricFields.TYPE.getName("_"), metric.getType().name());
 
         if (metric.getAttributes() != null) {
             for (MetricAttribute attribute: metric.getAttributes()) {
