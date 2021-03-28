@@ -7,7 +7,6 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WebBrowser;
 
-import java.net.URI;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 

@@ -1,4 +1,4 @@
-# trail-metrics-support-spring-web
+# trail-measurements-support-spring-web
 
 Contains a Spring Feign interceptor for automatically adding a **_MetricTrail_**'s ID as a HTTP header when calling a service.
 

@@ -1,8 +1,8 @@
 package com.mantledillusion.metrics.trail;
 
-import com.mantledillusion.metrics.trail.api.Metric;
-import com.mantledillusion.metrics.trail.api.MetricAttribute;
-import com.mantledillusion.metrics.trail.api.MetricType;
+import com.mantledillusion.metrics.trail.api.Event;
+import com.mantledillusion.metrics.trail.api.Measurement;
+import com.mantledillusion.metrics.trail.api.MeasurementType;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +30,7 @@ public class TrailMetricsSchedulingInterceptor {
     private static final String MID_BEGIN = "spring.scheduling.task.begin";
     private static final String AKEY_CLASS_NAME = "className";
     private static final String AKEY_METHOD_NAME = "methodName";
+    private static final String AKEY_DURATION = "duration";
 
     private static final String MID_END = "spring.scheduling.task.end";
 
@@ -154,10 +155,10 @@ public class TrailMetricsSchedulingInterceptor {
         MetricsTrailSupport.begin();
 
         if (this.dispatchBeginTask) {
-            Metric metric = new Metric(MID_BEGIN, MetricType.ALERT);
-            metric.getAttributes().add(new MetricAttribute(AKEY_CLASS_NAME, joinPoint.getSignature().getDeclaringTypeName()));
-            metric.getAttributes().add(new MetricAttribute(AKEY_METHOD_NAME, joinPoint.getSignature().getName()));
-            MetricsTrailSupport.commit(metric, false);
+            Event event = new Event(MID_BEGIN,
+                    new Measurement(AKEY_CLASS_NAME, joinPoint.getSignature().getDeclaringTypeName(), MeasurementType.STRING),
+                    new Measurement(AKEY_METHOD_NAME, joinPoint.getSignature().getName(), MeasurementType.STRING));
+            MetricsTrailSupport.commit(event, false);
         }
 
         TASK_DURATION.set(System.currentTimeMillis());
@@ -183,7 +184,12 @@ public class TrailMetricsSchedulingInterceptor {
 
     private void dispatchEndMetric() {
         if (this.dispatchEndTask) {
-            MetricsTrailSupport.commit(new Metric(MID_END, MetricType.METER, System.currentTimeMillis()-TASK_DURATION.get()), false);
+            MetricsTrailSupport.commit(new Event(MID_END,
+                    new Measurement(
+                            AKEY_DURATION,
+                            String.valueOf(System.currentTimeMillis()-TASK_DURATION.get()),
+                            MeasurementType.LONG
+                    )), false);
         }
         TASK_DURATION.set(null);
     }

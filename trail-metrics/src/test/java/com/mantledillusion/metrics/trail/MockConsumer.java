@@ -1,6 +1,6 @@
 package com.mantledillusion.metrics.trail;
 
-import com.mantledillusion.metrics.trail.api.Metric;
+import com.mantledillusion.metrics.trail.api.Event;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -8,12 +8,12 @@ import java.util.concurrent.*;
 public class MockConsumer implements MetricsConsumer {
 
 	private final Semaphore semaphore = new Semaphore(Integer.MAX_VALUE);
-	private final Map<UUID, Queue<Metric>> queues = new HashMap<>();
+	private final Map<UUID, Queue<Event>> queues = new HashMap<>();
 	private final Map<UUID, Integer> fails = new HashMap<>();
 	private int failLevel = 0;
 	
 	@Override
-	public void consume(String consumerId, UUID correlationId, Metric metric) throws Exception {
+	public void consume(String consumerId, UUID correlationId, Event event) throws Exception {
 		this.semaphore.acquire();
 		if (this.failLevel == 2) {
 			this.fails.put(correlationId, this.fails.computeIfAbsent(correlationId, id -> Integer.valueOf(0))+1);
@@ -22,7 +22,7 @@ public class MockConsumer implements MetricsConsumer {
 			this.fails.put(correlationId, this.fails.computeIfAbsent(correlationId, id -> Integer.valueOf(0))+1);
 			throw new IllegalStateException();
 		} else {
-			this.queues.computeIfAbsent(correlationId, id -> new LinkedBlockingQueue<>()).add(metric);
+			this.queues.computeIfAbsent(correlationId, id -> new LinkedBlockingQueue<>()).add(event);
 		}
 	}
 
@@ -58,7 +58,7 @@ public class MockConsumer implements MetricsConsumer {
 		this.failLevel = 0;
 	}
 	
-	Metric dequeueOne(UUID correlationId) {
+	Event dequeueOne(UUID correlationId) {
 		return this.queues.computeIfAbsent(correlationId, id -> new LinkedBlockingQueue<>()).remove();
 	}
 }

@@ -1,5 +1,7 @@
 package com.mantledillusion.metrics.trail.api.web;
 
+import com.mantledillusion.metrics.trail.api.MeasurementType;
+
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
@@ -15,6 +17,8 @@ public class WebMetricAttribute {
 	private String key;
 	@XmlElement(required = true, nillable = false)
 	private String value;
+	@XmlElement(required = true, nillable = false)
+	private MeasurementType type;
 
 	/**
 	 * Default constructor.
@@ -29,10 +33,13 @@ public class WebMetricAttribute {
 	 *            The key of the attribute; might be null.
 	 * @param value
 	 *            The value of the attribute; might be null.
+	 * @param type
+	 * 			  The type of the attribute's value; might be null.
 	 */
-	public WebMetricAttribute(String key, String value) {
+	public WebMetricAttribute(String key, String value, MeasurementType type) {
 		this.key = key;
 		this.value = value;
+		this.type = type;
 	}
 
 	/**
@@ -71,5 +78,23 @@ public class WebMetricAttribute {
 	 */
 	public void setValue(String value) {
 		this.value = value;
+	}
+
+	/**
+	 * Returns the type of the attribute's value.
+	 *
+	 * @return The type, might be null
+	 */
+	public MeasurementType getType() {
+		return type;
+	}
+
+	/**
+	 * Sets the type of the attribute's value.
+	 *
+	 * @param type The type to set, might be null.
+	 */
+	public void setType(MeasurementType type) {
+		this.type = type;
 	}
 }

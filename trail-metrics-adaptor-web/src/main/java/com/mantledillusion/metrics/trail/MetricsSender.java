@@ -10,12 +10,12 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
-import com.mantledillusion.metrics.trail.api.Metric;
+import com.mantledillusion.metrics.trail.api.Event;
 import com.mantledillusion.metrics.trail.api.web.*;
 
 /**
  * {@link MetricsConsumer} implementation that is able to package and send
- * consumed {@link Metric}s via web service.
+ * consumed {@link Event}s via web service.
  */
 public class MetricsSender implements MetricsConsumer {
 
@@ -31,20 +31,20 @@ public class MetricsSender implements MetricsConsumer {
 
 	/**
 	 * Defines the modes the {@link MetricsSender} can operate on when deciding how
-	 * to send {@link Metric}s.
+	 * to send {@link Event}s.
 	 */
 	public enum SenderMode {
 
 		/**
-		 * Causes every incoming {@link Metric} to be wrapped into a
+		 * Causes every incoming {@link Event} to be wrapped into a
 		 * {@link WebMetricRequest} on its own and given to the {@link MetricsWebFacade}
 		 * directly.
 		 */
 		SYNCHRONOUS,
 
 		/**
-		 * Causes the first incoming {@link Metric} to trigger accumulating a variable
-		 * amount of {@link Metric}s to wrap into a single {@link WebMetricRequest}.
+		 * Causes the first incoming {@link Event} to trigger accumulating a variable
+		 * amount of {@link Event}s to wrap into a single {@link WebMetricRequest}.
 		 * <p>
 		 * Sending the request will be triggered automatically after an amount of time
 		 * specifiable using {@link MetricsSender#setMinAccumulationTime(long)}.
@@ -155,9 +155,9 @@ public class MetricsSender implements MetricsConsumer {
 	 * Constructor.
 	 * <p>
 	 * Will use the given {@link MetricsWebFacade} to transfer packaged
-	 * {@link Metric}s.
+	 * {@link Event}s.
 	 * 
-	 * @param facade The facade that is able to transfer packaged {@link Metric}s
+	 * @param facade The facade that is able to transfer packaged {@link Event}s
 	 *               via web service when
 	 *               {@link MetricsWebFacade#transfer(WebMetricRequest)}
 	 *               is called; might <b>not</b> be null.
@@ -186,20 +186,20 @@ public class MetricsSender implements MetricsConsumer {
 	}
 
 	/**
-	 * Returns the number of {@link Metric}s currently being either packaged or
+	 * Returns the number of {@link Event}s currently being either packaged or
 	 * synchronously send.
 	 * 
-	 * @return The count of {@link Metric}s awaiting, never &lt;0
+	 * @return The count of {@link Event}s awaiting, never &lt;0
 	 */
 	public int getAwaitingCount() {
 		return this.lock.getReadHoldCount();
 	}
 
 	/**
-	 * Returns whether a {@link SenderMode#PACKAGED} set of {@link Metric}s is
+	 * Returns whether a {@link SenderMode#PACKAGED} set of {@link Event}s is
 	 * currently being send.
 	 * 
-	 * @return True if an accumulated set of {@link Metric}s is currently being
+	 * @return True if an accumulated set of {@link Event}s is currently being
 	 *         send, false otherwise
 	 */
 	public boolean isSendingPackage() {
@@ -222,8 +222,8 @@ public class MetricsSender implements MetricsConsumer {
 
 	/**
 	 * Sets the amount of time in milliseconds to minimally wait for more
-	 * {@link Metric}s to arrive for consuming until a {@link WebMetricRequest} of
-	 * all accumulated {@link Metric}s is send.
+	 * {@link Event}s to arrive for consuming until a {@link WebMetricRequest} of
+	 * all accumulated {@link Event}s is send.
 	 * <p>
 	 * The default accumulation time is {@link #DEFAULT_MIN_ACCUMULATION_TIME}
 	 * <p>
@@ -241,7 +241,7 @@ public class MetricsSender implements MetricsConsumer {
 
 	/**
 	 * Sets the intervals in milliseconds the {@link MetricsSender} waits until it
-	 * takes all accumulated {@link Metric}s and sends them as a
+	 * takes all accumulated {@link Event}s and sends them as a
 	 * {@link WebMetricRequest}.
 	 * <p>
 	 * If the sending fails more times than there are intervals set, the last
@@ -306,7 +306,7 @@ public class MetricsSender implements MetricsConsumer {
 
 	/**
 	 * Unlocks this {@link MetricsSender}, which will cause trying to send the
-	 * accumulated {@link Metric}s to be triggered again.
+	 * accumulated {@link Event}s to be triggered again.
 	 * <p>
 	 * Requires this {@link MetricsSender} to be locked, which can be checked using
 	 * {@link #isLocked()}.
@@ -322,9 +322,9 @@ public class MetricsSender implements MetricsConsumer {
 	}
 
 	@Override
-	public void consume(String consumerId, UUID correlationId, Metric metric) throws Exception {
-		MetricValidator.validate(metric);
-		WebMetric webMetric = WebMetric.from(metric);
+	public void consume(String consumerId, UUID correlationId, Event event) throws Exception {
+		EventValidator.validate(event);
+		WebMetric webMetric = WebMetric.from(event);
 
 		if (this.mode == SenderMode.SYNCHRONOUS) {
 			WebMetricTrail webMetricTrail = new WebMetricTrail(correlationId.toString(), webMetric);
@@ -355,9 +355,9 @@ public class MetricsSender implements MetricsConsumer {
 	 * Factory method for {@link MetricsSender}s.
 	 * <p>
 	 * Will use the given {@link MetricsWebFacade} to transfer packaged
-	 * {@link Metric}s.
+	 * {@link Event}s.
 	 * 
-	 * @param facade The facade that is able to transfer packaged {@link Metric}s
+	 * @param facade The facade that is able to transfer packaged {@link Event}s
 	 *               via web service when
 	 *               {@link MetricsWebFacade#transfer(WebMetricRequest)}
 	 *               is called; might <b>not</b> be null.

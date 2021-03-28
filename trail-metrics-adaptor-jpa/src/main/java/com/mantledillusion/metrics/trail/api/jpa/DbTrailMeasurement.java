@@ -1,16 +1,19 @@
 package com.mantledillusion.metrics.trail.api.jpa;
 
+import com.mantledillusion.metrics.trail.api.MeasurementType;
+
 import javax.persistence.*;
 
 /**
- * Represents an attribute of a {@link DbMetric}.
+ * Represents an attribute of a {@link DbTrailEvent}.
  */
 @Entity
-@Table(name = "metric_attribute", indexes = {
-		@Index(name = "IDX_ATTRIBUTE_KEY", columnList = "attribute_key"),
-		@Index(name = "IDX_ATTRIBUTE_VALUE", columnList = "attribute_value"),
-		@Index(name = "UIDX_METRIC_ATTRIBUTE_METRIC_ID_ATTRIBUTE_KEY", columnList = "metric_id, attribute_key", unique = true)})
-public class DbMetricAttribute {
+@Table(name = "trail_measurement", indexes = {
+		@Index(name = "IDX_ATTRIBUTE_KEY", columnList = "measurement_key"),
+		@Index(name = "IDX_ATTRIBUTE_VALUE", columnList = "measurement_value"),
+		@Index(name = "IDX_ATTRIBUTE_TYPE", columnList = "measurement_type"),
+		@Index(name = "UIDX_MEASUREMENT_EVENT_ID_MEASUREMENT_KEY", columnList = "trail_event_id, measurement_key", unique = true)})
+public class DbTrailMeasurement {
 
 	@Id
 	@Column(name = "id", updatable = false, nullable = false)
@@ -18,36 +21,43 @@ public class DbMetricAttribute {
 	private Long id;
 
 	@ManyToOne(optional = false, cascade = CascadeType.ALL)
-	@JoinColumn(name = "metric_id", nullable = false, foreignKey = @ForeignKey(name = "FK_METRIC_ATTRIBUTE_TO_METRIC",
-			foreignKeyDefinition = "FOREIGN KEY (metric_id) REFERENCES metric (id) ON UPDATE CASCADE ON DELETE CASCADE"))
-	private DbMetric metric;
+	@JoinColumn(name = "trail_event_id", nullable = false, foreignKey = @ForeignKey(name = "FK_MEASUREMENT_TO_EVENT",
+			foreignKeyDefinition = "FOREIGN KEY (trail_event_id) REFERENCES trail_event (id) ON UPDATE CASCADE ON DELETE CASCADE"))
+	private DbTrailEvent event;
 
-	@Column(name = "attribute_key", length = 255, nullable = false)
+	@Column(name = "measurement_key", length = 255, nullable = false)
 	private String key;
 
-	@Column(name = "attribute_value", length = 2047)
+	@Column(name = "measurement_value", length = 2047)
 	private String value;
+
+	@Column(name = "measurement_type", nullable = false)
+	@Enumerated(EnumType.STRING)
+	private MeasurementType type;
 
 	/**
 	 * Default constructor.
 	 */
-	public DbMetricAttribute() {
+	public DbTrailMeasurement() {
 	}
 
 	/**
 	 * Pre-setting constructor.
 	 *
-	 * @param metric
+	 * @param event
 	 *            The metric this attribute belongs to; might be null.
 	 * @param key
 	 *            The key of the attribute; might be null.
 	 * @param value
 	 *            The value of the attribute; might be null.
+	 * @param type
+	 * 			  The type of the attribute's value; might be null.
 	 */
-	public DbMetricAttribute(DbMetric metric, String key, String value) {
-		this.metric = metric;
+	public DbTrailMeasurement(DbTrailEvent event, String key, String value, MeasurementType type) {
+		this.event = event;
 		this.key = key;
 		this.value = value;
+		this.type = type;
 	}
 
 	/**
@@ -74,18 +84,18 @@ public class DbMetricAttribute {
 	 *
 	 * @return The metric, might be null
 	 */
-	public DbMetric getMetric() {
-		return metric;
+	public DbTrailEvent getEvent() {
+		return event;
 	}
 
 	/**
 	 * Sets the metric this attribute belongs to.
 	 *
-	 * @param metric
+	 * @param event
 	 *            The metric; might be null.
 	 */
-	public void setMetric(DbMetric metric) {
-		this.metric = metric;
+	public void setEvent(DbTrailEvent event) {
+		this.event = event;
 	}
 
 	/**
@@ -124,5 +134,23 @@ public class DbMetricAttribute {
 	 */
 	public void setValue(String value) {
 		this.value = value;
+	}
+
+	/**
+	 * Returns the type of the attribute's value.
+	 *
+	 * @return The type, might be null
+	 */
+	public MeasurementType getType() {
+		return type;
+	}
+
+	/**
+	 * Sets the type of the attribute's value.
+	 *
+	 * @param type The type to set, might be null.
+	 */
+	public void setType(MeasurementType type) {
+		this.type = type;
 	}
 }

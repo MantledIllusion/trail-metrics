@@ -1,12 +1,12 @@
 package com.mantledillusion.metrics.trail;
 
-import com.mantledillusion.metrics.trail.api.MetricType;
-import com.mantledillusion.metrics.trail.api.jpa.DbMetric;
-import com.mantledillusion.metrics.trail.api.jpa.DbMetricAttribute;
-import com.mantledillusion.metrics.trail.api.jpa.DbMetricsConsumerTrail;
-import com.mantledillusion.metrics.trail.repositories.MetricAttributeRepository;
-import com.mantledillusion.metrics.trail.repositories.MetricRepository;
-import com.mantledillusion.metrics.trail.repositories.MetricsConsumerTrailRepository;
+import com.mantledillusion.metrics.trail.api.MeasurementType;
+import com.mantledillusion.metrics.trail.api.jpa.DbTrailEvent;
+import com.mantledillusion.metrics.trail.api.jpa.DbTrailMeasurement;
+import com.mantledillusion.metrics.trail.api.jpa.DbTrailConsumer;
+import com.mantledillusion.metrics.trail.repositories.MeasurementRepository;
+import com.mantledillusion.metrics.trail.repositories.EventRepository;
+import com.mantledillusion.metrics.trail.repositories.ConsumerRepository;
 import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -34,80 +34,78 @@ public class TrailMetricsHibernateJpaAutoConfigurationTest {
     private TransactionTemplate transactionTemplate;
 
     @Autowired
-    private MetricsConsumerTrailRepository metricsConsumerRepository;
+    private ConsumerRepository metricsConsumerRepository;
     @Autowired
-    private MetricRepository metricRepository;
+    private EventRepository eventRepository;
     @Autowired
-    private MetricAttributeRepository metricAttributeRepository;
+    private MeasurementRepository measurementRepository;
 
     @Test
     public void testPersist() {
         this.transactionTemplate.executeWithoutResult(transactionStatus -> {
-            DbMetricsConsumerTrail trail = new DbMetricsConsumerTrail();
-            trail.setCorrelationId(TRAIL_ID);
-            trail.setConsumerId(TRAIL_CONSUMER_ID);
+            DbTrailConsumer consumer = new DbTrailConsumer();
+            consumer.setCorrelationId(TRAIL_ID);
+            consumer.setConsumerId(TRAIL_CONSUMER_ID);
 
-            DbMetric metric = new DbMetric();
-            metric.setTrail(trail);
-            metric.setIdentifier(METRIC_IDENTIFIER);
-            metric.setType(MetricType.ALERT);
-            metric.setTimestamp(METRIC_TIMESTAMP);
-            metric.setTimezone(METRIC_TIMEZONE);
-            trail.setMetrics(Collections.singletonList(metric));
+            DbTrailEvent event = new DbTrailEvent();
+            event.setTrail(consumer);
+            event.setIdentifier(METRIC_IDENTIFIER);
+            event.setTimestamp(METRIC_TIMESTAMP);
+            event.setTimezone(METRIC_TIMEZONE);
+            consumer.setEvents(Collections.singletonList(event));
 
-            DbMetricAttribute attribute = new DbMetricAttribute();
-            attribute.setMetric(metric);
-            attribute.setKey(ATTRIBUTE_KEY);
-            attribute.setValue(ATTRIBUTE_VALUE);
-            metric.setAttributes(Collections.singletonList(attribute));
+            DbTrailMeasurement measurement = new DbTrailMeasurement();
+            measurement.setEvent(event);
+            measurement.setKey(ATTRIBUTE_KEY);
+            measurement.setValue(ATTRIBUTE_VALUE);
+            measurement.setType(MeasurementType.STRING);
+            event.setMeasurements(Collections.singletonList(measurement));
 
-            this.metricsConsumerRepository.saveAndFlush(trail);
+            this.metricsConsumerRepository.saveAndFlush(consumer);
         });
 
         this.transactionTemplate.executeWithoutResult(transactionStatus -> {
             Assertions.assertEquals(1L, this.metricsConsumerRepository.count());
-            DbMetricsConsumerTrail trail = this.metricsConsumerRepository.findAll().iterator().next();
-            Assertions.assertNotNull(trail.getId());
-            Assertions.assertEquals(TRAIL_CONSUMER_ID, trail.getConsumerId());
-            Assertions.assertEquals(TRAIL_ID, trail.getCorrelationId());
+            DbTrailConsumer consumer = this.metricsConsumerRepository.findAll().iterator().next();
+            Assertions.assertNotNull(consumer.getId());
+            Assertions.assertEquals(TRAIL_CONSUMER_ID, consumer.getConsumerId());
+            Assertions.assertEquals(TRAIL_ID, consumer.getCorrelationId());
 
-            Assertions.assertEquals(1, trail.getMetrics().size());
-            DbMetric metric = trail.getMetrics().iterator().next();
-            Assertions.assertNotNull(metric.getId());
-            Assert.assertSame(trail, metric.getTrail());
-            Assertions.assertEquals(METRIC_IDENTIFIER, metric.getIdentifier());
-            Assertions.assertEquals(MetricType.ALERT, metric.getType());
-            Assertions.assertEquals(METRIC_TIMESTAMP, metric.getTimestamp());
-            Assertions.assertEquals(METRIC_TIMEZONE, metric.getTimezone());
+            Assertions.assertEquals(1, consumer.getEvents().size());
+            DbTrailEvent event = consumer.getEvents().iterator().next();
+            Assertions.assertNotNull(event.getId());
+            Assert.assertSame(consumer, event.getTrail());
+            Assertions.assertEquals(METRIC_IDENTIFIER, event.getIdentifier());
+            Assertions.assertEquals(METRIC_TIMESTAMP, event.getTimestamp());
+            Assertions.assertEquals(METRIC_TIMEZONE, event.getTimezone());
 
-            Assertions.assertEquals(1, metric.getAttributes().size());
-            DbMetricAttribute attribute = metric.getAttributes().iterator().next();
-            Assertions.assertNotNull(attribute.getId());
-            Assert.assertSame(metric, attribute.getMetric());
-            Assertions.assertEquals(ATTRIBUTE_KEY, attribute.getKey());
-            Assertions.assertEquals(ATTRIBUTE_VALUE, attribute.getValue());
+            Assertions.assertEquals(1, event.getMeasurements().size());
+            DbTrailMeasurement measurement = event.getMeasurements().iterator().next();
+            Assertions.assertNotNull(measurement.getId());
+            Assert.assertSame(event, measurement.getEvent());
+            Assertions.assertEquals(ATTRIBUTE_KEY, measurement.getKey());
+            Assertions.assertEquals(ATTRIBUTE_VALUE, measurement.getValue());
         });
     }
 
     @Test
     public void testClean() {
-        DbMetricsConsumerTrail trail = new DbMetricsConsumerTrail();
-        trail.setCorrelationId(UUID.randomUUID());
-        trail.setConsumerId(TRAIL_CONSUMER_ID);
+        DbTrailConsumer consumer = new DbTrailConsumer();
+        consumer.setCorrelationId(UUID.randomUUID());
+        consumer.setConsumerId(TRAIL_CONSUMER_ID);
 
-        DbMetric metric = new DbMetric();
-        metric.setTrail(trail);
-        metric.setIdentifier("cleanme.abc");
-        metric.setType(MetricType.ALERT);
-        metric.setTimestamp(LocalDateTime.now());
-        metric.setTimezone(METRIC_TIMEZONE);
-        trail.setMetrics(Collections.singletonList(metric));
+        DbTrailEvent event = new DbTrailEvent();
+        event.setTrail(consumer);
+        event.setIdentifier("cleanme.abc");
+        event.setTimestamp(LocalDateTime.now());
+        event.setTimezone(METRIC_TIMEZONE);
+        consumer.setEvents(Collections.singletonList(event));
 
-        this.metricsConsumerRepository.saveAndFlush(trail);
+        this.metricsConsumerRepository.saveAndFlush(consumer);
 
         long ms = System.currentTimeMillis();
         this.transactionTemplate.executeWithoutResult(transactionStatus -> {
-            while (this.metricRepository.countByIdentifier("cleanme.%") != 0) {
+            while (this.eventRepository.countByIdentifier("cleanme.%") != 0) {
                 if (System.currentTimeMillis()-ms < 2000) {
                     try {
                         Thread.sleep(50);

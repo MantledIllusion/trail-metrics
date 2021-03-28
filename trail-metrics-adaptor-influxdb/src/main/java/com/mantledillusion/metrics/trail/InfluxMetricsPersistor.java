@@ -1,19 +1,20 @@
 package com.mantledillusion.metrics.trail;
 
-import com.mantledillusion.metrics.trail.api.Metric;
-import com.mantledillusion.metrics.trail.api.MetricAttribute;
-import com.mantledillusion.metrics.trail.api.MetricFields;
+import com.mantledillusion.metrics.trail.api.Event;
+import com.mantledillusion.metrics.trail.api.Measurement;
+import com.mantledillusion.metrics.trail.api.EventFields;
 import org.influxdb.InfluxDB;
 import org.influxdb.dto.Point;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
- * {@link MetricsConsumer} implementation that is able to persist consumed {@link Metric}s into an InfluxDB database
+ * {@link MetricsConsumer} implementation that is able to persist consumed {@link Event}s into an InfluxDB database
  * as {@link Point}s.
  */
 public class InfluxMetricsPersistor implements MetricsConsumer {
@@ -27,27 +28,42 @@ public class InfluxMetricsPersistor implements MetricsConsumer {
     }
 
     @Override
-    public void consume(String consumerId, UUID correlationId, Metric metric) {
-        Point.Builder pointBuilder = Point.measurement(metric.getIdentifier())
-                .time(getNanos(metric.getTimestamp()), TimeUnit.NANOSECONDS)
-                .tag(MetricFields.CONSUMER_ID.getName("_"), consumerId)
-                .tag(MetricFields.CORRELATION_ID.getName("_"), correlationId.toString())
-                .addField(MetricFields.TYPE.getName("_"), metric.getType().name());
+    public void consume(String consumerId, UUID correlationId, Event event) {
+        Point.Builder pointBuilder = Point.measurement(event.getIdentifier())
+                .time(getNanos(event.getTimestamp()), TimeUnit.NANOSECONDS)
+                .tag(EventFields.CONSUMER_ID.getName("_"), consumerId)
+                .tag(EventFields.CORRELATION_ID.getName("_"), correlationId.toString());
 
-        if (metric.getAttributes() != null) {
-            for (MetricAttribute attribute: metric.getAttributes()) {
-                if (Metric.OPERATOR_ATTRIBUTE_KEY.equals(attribute.getKey())) {
-                    switch (metric.getType()) {
-                        case METER:
-                        case TREND:
-                            pointBuilder.addField(Metric.OPERATOR_ATTRIBUTE_KEY, Float.parseFloat(attribute.getValue()));
-                            break;
-                        case PHASE:
-                            pointBuilder.tag(attribute.getKey(), attribute.getValue());
-                            break;
-                    }
-                } else {
-                    pointBuilder.tag(attribute.getKey(), attribute.getValue());
+        if (event.getMeasurements() != null) {
+            for (Measurement measurement : event.getMeasurements()) {
+                switch (measurement.getType()) {
+                    case BOOLEAN:
+                        pointBuilder.addField(measurement.getKey(), (Boolean) measurement.parseValue());
+                        break;
+                    case SHORT:
+                        pointBuilder.addField(measurement.getKey(), (Short) measurement.parseValue());
+                        break;
+                    case INTEGER:
+                        pointBuilder.addField(measurement.getKey(), (Integer) measurement.parseValue());
+                        break;
+                    case LONG:
+                        pointBuilder.addField(measurement.getKey(), (Long) measurement.parseValue());
+                        break;
+                    case FLOAT:
+                        pointBuilder.addField(measurement.getKey(), (Float) measurement.parseValue());
+                        break;
+                    case DOUBLE:
+                        pointBuilder.addField(measurement.getKey(), (Double) measurement.parseValue());
+                        break;
+                    case BIGINTEGER:
+                        pointBuilder.addField(measurement.getKey(), ((BigInteger) measurement.parseValue()).longValue());
+                        break;
+                    case BIGDECIMAL:
+                        pointBuilder.addField(measurement.getKey(), ((BigDecimal) measurement.parseValue()).doubleValue());
+                        break;
+                    default:
+                        pointBuilder.addField(measurement.getKey(), measurement.getValue());
+                        break;
                 }
             }
         }

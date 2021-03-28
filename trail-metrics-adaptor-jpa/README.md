@@ -1,6 +1,6 @@
-# trail-metrics-adaptor-jpa
+# trail-measurements-adaptor-jpa
 
-A **_MetricsConsumer_** that is able to persist metrics using JPA2 annotated POJOs.
+A **_MetricsConsumer_** that is able to persist measurements using JPA2 annotated POJOs.
 
 ## How to use
 

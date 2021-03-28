@@ -1,7 +1,6 @@
 package com.mantledillusion.metrics.trail;
 
-import com.mantledillusion.metrics.trail.api.Metric;
-import com.mantledillusion.metrics.trail.api.MetricType;
+import com.mantledillusion.metrics.trail.api.Event;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -19,16 +18,16 @@ public class MetricsPredicateTest {
         MetricsPredicate predicateB = metric -> metric.getIdentifier().endsWith("B");
 
         MetricsPredicate conjunction = predicateA.and(predicateB);
-        Assertions.assertFalse(conjunction.test(new Metric("X---X", null)));
-        Assertions.assertFalse(conjunction.test(new Metric("A---X", null)));
-        Assertions.assertFalse(conjunction.test(new Metric("X---B", null)));
-        Assertions.assertTrue(conjunction.test(new Metric("A---B", null)));
+        Assertions.assertFalse(conjunction.test(new Event("X---X")));
+        Assertions.assertFalse(conjunction.test(new Event("A---X")));
+        Assertions.assertFalse(conjunction.test(new Event("X---B")));
+        Assertions.assertTrue(conjunction.test(new Event("A---B")));
 
         conjunction = conjunction.functionalClone();
-        Assertions.assertFalse(conjunction.test(new Metric("X---X", null)));
-        Assertions.assertFalse(conjunction.test(new Metric("A---X", null)));
-        Assertions.assertFalse(conjunction.test(new Metric("X---B", null)));
-        Assertions.assertTrue(conjunction.test(new Metric("A---B", null)));
+        Assertions.assertFalse(conjunction.test(new Event("X---X")));
+        Assertions.assertFalse(conjunction.test(new Event("A---X")));
+        Assertions.assertFalse(conjunction.test(new Event("X---B")));
+        Assertions.assertTrue(conjunction.test(new Event("A---B")));
     }
 
     @Test
@@ -43,16 +42,16 @@ public class MetricsPredicateTest {
         MetricsPredicate predicateB = metric -> metric.getIdentifier().endsWith("B");
 
         MetricsPredicate conjunction = predicateA.or(predicateB);
-        Assertions.assertFalse(conjunction.test(new Metric("X---X", null)));
-        Assertions.assertTrue(conjunction.test(new Metric("A---X", null)));
-        Assertions.assertTrue(conjunction.test(new Metric("X---B", null)));
-        Assertions.assertTrue(conjunction.test(new Metric("A---B", null)));
+        Assertions.assertFalse(conjunction.test(new Event("X---X")));
+        Assertions.assertTrue(conjunction.test(new Event("A---X")));
+        Assertions.assertTrue(conjunction.test(new Event("X---B")));
+        Assertions.assertTrue(conjunction.test(new Event("A---B")));
 
         conjunction = conjunction.functionalClone();
-        Assertions.assertFalse(conjunction.test(new Metric("X---X", null)));
-        Assertions.assertTrue(conjunction.test(new Metric("A---X", null)));
-        Assertions.assertTrue(conjunction.test(new Metric("X---B", null)));
-        Assertions.assertTrue(conjunction.test(new Metric("A---B", null)));
+        Assertions.assertFalse(conjunction.test(new Event("X---X")));
+        Assertions.assertTrue(conjunction.test(new Event("A---X")));
+        Assertions.assertTrue(conjunction.test(new Event("X---B")));
+        Assertions.assertTrue(conjunction.test(new Event("A---B")));
     }
 
     @Test
@@ -62,15 +61,15 @@ public class MetricsPredicateTest {
 
     @Test
     public void testValveState() {
-        MetricsPredicate predicate = metric -> metric.getType() == MetricType.PHASE;
+        MetricsPredicate predicate = metric -> metric.getIdentifier().equals("open");
         MetricsValve valve = predicate.asValve();
 
         Assertions.assertFalse(valve.isOpen());
-        Assertions.assertFalse(valve.test(new Metric(null, MetricType.ALERT, null)));
+        Assertions.assertFalse(valve.test(new Event("close")));
         Assertions.assertFalse(valve.isOpen());
-        Assertions.assertTrue(valve.test(new Metric(null, MetricType.PHASE, null)));
+        Assertions.assertTrue(valve.test(new Event("open")));
         Assertions.assertTrue(valve.isOpen());
-        Assertions.assertTrue(valve.test(new Metric(null, MetricType.ALERT, null)));
+        Assertions.assertTrue(valve.test(new Event("close")));
         Assertions.assertTrue(valve.isOpen());
     }
 }

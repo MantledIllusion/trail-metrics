@@ -25,12 +25,13 @@ public abstract class AbstractMetricsTest {
     }
 
     protected void waitUntilConsumed(int expectedDeliveringCount) {
-        while (this.queue.getDeliveringCount() > expectedDeliveringCount) {
-            try {
+        try {
+            Thread.sleep(100);
+            while (this.queue.getDeliveringCount() > expectedDeliveringCount) {
                 Thread.sleep(50);
-            } catch (InterruptedException e) {
-                throw new RuntimeException("Unable to wait for event consuming");
             }
+        } catch (InterruptedException e) {
+            throw new RuntimeException("Unable to wait for event consuming");
         }
     }
 

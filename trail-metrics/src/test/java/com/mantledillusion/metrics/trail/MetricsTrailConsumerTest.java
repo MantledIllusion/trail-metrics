@@ -1,7 +1,6 @@
 package com.mantledillusion.metrics.trail;
 
-import com.mantledillusion.metrics.trail.api.Metric;
-import com.mantledillusion.metrics.trail.api.MetricType;
+import com.mantledillusion.metrics.trail.api.Event;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -64,7 +63,7 @@ public class MetricsTrailConsumerTest extends AbstractMetricsTest {
 		this.queue = this.trail.hook(MetricsTrailConsumer.from(TEST_CONSUMER, this.consumer, gate, filter));
 
 		// USER A CAUSES 1 STANDARD METRIC EVENT
-		this.trail.commit(new Metric(TEST_EVENT_PREFIX+"A", MetricType.ALERT));
+		this.trail.commit(new Event(TEST_EVENT_PREFIX+"A"));
 		
 		waitUntilConsumed();
 		assertEquals(expectedCounts[0][0], this.consumer.size(TRAIL_ID));
@@ -72,7 +71,7 @@ public class MetricsTrailConsumerTest extends AbstractMetricsTest {
 		assertEquals(expectedCounts[0][1], this.queue.getGatedCount());
 
 		// USER A CAUSES 1 IMPORTANT METRIC EVENT
-		this.trail.commit(new Metric(TEST_IMPORTANT_EVENT_PREFIX+"B", MetricType.ALERT));
+		this.trail.commit(new Event(TEST_IMPORTANT_EVENT_PREFIX+"B"));
 		
 		waitUntilConsumed();
 		assertEquals(expectedCounts[1][0], this.consumer.size(TRAIL_ID));
@@ -80,7 +79,7 @@ public class MetricsTrailConsumerTest extends AbstractMetricsTest {
 		assertEquals(expectedCounts[1][1], this.queue.getGatedCount());
 		
 		// USER A CAUSES 1 STANDARD METRIC EVENT
-		this.trail.commit(new Metric(TEST_EVENT_PREFIX+"C", MetricType.ALERT));
+		this.trail.commit(new Event(TEST_EVENT_PREFIX+"C"));
 		
 		waitUntilConsumed();
 		assertEquals(expectedCounts[2][0], this.consumer.size(TRAIL_ID));
@@ -88,7 +87,7 @@ public class MetricsTrailConsumerTest extends AbstractMetricsTest {
 		assertEquals(expectedCounts[2][1], this.queue.getGatedCount());
 
 		// USER A CAUSES 1 IMPORTANT METRIC EVENT
-		this.trail.commit(new Metric(TEST_IMPORTANT_EVENT_PREFIX+"D", MetricType.ALERT));
+		this.trail.commit(new Event(TEST_IMPORTANT_EVENT_PREFIX+"D"));
 		
 		waitUntilConsumed();
 		assertEquals(expectedCounts[3][0], this.consumer.size(TRAIL_ID));

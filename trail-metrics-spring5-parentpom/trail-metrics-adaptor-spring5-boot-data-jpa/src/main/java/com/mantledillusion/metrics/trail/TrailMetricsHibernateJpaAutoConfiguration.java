@@ -1,8 +1,11 @@
 package com.mantledillusion.metrics.trail;
 
-import com.mantledillusion.metrics.trail.api.jpa.DbMetric;
-import com.mantledillusion.metrics.trail.api.jpa.DbMetricAttribute;
-import com.mantledillusion.metrics.trail.api.jpa.DbMetricsConsumerTrail;
+import com.mantledillusion.metrics.trail.api.jpa.DbTrailEvent;
+import com.mantledillusion.metrics.trail.api.jpa.DbTrailMeasurement;
+import com.mantledillusion.metrics.trail.api.jpa.DbTrailConsumer;
+import com.mantledillusion.metrics.trail.repositories.ConsumerRepository;
+import com.mantledillusion.metrics.trail.repositories.EventRepository;
+import com.mantledillusion.metrics.trail.repositories.MeasurementRepository;
 import org.hibernate.Session;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
@@ -46,16 +49,16 @@ import java.util.EnumSet;
  * <p>
  * By default, the configuration will also use the {@link DataSource} to migrate the database to contain tables for the
  * following entities:<br>
- * - {@link DbMetricsConsumerTrail}<br>
- * - {@link DbMetric}<br>
- * - {@link DbMetricAttribute}<br>
+ * - {@link DbTrailConsumer}<br>
+ * - {@link DbTrailEvent}<br>
+ * - {@link DbTrailMeasurement}<br>
  * If not desired, the property {@value #PRTY_MIGRATE_DATABASE} can be set to <code>false</code>; creating those tables
  * will then be up to the developer.
  * <p>
  * The configuration will also configure these repositories for the entities:<br>
- *  * - {@link com.mantledillusion.metrics.trail.repositories.MetricsConsumerTrailRepository}<br>
- *  * - {@link com.mantledillusion.metrics.trail.repositories.MetricRepository}<br>
- *  * - {@link com.mantledillusion.metrics.trail.repositories.MetricAttributeRepository}<br>
+ *  * - {@link ConsumerRepository}<br>
+ *  * - {@link EventRepository}<br>
+ *  * - {@link MeasurementRepository}<br>
  */
 @Configuration
 @AutoConfigureAfter(HibernateJpaAutoConfiguration.class)
@@ -96,9 +99,9 @@ public class TrailMetricsHibernateJpaAutoConfiguration {
                     applySetting(Environment.DATASOURCE, dataSource).
                     build();
             Metadata metadata = new MetadataSources(serviceRegistry).
-                    addAnnotatedClass(DbMetricsConsumerTrail.class).
-                    addAnnotatedClass(DbMetric.class).
-                    addAnnotatedClass(DbMetricAttribute.class).
+                    addAnnotatedClass(DbTrailConsumer.class).
+                    addAnnotatedClass(DbTrailEvent.class).
+                    addAnnotatedClass(DbTrailMeasurement.class).
                     buildMetadata();
             new SchemaExport().
                     execute(EnumSet.of(TargetType.DATABASE), SchemaExport.Action.CREATE, metadata);

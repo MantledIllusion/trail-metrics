@@ -10,11 +10,11 @@ import java.util.UUID;
  * Represents a trail of metrics consumed by a specific consumer.
  */
 @Entity
-@Table(name = "metric_trail", indexes = {
-        @Index(name = "IDX_METRIC_TRAIL_CORRELATION_ID", columnList = "correlation_id"),
-        @Index(name = "IDX_METRIC_TRAIL_CONSUMER_ID", columnList = "consumer_id"),
-        @Index(name = "UIDX_METRIC_TRAIL_CORRELATION_ID_CONSUMER_ID", columnList = "correlation_id, consumer_id", unique = true)})
-public class DbMetricsConsumerTrail {
+@Table(name = "trail_consumer", indexes = {
+        @Index(name = "IDX_TRAIL_CORRELATION_ID", columnList = "correlation_id"),
+        @Index(name = "IDX_TRAIL_CONSUMER_ID", columnList = "consumer_id"),
+        @Index(name = "UIDX_TRAIL_CORRELATION_ID_CONSUMER_ID", columnList = "correlation_id, consumer_id", unique = true)})
+public class DbTrailConsumer {
 
     @Id
     @Column(name = "id", updatable = false, nullable = false)
@@ -29,12 +29,12 @@ public class DbMetricsConsumerTrail {
     private String consumerId;
 
     @OneToMany(mappedBy = "trail", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<DbMetric> metrics;
+    private List<DbTrailEvent> events;
 
     /**
      * Default constructor.
      */
-    public DbMetricsConsumerTrail() {
+    public DbTrailConsumer() {
     }
 
     /**
@@ -43,7 +43,7 @@ public class DbMetricsConsumerTrail {
      * @param correlationId The ID of the trail; might be null.
      * @param consumerId The ID of the consumer; might be null.
      */
-    public DbMetricsConsumerTrail(UUID correlationId, String consumerId) {
+    public DbTrailConsumer(UUID correlationId, String consumerId) {
         this.correlationId = correlationId;
         this.consumerId = consumerId;
     }
@@ -106,16 +106,16 @@ public class DbMetricsConsumerTrail {
      *
      * @return A list of metrics, might be null
      */
-    public List<DbMetric> getMetrics() {
-        return metrics;
+    public List<DbTrailEvent> getEvents() {
+        return events;
     }
 
     /**
      * Sets the metrics this consumer trail has received.
      *
-     * @param metrics The list of metrics; might be null
+     * @param events The list of metrics; might be null
      */
-    public void setMetrics(List<DbMetric> metrics) {
-        this.metrics = metrics;
+    public void setEvents(List<DbTrailEvent> events) {
+        this.events = events;
     }
 }

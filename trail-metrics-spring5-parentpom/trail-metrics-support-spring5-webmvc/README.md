@@ -1,4 +1,4 @@
-# trail-metrics-support-spring-webmvc
+# trail-measurements-support-spring-webmvc
 
 Contains a Spring WebMVC interceptor for automatically beginning / ending a **_MetricTrail_** as a HTTP request comes in / is responded to.
 
@@ -18,9 +18,9 @@ trailMetrics:
     correlationIdHeaderName: <The name of the HTTP header to use when sending correlationIds, 'correlationid' by default>
     requestPatterns: <An array of MVC URI patterns to limit beginning trails on to>
     incomingMode: <The mode of how to handle incoming trails, one of [STRICT, LENIENT, OPTIONAL], LENIENT by default>
-    dispatchPatterns: <An array of MVC URI patterns to limit dispatching metrics to>
-    dispatchRequest: <Whether or not to dispatch a metric when a request is received, false by default>
-    dispatchResponse: <Whether or not to dispatch a metric when a request is responded to, false by default>
+    dispatchPatterns: <An array of MVC URI patterns to limit dispatching measurements to>
+    dispatchRequest: <Whether or not to dispatch a measurement when a request is received, false by default>
+    dispatchResponse: <Whether or not to dispatch a measurement when a request is responded to, false by default>
 ```
 
 ## Metrics dispatched

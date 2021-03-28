@@ -1,7 +1,6 @@
 package com.mantledillusion.metrics.trail;
 
-import com.mantledillusion.metrics.trail.api.Metric;
-import com.mantledillusion.metrics.trail.api.MetricType;
+import com.mantledillusion.metrics.trail.api.Event;
 import com.mantledillusion.metrics.trail.api.web.WebMetric;
 
 import java.util.UUID;
@@ -16,9 +15,9 @@ public interface TestConstants {
 		consume(sender, null, null);
 	}
 	
-	default void consume(MetricsSender sender, String consumerId, UUID correlationId, Metric... metrics) throws Exception {
-		for (Metric metric: metrics) {
-			sender.consume(consumerId, correlationId, metric);
+	default void consume(MetricsSender sender, String consumerId, UUID correlationId, Event... events) throws Exception {
+		for (Event event : events) {
+			sender.consume(consumerId, correlationId, event);
 		}
 		
 		while (true) {
@@ -29,9 +28,8 @@ public interface TestConstants {
 		}
 	}
 
-	default boolean equals(Metric o1, WebMetric o2) {
+	default boolean equals(Event o1, WebMetric o2) {
 		return o1.getIdentifier().equals(o2.getIdentifier()) &&
-				o1.getType().equals(MetricType.valueOf(o2.getType().name())) &&
 				o1.getTimestamp().equals(o2.getTimestamp());
 	}
 }

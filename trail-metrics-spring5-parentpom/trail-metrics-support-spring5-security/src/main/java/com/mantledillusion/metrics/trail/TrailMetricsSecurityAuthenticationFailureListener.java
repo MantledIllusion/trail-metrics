@@ -1,15 +1,15 @@
 package com.mantledillusion.metrics.trail;
 
-import com.mantledillusion.metrics.trail.api.Metric;
-import com.mantledillusion.metrics.trail.api.MetricAttribute;
-import com.mantledillusion.metrics.trail.api.MetricType;
+import com.mantledillusion.metrics.trail.api.Event;
+import com.mantledillusion.metrics.trail.api.Measurement;
+import com.mantledillusion.metrics.trail.api.MeasurementType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
 import org.springframework.security.authentication.event.AbstractAuthenticationFailureEvent;
 
 /**
- * {@link ApplicationListener} that will write an {@link MetricType#ALERT} {@link Metric} with the ID
- * {@value #MID_AUTHENTICATION_FAILURE} when a principal's authentication fails.
+ * {@link ApplicationListener} that will write an {@link Event} with the ID {@value #MID_AUTHENTICATION_FAILURE} when
+ * a principal's authentication fails.
  */
 public class TrailMetricsSecurityAuthenticationFailureListener implements ApplicationListener<AbstractAuthenticationFailureEvent> {
 
@@ -26,10 +26,10 @@ public class TrailMetricsSecurityAuthenticationFailureListener implements Applic
     @Override
     public void onApplicationEvent(AbstractAuthenticationFailureEvent event) {
         if (this.dispatch) {
-            Metric metric = new Metric(MID_AUTHENTICATION_FAILURE, MetricType.ALERT);
-            metric.getAttributes().add(new MetricAttribute(AKEY_PRINCIPAL_NAME, event.getAuthentication().getName()));
-            metric.getAttributes().add(new MetricAttribute(AKEY_FAILURE_MESSAGE, event.getException().getMessage()));
-            MetricsTrailSupport.commit(metric, false);
+            Event measurement = new Event(MID_AUTHENTICATION_FAILURE,
+                    new Measurement(AKEY_PRINCIPAL_NAME, event.getAuthentication().getName(), MeasurementType.STRING),
+                    new Measurement(AKEY_FAILURE_MESSAGE, event.getException().getMessage(), MeasurementType.STRING));
+            MetricsTrailSupport.commit(measurement, false);
         }
     }
 }

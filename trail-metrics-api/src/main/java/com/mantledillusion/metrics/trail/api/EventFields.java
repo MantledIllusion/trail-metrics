@@ -1,19 +1,18 @@
 package com.mantledillusion.metrics.trail.api;
 
-public enum MetricFields {
+public enum EventFields {
 
     CONSUMER_ID("consumerId"),
     CORRELATION_ID("correlationId"),
     IDENTIFIER("identifier"),
-    TYPE("type"),
-    ATTRIBUTES("attributes"),
-    ATTRIBUTE_KEY("key"),
-    ATTRIBUTE_VALUE("value"),
+    MEASUREMENTS("measurements"),
+    MEASUREMENT_KEY("key"),
+    MEASUREMENT_VALUE("value"),
     TIMESTAMP("timestamp");
 
     private final String name;
 
-    MetricFields(String name) {
+    EventFields(String name) {
         this.name = name;
     }
 

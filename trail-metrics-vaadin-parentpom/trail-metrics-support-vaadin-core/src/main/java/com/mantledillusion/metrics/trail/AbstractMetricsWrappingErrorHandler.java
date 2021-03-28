@@ -1,7 +1,8 @@
 package com.mantledillusion.metrics.trail;
 
-import com.mantledillusion.metrics.trail.api.Metric;
-import com.mantledillusion.metrics.trail.api.MetricAttribute;
+import com.mantledillusion.metrics.trail.api.Event;
+import com.mantledillusion.metrics.trail.api.Measurement;
+import com.mantledillusion.metrics.trail.api.MeasurementType;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -9,6 +10,7 @@ import java.util.function.Supplier;
 
 abstract class AbstractMetricsWrappingErrorHandler<H> {
 
+    public static final String ATTRIBUTE_KEY_SIMPLE_TYPE = "simpleType";
     public static final String ATTRIBUTE_KEY_TYPE = "type";
     public static final String ATTRIBUTE_KEY_MESSAGE = "message";
     public static final String ATTRIBUTE_KEY_STACKTRACE = "stackTrace";
@@ -26,12 +28,13 @@ abstract class AbstractMetricsWrappingErrorHandler<H> {
         PrintWriter writer = new PrintWriter(out);
         t.printStackTrace(writer);
 
-        Metric metric = GeneralVaadinMetrics.ERROR.build(t.getClass().getSimpleName());
-        metric.getAttributes().add(new MetricAttribute(ATTRIBUTE_KEY_TYPE, t.getClass().getName()));
-        metric.getAttributes().add(new MetricAttribute(ATTRIBUTE_KEY_MESSAGE, t.getMessage()));
-        metric.getAttributes().add(new MetricAttribute(ATTRIBUTE_KEY_STACKTRACE, out.toString()));
+        Event event = GeneralVaadinMetrics.ERROR.build(
+                new Measurement(ATTRIBUTE_KEY_SIMPLE_TYPE, t.getClass().getSimpleName(), MeasurementType.STRING),
+                new Measurement(ATTRIBUTE_KEY_TYPE, t.getClass().getName(), MeasurementType.STRING),
+                new Measurement(ATTRIBUTE_KEY_MESSAGE, t.getMessage(), MeasurementType.STRING),
+                new Measurement(ATTRIBUTE_KEY_STACKTRACE, out.toString(), MeasurementType.STRING));
 
-        this.trailSupplier.get().commit(metric);
+        this.trailSupplier.get().commit(event);
     }
 
     /**

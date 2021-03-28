@@ -1,12 +1,12 @@
 package com.mantledillusion.metrics.trail;
 
-import com.mantledillusion.metrics.trail.api.Metric;
+import com.mantledillusion.metrics.trail.api.Event;
 
 import java.util.*;
 import java.util.concurrent.*;
 
 /**
- * Represents a {@link MetricsConsumer} that can consume {@link Metric}s from a {@link MetricsTrail}.
+ * Represents a {@link MetricsConsumer} that can consume {@link Event}s from a {@link MetricsTrail}.
  */
 public final class MetricsTrailConsumer {
 
@@ -23,17 +23,17 @@ public final class MetricsTrailConsumer {
             1800000};
 
     /**
-     * Represents a queue that retrieves {@link Metric}s from a {@link MetricsTrail} to deliver them to a {@link MetricsTrailConsumer}.
+     * Represents a queue that retrieves {@link Event}s from a {@link MetricsTrail} to deliver them to a {@link MetricsTrailConsumer}.
      */
     public class MetricsTrailConsumerQueue {
 
         private class LinkedMetric {
 
-            private final Metric metric;
+            private final Event event;
             private LinkedMetric next;
 
-            private LinkedMetric(Metric metric) {
-                this.metric = metric;
+            private LinkedMetric(Event event) {
+                this.event = event;
             }
 
             private void delivered() {
@@ -66,9 +66,9 @@ public final class MetricsTrailConsumer {
             this.filter = MetricsTrailConsumer.this.filter != null ? MetricsTrailConsumer.this.filter.functionalClone() : null;
         }
 
-        synchronized void enqueue(Metric metric) {
-            if (this.filter == null || this.filter.test(metric)) {
-                LinkedMetric linkedMetric = new LinkedMetric(metric);
+        synchronized void enqueue(Event event) {
+            if (this.filter == null || this.filter.test(event)) {
+                LinkedMetric linkedMetric = new LinkedMetric(event);
                 if (this.first == null) {
                     this.first = linkedMetric;
                 }
@@ -80,7 +80,7 @@ public final class MetricsTrailConsumer {
                 }
                 this.last = linkedMetric;
             }
-            if (this.gate == null || this.gate.test(metric)) {
+            if (this.gate == null || this.gate.test(event)) {
                 deliverAccumulated();
             }
         }
@@ -118,18 +118,18 @@ public final class MetricsTrailConsumer {
         }
 
         /**
-         * Returns whether there are {@link Metric}s that are enqueued and waiting for this consumer's gate to open so they can be delivered.
+         * Returns whether there are {@link Event}s that are enqueued and waiting for this consumer's gate to open so they can be delivered.
          *
-         * @return True if there is at least one {@link Metric} currently gated, false otherwise
+         * @return True if there is at least one {@link Event} currently gated, false otherwise
          */
         public synchronized boolean hasGated() {
             return this.current != null;
         }
 
         /**
-         * Returns the count of {@link Metric}s that are enqueued and waiting for this consumer's gate to open so they can be delivered.
+         * Returns the count of {@link Event}s that are enqueued and waiting for this consumer's gate to open so they can be delivered.
          *
-         * @return The count of {@link Metric}s currently gated
+         * @return The count of {@link Event}s currently gated
          */
         public synchronized int getGatedCount() {
             int count = 0;
@@ -142,18 +142,18 @@ public final class MetricsTrailConsumer {
         }
 
         /**
-         * Returns whether there are {@link Metric}s that are currently being delivered to this consumer by asynchronous tasks.
+         * Returns whether there are {@link Event}s that are currently being delivered to this consumer by asynchronous tasks.
          *
-         * @return True if there is at least one {@link Metric} currently being delivered, false otherwise
+         * @return True if there is at least one {@link Event} currently being delivered, false otherwise
          */
         public synchronized boolean isDelivering() {
             return this.first != this.current;
         }
 
         /**
-         * Returns the count of {@link Metric}s that are currently being delivered to this consumer by asynchronous tasks.
+         * Returns the count of {@link Event}s that are currently being delivered to this consumer by asynchronous tasks.
          *
-         * @return The count of {@link Metric}s currently being delivered
+         * @return The count of {@link Event}s currently being delivered
          */
         public synchronized int getDeliveringCount() {
             int count = 0;
@@ -190,7 +190,7 @@ public final class MetricsTrailConsumer {
                 int tries = 0;
                 while (true) {
                     try {
-                        MetricsTrailConsumer.this.consumer.consume(MetricsTrailConsumer.this.consumerId, correlationId, linkedMetric.metric);
+                        MetricsTrailConsumer.this.consumer.consume(MetricsTrailConsumer.this.consumerId, correlationId, linkedMetric.event);
                         linkedMetric.delivered();
                         break;
                     } catch (Exception e) {
@@ -291,11 +291,11 @@ public final class MetricsTrailConsumer {
     }
 
     /**
-     * Creates a {@link MetricsTrailConsumer} that can consume all {@link Metric}s a {@link MetricsTrail} gets aware of.
+     * Creates a {@link MetricsTrailConsumer} that can consume all {@link Event}s a {@link MetricsTrail} gets aware of.
      *
      * @param consumerId The id to add the consumer under, which will be delivered
      *                   to the consumer on each
-     *                   {@link MetricsConsumer#consume(String, UUID, Metric)}
+     *                   {@link MetricsConsumer#consume(String, UUID, Event)}
      *                   invocation. Allows the same consumer to be registered
      *                   multiple times with differing configurations; might
      *                   <b>not</b> be null.
@@ -308,21 +308,21 @@ public final class MetricsTrailConsumer {
     }
 
     /**
-     * Creates a {@link MetricsTrailConsumer} that can consume all {@link Metric}s a {@link MetricsTrail} gets aware of.
+     * Creates a {@link MetricsTrailConsumer} that can consume all {@link Event}s a {@link MetricsTrail} gets aware of.
      *
      * @param consumerId The unique id to add the consumer under, which will be
      *                   delivered to the consumer on each
-     *                   {@link MetricsConsumer#consume(String, UUID, Metric)}
+     *                   {@link MetricsConsumer#consume(String, UUID, Event)}
      *                   invocation. Allows the same consumer to be registered
      *                   multiple times with differing configurations; might
      *                   <b>not</b> be null.
      * @param consumer   The consumer to add; might <b>not</b> be null.
      * @param gate       The predicate that needs to
-     *                   {@link MetricsPredicate#test(Metric)} true to trigger
+     *                   {@link MetricsPredicate#test(Event)} true to trigger
      *                   flushing all of a trail's accumulated
-     *                   {@link Metric}s; might be null.
+     *                   {@link Event}s; might be null.
      * @param filter     The predicate that needs to
-     *                   {@link MetricsPredicate#test(Metric)} true to allow an
+     *                   {@link MetricsPredicate#test(Event)} true to allow an
      *                   about-to-be-flushed metric to be delivered to the consumer;
      *                   might be null.
      * @return The created {@link MetricsTrailConsumer} that can be used to configure and

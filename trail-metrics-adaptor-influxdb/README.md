@@ -1,6 +1,6 @@
-# trail-metrics-adaptor-influxdb
+# trail-measurements-adaptor-influxdb
 
-A **_MetricsConsumer_** that is able to persist metrics into an Influx DB.
+A **_MetricsConsumer_** that is able to persist measurements into an Influx DB.
 
 ## How to use
 

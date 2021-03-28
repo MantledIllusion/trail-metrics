@@ -1,4 +1,4 @@
-# trail-metrics-support-spring-jms
+# trail-measurements-support-spring-jms
 
 Contains a wrapper for Spring JMS message converters for automatically adding a **_MetricTrail_**'s ID as the JMS correlation ID header when an incoming / outgoing message is converted.
 
@@ -19,7 +19,7 @@ trailMetrics:
     messageConverter: <The Spring bean qualifier of the MessageConverter to wrap>
     incomingMode: <How to handle incoming JMS messages, one of [STRICT, LENIENT, OPTIONAL], LENIENT by default>
     outgoingMode: <How to handle outgoing JMS messages, one of [STRICT, LENIENT, OPTIONAL], OPTIONAL by default>
-    dispatchReceive: <Whether to dispatch a metric when a message is received>
+    dispatchReceive: <Whether to dispatch a measurement when a message is received>
 ```
 
 ## Metrics dispatched

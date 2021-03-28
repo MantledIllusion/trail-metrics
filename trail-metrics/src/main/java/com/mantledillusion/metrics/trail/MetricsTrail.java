@@ -1,11 +1,11 @@
 package com.mantledillusion.metrics.trail;
 
-import com.mantledillusion.metrics.trail.api.Metric;
+import com.mantledillusion.metrics.trail.api.Event;
 
 import java.util.*;
 
 /**
- * A {@link MetricsTrail} is a stream of {@link Metric}s that occurs during a single process of any kind.
+ * A {@link MetricsTrail} is a stream of {@link Event}s that occurs during a single process of any kind.
  */
 public final class MetricsTrail {
 
@@ -38,10 +38,10 @@ public final class MetricsTrail {
      * Hooks the given {@link MetricsTrailConsumer} this {@link MetricsTrail}.
      * <p>
      * To hook the given {@link MetricsTrailConsumer} to the {@link MetricsTrail}, a new
-     * {@link MetricsTrailConsumer.MetricsTrailConsumerQueue} is created that will receive the trail's {@link Metric}s
+     * {@link MetricsTrailConsumer.MetricsTrailConsumerQueue} is created that will receive the trail's {@link Event}s
      * and enqueue them for delivery for the consumer.
      * <p>
-     * Delivering the {@link Metric}s will depend on the settings made to the {@link MetricsTrailConsumer}.
+     * Delivering the {@link Event}s will depend on the settings made to the {@link MetricsTrailConsumer}.
      *
      * @param consumer The {@link MetricsTrailConsumer} hook; might <b>not</b> be null.
      * @return A new {@link MetricsTrailConsumer.MetricsTrailConsumerQueue}, never null
@@ -56,30 +56,30 @@ public final class MetricsTrail {
     }
 
     /**
-     * Commits the given {@link Metric} to all {@link MetricsTrailConsumer.MetricsTrailConsumerQueue}s hooked this {@link MetricsTrail}.
+     * Commits the given {@link Event} to all {@link MetricsTrailConsumer.MetricsTrailConsumerQueue}s hooked this {@link MetricsTrail}.
      *
-     * @param metric The metric to commit; might <b>not</b> be null.
+     * @param event The metric to commit; might <b>not</b> be null.
      */
-    public synchronized void commit(Metric metric) {
-        MetricValidator.validate(metric);
-        this.queues.parallelStream().forEach(queue -> queue.enqueue(metric));
+    public synchronized void commit(Event event) {
+        EventValidator.validate(event);
+        this.queues.parallelStream().forEach(queue -> queue.enqueue(event));
     }
 
     /**
-     * Returns whether there are {@link Metric}s that are enqueued and waiting for any of this {@link MetricsTrail}'s
+     * Returns whether there are {@link Event}s that are enqueued and waiting for any of this {@link MetricsTrail}'s
      * {@link MetricsTrailConsumer.MetricsTrailConsumerQueue} gates to open so they can be delivered.
      *
-     * @return True if there is at least one {@link Metric} currently gated, false otherwise
+     * @return True if there is at least one {@link Event} currently gated, false otherwise
      */
     public synchronized boolean hasGated() {
         return this.queues.stream().anyMatch(queue -> queue.hasGated());
     }
 
     /**
-     * Returns whether there are {@link Metric}s of this {@link MetricsTrail}'s
+     * Returns whether there are {@link Event}s of this {@link MetricsTrail}'s
      * {@link MetricsTrailConsumer.MetricsTrailConsumerQueue} currently being delivered to their consumer by asynchronous tasks.
      *
-     * @return True if there is at least one {@link Metric} currently being delivered, false otherwise
+     * @return True if there is at least one {@link Event} currently being delivered, false otherwise
      */
     public synchronized boolean isDelivering() {
         return this.queues.stream().anyMatch(queue -> queue.isDelivering());

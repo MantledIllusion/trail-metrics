@@ -1,4 +1,4 @@
-# trail-metrics-support-vaadin-14
+# trail-measurements-support-vaadin-14
 
 A _**MetricsTrail**_ support for Vaadin Flow 14.
 
@@ -10,11 +10,11 @@ By calling _**VaadinMetricsTrailSupport**.getCurrent()_ that trail can be access
 
 ### Default Vaadin Metrics
 
-By supporting a **_VaadinService_**, default metrics will be written for:
+By supporting a **_VaadinService_**, default measurements will be written for:
 - The begin of a session
 - The info about the browser used
 - The end of a session
 - The URL navigation done in the application
 
-By supporting a **_ErrorHandler_**, default metrics will be written for:
+By supporting a **_ErrorHandler_**, default measurements will be written for:
 - Every uncaught error of the application

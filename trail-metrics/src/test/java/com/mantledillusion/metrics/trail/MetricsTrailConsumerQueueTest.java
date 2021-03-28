@@ -1,7 +1,6 @@
 package com.mantledillusion.metrics.trail;
 
-import com.mantledillusion.metrics.trail.api.Metric;
-import com.mantledillusion.metrics.trail.api.MetricType;
+import com.mantledillusion.metrics.trail.api.Event;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -20,18 +19,18 @@ public class MetricsTrailConsumerQueueTest extends AbstractMetricsTest {
     public void testBasicDelivery() {
         this.queue = this.trail.hook(MetricsTrailConsumer.from(TEST_CONSUMER, this.consumer));
 
-        Metric metricA = new Metric(TEST_EVENT_PREFIX+"A", MetricType.ALERT);
-        this.trail.commit(metricA);
-        Metric metricB = new Metric(TEST_EVENT_PREFIX+"B", MetricType.ALERT);
-        this.trail.commit(metricB);
-        Metric metricC = new Metric(TEST_EVENT_PREFIX+"C", MetricType.ALERT);
-        this.trail.commit(metricC);
+        Event eventA = new Event(TEST_EVENT_PREFIX+"A");
+        this.trail.commit(eventA);
+        Event eventB = new Event(TEST_EVENT_PREFIX+"B");
+        this.trail.commit(eventB);
+        Event eventC = new Event(TEST_EVENT_PREFIX+"C");
+        this.trail.commit(eventC);
         waitUntilConsumed();
 
         assertEquals(3, this.consumer.size(TRAIL_ID));
-        assertSame(metricA, this.consumer.dequeueOne(TRAIL_ID));
-        assertSame(metricB, this.consumer.dequeueOne(TRAIL_ID));
-        assertSame(metricC, this.consumer.dequeueOne(TRAIL_ID));
+        assertSame(eventA, this.consumer.dequeueOne(TRAIL_ID));
+        assertSame(eventB, this.consumer.dequeueOne(TRAIL_ID));
+        assertSame(eventC, this.consumer.dequeueOne(TRAIL_ID));
     }
 
     @Test
@@ -50,14 +49,14 @@ public class MetricsTrailConsumerQueueTest extends AbstractMetricsTest {
         assertFalse(this.queue.isDelivering());
         assertEquals(0, this.queue.getDeliveringCount());
 
-        Metric metricA = new Metric(TEST_EVENT_PREFIX+"A", MetricType.ALERT);
-        this.trail.commit(metricA);
+        Event eventA = new Event(TEST_EVENT_PREFIX+"A");
+        this.trail.commit(eventA);
 
         assertTrue(this.queue.isDelivering());
         assertEquals(1, this.queue.getDeliveringCount());
 
-        Metric metricB = new Metric(TEST_EVENT_PREFIX+"B", MetricType.ALERT);
-        this.trail.commit(metricB);
+        Event eventB = new Event(TEST_EVENT_PREFIX+"B");
+        this.trail.commit(eventB);
 
         assertTrue(this.queue.isDelivering());
         assertEquals(2, this.queue.getDeliveringCount());
@@ -87,8 +86,8 @@ public class MetricsTrailConsumerQueueTest extends AbstractMetricsTest {
         assertFalse(this.queue.isDelivering());
         assertEquals(0, this.queue.getDeliveringCount());
 
-        Metric metricA = new Metric(TEST_EVENT_PREFIX+"A", MetricType.ALERT);
-        this.trail.commit(metricA);
+        Event eventA = new Event(TEST_EVENT_PREFIX+"A");
+        this.trail.commit(eventA);
 
         assertTrue(this.queue.isDelivering());
         assertEquals(1, this.queue.getDeliveringCount());
@@ -118,8 +117,8 @@ public class MetricsTrailConsumerQueueTest extends AbstractMetricsTest {
         assertFalse(this.queue.isDelivering());
         assertEquals(0, this.queue.getDeliveringCount());
 
-        Metric metricA = new Metric(TEST_EVENT_PREFIX+"A", MetricType.ALERT);
-        this.trail.commit(metricA);
+        Event eventA = new Event(TEST_EVENT_PREFIX+"A");
+        this.trail.commit(eventA);
 
         assertTrue(this.queue.isDelivering());
         assertEquals(1, this.queue.getDeliveringCount());
@@ -138,8 +137,8 @@ public class MetricsTrailConsumerQueueTest extends AbstractMetricsTest {
 
         assertFalse(consumer.doFlushOnTrailEnd());
 
-        Metric metricA = new Metric(TEST_EVENT_PREFIX+"A", MetricType.ALERT);
-        this.trail.commit(metricA);
+        Event eventA = new Event(TEST_EVENT_PREFIX+"A");
+        this.trail.commit(eventA);
 
         assertTrue(this.queue.hasGated());
         assertEquals(1, this.queue.getGatedCount());
@@ -162,8 +161,8 @@ public class MetricsTrailConsumerQueueTest extends AbstractMetricsTest {
 
         assertTrue(consumer.doFlushOnTrailEnd());
 
-        Metric metric = new Metric(TEST_EVENT_PREFIX+"A", MetricType.ALERT);
-        this.trail.commit(metric);
+        Event event = new Event(TEST_EVENT_PREFIX+"A");
+        this.trail.commit(event);
 
         assertTrue(this.queue.hasGated());
         assertEquals(1, this.queue.getGatedCount());
@@ -176,6 +175,6 @@ public class MetricsTrailConsumerQueueTest extends AbstractMetricsTest {
         waitUntilConsumed();
 
         assertEquals(1, this.consumer.size(TRAIL_ID));
-        assertSame(metric, this.consumer.dequeueOne(TRAIL_ID));
+        assertSame(event, this.consumer.dequeueOne(TRAIL_ID));
     }
 }

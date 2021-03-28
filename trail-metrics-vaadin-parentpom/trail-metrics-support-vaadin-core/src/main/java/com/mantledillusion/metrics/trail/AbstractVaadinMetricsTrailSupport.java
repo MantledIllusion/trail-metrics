@@ -1,7 +1,8 @@
 package com.mantledillusion.metrics.trail;
 
-import com.mantledillusion.metrics.trail.api.Metric;
-import com.mantledillusion.metrics.trail.api.MetricAttribute;
+import com.mantledillusion.metrics.trail.api.Event;
+import com.mantledillusion.metrics.trail.api.Measurement;
+import com.mantledillusion.metrics.trail.api.MeasurementType;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -10,6 +11,8 @@ import java.util.function.Consumer;
 abstract class AbstractVaadinMetricsTrailSupport<ServiceType, SessionType> {
 
     public static final String ATTRIBUTE_KEY_SESSION_ID = "sessionId";
+    public static final String ATTRIBUTE_KEY_PATH = "path";
+    public static final String ATTRIBUTE_KEY_PARAM_PREFIX = "param.";
 
     private final Set<MetricsTrailConsumer> consumers = Collections.newSetFromMap(new IdentityHashMap<>());
 
@@ -25,14 +28,14 @@ abstract class AbstractVaadinMetricsTrailSupport<ServiceType, SessionType> {
             hookSession(session, trail);
 
             trail.commit(GeneralVaadinMetrics.SESSION_BEGIN.build(
-                    new MetricAttribute(ATTRIBUTE_KEY_SESSION_ID, getSessionId(session))));
+                    new Measurement(ATTRIBUTE_KEY_SESSION_ID, getSessionId(session), MeasurementType.STRING)));
 
             BrowserInfo browserInfo = getSessionBrowserInfo(session);
             trail.commit(GeneralVaadinMetrics.BROWSER_INFO.build(
-                    new MetricAttribute(BrowserInfo.ATTRIBUTE_KEY_APPLICATION, browserInfo.getApplication()),
-                    new MetricAttribute(BrowserInfo.ATTRIBUTE_KEY_TYPE, browserInfo.getBrowser().name()),
-                    new MetricAttribute(BrowserInfo.ATTRIBUTE_KEY_VERSION, browserInfo.getVersion()),
-                    new MetricAttribute(BrowserInfo.ATTRIBUTE_KEY_ENVIRONMENT, browserInfo.getEnvironment().name())));
+                    new Measurement(BrowserInfo.ATTRIBUTE_KEY_APPLICATION, browserInfo.getApplication(), MeasurementType.STRING),
+                    new Measurement(BrowserInfo.ATTRIBUTE_KEY_TYPE, browserInfo.getBrowser().name(), MeasurementType.STRING),
+                    new Measurement(BrowserInfo.ATTRIBUTE_KEY_VERSION, browserInfo.getVersion(), MeasurementType.STRING),
+                    new Measurement(BrowserInfo.ATTRIBUTE_KEY_ENVIRONMENT, browserInfo.getEnvironment().name(), MeasurementType.STRING)));
         };
 
         // NAVIGATION
@@ -40,13 +43,13 @@ abstract class AbstractVaadinMetricsTrailSupport<ServiceType, SessionType> {
 
             @Override
             public void accept(String path, String query) {
-                Metric metric = GeneralVaadinMetrics.NAVIGATION.build(path);
+                Event event = GeneralVaadinMetrics.NAVIGATION.build(new Measurement(ATTRIBUTE_KEY_PATH, path, MeasurementType.STRING));
                 if (!query.isEmpty()) {
                     for (Map.Entry<String, String> param : fromParamAppender(query).entrySet()) {
-                        metric.getAttributes().add(new MetricAttribute(param.getKey(), param.getValue()));
+                        event.getMeasurements().add(new Measurement(ATTRIBUTE_KEY_PARAM_PREFIX+param.getKey(), param.getValue(), MeasurementType.STRING));
                     }
                 }
-                getSessionTrail().commit(metric);
+                getSessionTrail().commit(event);
             }
 
             private final Map<String, String> fromParamAppender(String query) {

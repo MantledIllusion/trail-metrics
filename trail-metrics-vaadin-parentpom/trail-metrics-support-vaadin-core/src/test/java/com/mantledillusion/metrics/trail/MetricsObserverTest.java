@@ -3,8 +3,7 @@ package com.mantledillusion.metrics.trail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
-import com.mantledillusion.metrics.trail.api.Metric;
-import com.mantledillusion.metrics.trail.api.MetricType;
+import com.mantledillusion.metrics.trail.api.Event;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -38,11 +37,11 @@ public class MetricsObserverTest {
 		waitUntilConsumed();
 		assertEquals(2, this.consumer.size(correlationId));
 		
-		Metric e1 = this.consumer.dequeueOne(correlationId);
-		assertEquals(GeneralVaadinMetrics.SESSION_BEGIN.getMetricId(), e1.getIdentifier());
+		Event e1 = this.consumer.dequeueOne(correlationId);
+		assertEquals(GeneralVaadinMetrics.SESSION_BEGIN.getIdentifier(), e1.getIdentifier());
 
 		e1 = this.consumer.dequeueOne(correlationId);
-		assertEquals(GeneralVaadinMetrics.BROWSER_INFO.getMetricId(), e1.getIdentifier());
+		assertEquals(GeneralVaadinMetrics.BROWSER_INFO.getIdentifier(), e1.getIdentifier());
 
 		// USER B VISITS
 		UUID correlationIdAlt = this.env.mockUserVisit(SESSION_ID_ALT);
@@ -51,35 +50,35 @@ public class MetricsObserverTest {
 		assertEquals(0, this.consumer.size(correlationId));
 		assertEquals(2, this.consumer.size(correlationIdAlt));
 		
-		Metric e2 = this.consumer.dequeueOne(correlationIdAlt);
-		assertEquals(GeneralVaadinMetrics.SESSION_BEGIN.getMetricId(), e2.getIdentifier());
+		Event e2 = this.consumer.dequeueOne(correlationIdAlt);
+		assertEquals(GeneralVaadinMetrics.SESSION_BEGIN.getIdentifier(), e2.getIdentifier());
 
 		e2 = this.consumer.dequeueOne(correlationIdAlt);
-		assertEquals(GeneralVaadinMetrics.BROWSER_INFO.getMetricId(), e2.getIdentifier());
+		assertEquals(GeneralVaadinMetrics.BROWSER_INFO.getIdentifier(), e2.getIdentifier());
 		
 		// USER B CAUSES 1 METRIC
-		Metric metricA = new Metric(TEST_EVENT_PREFIX+"A", MetricType.ALERT);
-		this.env.mockDispatch(metricA);
+		Event eventA = new Event(TEST_EVENT_PREFIX+"A");
+		this.env.mockDispatch(eventA);
 
 		waitUntilConsumed();
 		assertEquals(1, this.consumer.size(correlationIdAlt));
 
-		Metric e3 = this.consumer.dequeueOne(correlationIdAlt);
-		assertSame(metricA, e3);
+		Event e3 = this.consumer.dequeueOne(correlationIdAlt);
+		assertSame(eventA, e3);
 		
 		// USER B CAUSES 2 METRICS
-		Metric metricB = new Metric(TEST_EVENT_PREFIX+"B", MetricType.ALERT);
-		this.env.mockDispatch(metricB);
-		Metric metricC = new Metric(TEST_EVENT_PREFIX+"C", MetricType.ALERT);
-		this.env.mockDispatch(metricC);
+		Event eventB = new Event(TEST_EVENT_PREFIX+"B");
+		this.env.mockDispatch(eventB);
+		Event eventC = new Event(TEST_EVENT_PREFIX+"C");
+		this.env.mockDispatch(eventC);
 
 		waitUntilConsumed();
 		assertEquals(2, this.consumer.size(correlationIdAlt));
 
-		Metric e4 = this.consumer.dequeueOne(correlationIdAlt);
-		assertSame(metricB, e4);
-		Metric e5 = this.consumer.dequeueOne(correlationIdAlt);
-		assertSame(metricC, e5);
+		Event e4 = this.consumer.dequeueOne(correlationIdAlt);
+		assertSame(eventB, e4);
+		Event e5 = this.consumer.dequeueOne(correlationIdAlt);
+		assertSame(eventC, e5);
 	}
 	
 	private void waitUntilConsumed() {

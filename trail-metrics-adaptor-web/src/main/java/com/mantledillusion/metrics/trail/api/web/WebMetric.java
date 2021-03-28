@@ -1,8 +1,7 @@
 package com.mantledillusion.metrics.trail.api.web;
 
-import com.mantledillusion.metrics.trail.api.Metric;
-import com.mantledillusion.metrics.trail.api.MetricAttribute;
-import com.mantledillusion.metrics.trail.api.MetricType;
+import com.mantledillusion.metrics.trail.api.Event;
+import com.mantledillusion.metrics.trail.api.Measurement;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -16,13 +15,11 @@ import java.util.stream.Collectors;
  * Represents a single metric.
  */
 @XmlRootElement
-@XmlType(propOrder = { "identifier", "type", "timestamp", "attributes" })
+@XmlType(propOrder = { "identifier", "timestamp", "attributes" })
 public class WebMetric {
 
 	@XmlElement(required = true, nillable = false)
 	private String identifier;
-	@XmlElement(required = true, nillable = false)
-	private WebMetricType type;
 	@XmlElement(required = true, nillable = false)
 	private ZonedDateTime timestamp = ZonedDateTime.now();
 	@XmlElement(required = false, nillable = false)
@@ -39,12 +36,9 @@ public class WebMetric {
 	 * 
 	 * @param identifier
 	 *            The identifier; might be null.
-	 * @param type
-	 *            The type; might be null.
 	 */
-	public WebMetric(String identifier, WebMetricType type) {
+	public WebMetric(String identifier) {
 		this.identifier = identifier;
-		this.type = type;
 	}
 
 	/**
@@ -73,27 +67,6 @@ public class WebMetric {
 	}
 
 	/**
-	 * Returns the {@link WebMetricType} that specifies how this {@link WebMetric} will be
-	 * interpreted.
-	 * 
-	 * @return The type, might be null.
-	 */
-	public WebMetricType getType() {
-		return type;
-	}
-
-	/**
-	 * Returns the {@link WebMetricType} that specifies how this {@link WebMetric} will be
-	 * interpreted.
-	 * 
-	 * @param type
-	 *            The type; might be null.
-	 */
-	public void setType(WebMetricType type) {
-		this.type = type;
-	}
-
-	/**
 	 * Returns the timestamp at which this {@link WebMetric} was created.
 	 * <p>
 	 * By default, this is set to {@link ZonedDateTime#now()}.
@@ -118,10 +91,6 @@ public class WebMetric {
 
 	/**
 	 * Returns the list of this {@link WebMetric}'s {@link WebMetricAttribute}.
-	 * <p>
-	 * Attributes can be attached to a metric to fulfill {@link WebMetricType}
-	 * requirements by specifying a {@link Metric#OPERATOR_ATTRIBUTE_KEY} attribute or to
-	 * deliver meta information.
 	 * 
 	 * @return The attribute list, might be null
 	 */
@@ -131,10 +100,6 @@ public class WebMetric {
 
 	/**
 	 * Returns the list of this {@link WebMetric}'s {@link WebMetricAttribute}.
-	 * <p>
-	 * Attributes can be attached to a metric to fulfill {@link WebMetricType}
-	 * requirements by specifying a {@link Metric#OPERATOR_ATTRIBUTE_KEY} attribute or to
-	 * deliver meta information.
 	 * 
 	 * @param attributes
 	 *            The attribute list; might be null.
@@ -144,19 +109,18 @@ public class WebMetric {
 	}
 
 	/**
-	 * Maps this {@link WebMetric} to a {@link Metric}.
+	 * Maps this {@link WebMetric} to a {@link Event}.
 	 *
-	 * @return A new {@link Metric} instance, never null
+	 * @return A new {@link Event} instance, never null
 	 */
-	public Metric to() {
-		MetricType type = this.type != null ? MetricType.valueOf(this.type.name()) : null;
-		Metric target = new Metric(this.identifier, type);
+	public Event to() {
+		Event target = new Event(this.identifier);
 		target.setTimestamp(this.timestamp);
 
 		if (this.attributes != null) {
-			target.setAttributes(this.attributes
+			target.setMeasurements(this.attributes
 					.parallelStream()
-					.map(attribute -> new MetricAttribute(attribute.getKey(), attribute.getValue()))
+					.map(attribute -> new Measurement(attribute.getKey(), attribute.getValue(), attribute.getType()))
 					.collect(Collectors.toList()));
 		}
 
@@ -164,24 +128,23 @@ public class WebMetric {
 	}
 
 	/**
-	 * Maps the given {@link Metric} to a {@link WebMetric}.
+	 * Maps the given {@link Event} to a {@link WebMetric}.
 	 *
 	 * @param source The metric to map from; might <b>not</b> be null.
 	 * @return A new {@link WebMetric} instance, never null
 	 */
-	public static WebMetric from(Metric source) {
+	public static WebMetric from(Event source) {
 		if (source == null) {
 			throw new IllegalArgumentException("Cannot map a null metric");
 		}
-		WebMetricType type = source.getType() != null ? WebMetricType.valueOf(source.getType().name()) : null;
-		WebMetric target = new WebMetric(source.getIdentifier(), type);
+		WebMetric target = new WebMetric(source.getIdentifier());
 		target.setTimestamp(source.getTimestamp());
 
-		if (source.getAttributes() != null) {
+		if (source.getMeasurements() != null) {
 			target.setAttributes(source
-					.getAttributes()
+					.getMeasurements()
 					.parallelStream()
-					.map(attribute -> new WebMetricAttribute(attribute.getKey(), attribute.getValue()))
+					.map(attribute -> new WebMetricAttribute(attribute.getKey(), attribute.getValue(), attribute.getType()))
 					.collect(Collectors.toList()));
 		}
 

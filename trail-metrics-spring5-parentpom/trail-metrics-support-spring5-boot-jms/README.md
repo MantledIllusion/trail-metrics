@@ -1,4 +1,4 @@
-# trail-metrics-support-spring-boot-jms
+# trail-measurements-support-spring-boot-jms
 
 Contains Spring Boot auto configurations that automatically configures message converter wrappers for in and outgoing jms messages.
 
@@ -16,7 +16,7 @@ trailMetrics:
     messageConverter: <The Spring bean qualifier of the MessageConverter to wrap>
     incomingMode: <How to handle incoming JMS messages, one of [STRICT, LENIENT, OPTIONAL], LENIENT by default>
     outgoingMode: <How to handle outgoing JMS messages, one of [STRICT, LENIENT, OPTIONAL], OPTIONAL by default>
-    dispatchReceive: <Whether to dispatch a metric when a message is received>
+    dispatchReceive: <Whether to dispatch a measurement when a message is received>
 ```
 
 ## Metrics dispatched

@@ -1,6 +1,6 @@
 package com.mantledillusion.metrics.trail;
 
-import com.mantledillusion.metrics.trail.api.Metric;
+import com.mantledillusion.metrics.trail.api.Event;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -77,12 +77,12 @@ public class MetricsTrailSupportTest {
 
     @Test
     public void commitForcedMetricWithoutExisting() {
-        Assertions.assertThrows(IllegalStateException.class, () -> MetricsTrailSupport.commit(new Metric()));
+        Assertions.assertThrows(IllegalStateException.class, () -> MetricsTrailSupport.commit(new Event()));
     }
 
     @Test
     public void commitUnforcedMetricWithoutExisting() {
-        MetricsTrailSupport.commit(new Metric(), false);
+        MetricsTrailSupport.commit(new Event(), false);
     }
 
     @Test

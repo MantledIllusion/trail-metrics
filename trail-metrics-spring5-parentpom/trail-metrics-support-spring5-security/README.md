@@ -1,4 +1,4 @@
-# trail-metrics-support-spring-security
+# trail-measurements-support-spring-security
 
 Contains Spring event listeners for creating events when authentications fail/begin/end.
 
@@ -15,9 +15,9 @@ Register any combination of instances of the following classes as Spring beans:
 trailMetrics:
   security:
     authentication:
-      dispatchFailure: <Dispatch a metric when authentication fails, false by default>
-      dispatchSuccess: <Dispatch a metric when authentication succeeds, false by default>
-      dispatchClosure: <Dispatch a metric when authentication ends, false by default>
+      dispatchFailure: <Dispatch a measurement when authentication fails, false by default>
+      dispatchSuccess: <Dispatch a measurement when authentication succeeds, false by default>
+      dispatchClosure: <Dispatch a measurement when authentication ends, false by default>
 ```
 
 ## Metrics dispatched

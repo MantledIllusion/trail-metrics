@@ -1,11 +1,11 @@
 package com.mantledillusion.metrics.trail;
 
-import com.mantledillusion.metrics.trail.api.Metric;
-import com.mantledillusion.metrics.trail.api.MetricAttribute;
-import com.mantledillusion.metrics.trail.api.MetricType;
-import com.mantledillusion.metrics.trail.api.jpa.DbMetric;
-import com.mantledillusion.metrics.trail.api.jpa.DbMetricAttribute;
-import com.mantledillusion.metrics.trail.api.jpa.DbMetricsConsumerTrail;
+import com.mantledillusion.metrics.trail.api.MeasurementType;
+import com.mantledillusion.metrics.trail.api.Event;
+import com.mantledillusion.metrics.trail.api.Measurement;
+import com.mantledillusion.metrics.trail.api.jpa.DbTrailEvent;
+import com.mantledillusion.metrics.trail.api.jpa.DbTrailMeasurement;
+import com.mantledillusion.metrics.trail.api.jpa.DbTrailConsumer;
 import org.h2.tools.Server;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -29,6 +29,7 @@ public class MetricsPersistorTest {
     private static final String METRIC_IDENTIFIER_PREFIX = "metric#";
     private static final String METRIC_ATTRIBUTE_KEY = "attrKey";
     private static final String METRIC_ATTRIBUTE_VALUE = "attrValue";
+    private static final MeasurementType METRIC_ATTRIBUTE_TYPE = MeasurementType.STRING;
 
     private static EntityManager ENTITY_MANAGER;
     private static MetricsPersistor PERSISTOR;
@@ -57,61 +58,60 @@ public class MetricsPersistorTest {
         UUID correlationId = UUID.randomUUID();
 
         // METRIC #1 (TRAIL #1)
-        Metric metric = new Metric();
-        metric.setType(MetricType.ALERT);
-        metric.setTimestamp(ZonedDateTime.now());
-        metric.setIdentifier(METRIC_IDENTIFIER_PREFIX+1);
+        Event event = new Event();
+        event.setTimestamp(ZonedDateTime.now());
+        event.setIdentifier(METRIC_IDENTIFIER_PREFIX+1);
 
-        PERSISTOR.consume(CONSUMER_ID, correlationId, metric);
-        assertMatching(correlationId, metric, 1, 1, 0, 1, 0);
+        PERSISTOR.consume(CONSUMER_ID, correlationId, event);
+        assertMatching(correlationId, event, 1, 1, 0, 1, 0);
 
         // METRIC #2 (TRAIL #1)
-        metric.setIdentifier(METRIC_IDENTIFIER_PREFIX+2);
-        metric.getAttributes().add(new MetricAttribute(METRIC_ATTRIBUTE_KEY, METRIC_ATTRIBUTE_VALUE));
+        event.setIdentifier(METRIC_IDENTIFIER_PREFIX+2);
+        event.getMeasurements().add(new Measurement(METRIC_ATTRIBUTE_KEY, METRIC_ATTRIBUTE_VALUE, METRIC_ATTRIBUTE_TYPE));
 
-        PERSISTOR.consume(CONSUMER_ID, correlationId, metric);
-        assertMatching(correlationId, metric, 2, 1, 0, 2, 1);
+        PERSISTOR.consume(CONSUMER_ID, correlationId, event);
+        assertMatching(correlationId, event, 2, 1, 0, 2, 1);
 
         // TRAIL #2
         correlationId = UUID.randomUUID();
 
         // METRIC #3 (TRAIL #2)
-        metric.setIdentifier(METRIC_IDENTIFIER_PREFIX+3);
-        metric.getAttributes().clear();
+        event.setIdentifier(METRIC_IDENTIFIER_PREFIX+3);
+        event.getMeasurements().clear();
 
-        PERSISTOR.consume(CONSUMER_ID, correlationId, metric);
-        assertMatching(correlationId, metric, 3, 2, 1, 1, 0);
+        PERSISTOR.consume(CONSUMER_ID, correlationId, event);
+        assertMatching(correlationId, event, 3, 2, 1, 1, 0);
     }
 
-    private void assertMatching(UUID correlationId, Metric metric, int metricNumber,
+    private void assertMatching(UUID correlationId, Event event, int metricNumber,
                                 int expectedTrailCount, int matchingCorrelationIdx,
                                 int expectedMetricCount, int matchingMetricIdx) {
-        List<DbMetricsConsumerTrail> dbTrails = ENTITY_MANAGER.
-                createQuery("SELECT t FROM DbMetricsConsumerTrail t", DbMetricsConsumerTrail.class).getResultList();
+        List<DbTrailConsumer> dbTrails = ENTITY_MANAGER.
+                createQuery("SELECT t FROM DbTrailConsumer t", DbTrailConsumer.class).getResultList();
 
         Assertions.assertNotNull(dbTrails);
         Assertions.assertEquals(expectedTrailCount, dbTrails.size());
 
-        DbMetricsConsumerTrail dbTrail = dbTrails.get(matchingCorrelationIdx);
+        DbTrailConsumer dbTrail = dbTrails.get(matchingCorrelationIdx);
         Assertions.assertEquals(CONSUMER_ID, dbTrail.getConsumerId());
         Assertions.assertEquals(correlationId, dbTrail.getCorrelationId());
-        Assertions.assertNotNull(dbTrail.getMetrics());
-        Assertions.assertEquals(expectedMetricCount, dbTrail.getMetrics().size());
+        Assertions.assertNotNull(dbTrail.getEvents());
+        Assertions.assertEquals(expectedMetricCount, dbTrail.getEvents().size());
 
-        DbMetric dbMetric = dbTrail.getMetrics().get(matchingMetricIdx);
-        Assertions.assertNotNull(dbMetric.getTrail());
-        Assertions.assertEquals(dbTrail.getId(), dbMetric.getTrail().getId());
-        Assertions.assertEquals(METRIC_IDENTIFIER_PREFIX+metricNumber, dbMetric.getIdentifier());
-        Assertions.assertEquals(MetricType.ALERT, dbMetric.getType());
-        Assertions.assertTrue(metric.getAttributes().size() == 0 ? dbMetric.getAttributes() == null || dbMetric.getAttributes().isEmpty() :
-                dbMetric.getAttributes().size() == metric.getAttributes().size());
+        DbTrailEvent dbTrailEvent = dbTrail.getEvents().get(matchingMetricIdx);
+        Assertions.assertNotNull(dbTrailEvent.getTrail());
+        Assertions.assertEquals(dbTrail.getId(), dbTrailEvent.getTrail().getId());
+        Assertions.assertEquals(METRIC_IDENTIFIER_PREFIX+metricNumber, dbTrailEvent.getIdentifier());
+        Assertions.assertTrue(event.getMeasurements().size() == 0 ? dbTrailEvent.getMeasurements() == null || dbTrailEvent.getMeasurements().isEmpty() :
+                dbTrailEvent.getMeasurements().size() == event.getMeasurements().size());
 
-        Map<String, String> attributeMap = metric.getAttributes().stream().
-                collect(Collectors.toMap(MetricAttribute::getKey, MetricAttribute::getValue));
-        if (dbMetric.getAttributes() != null) {
-            for (DbMetricAttribute attribute: dbMetric.getAttributes()) {
+        Map<String, String> attributeMap = event.getMeasurements().stream().
+                collect(Collectors.toMap(Measurement::getKey, Measurement::getValue));
+        if (dbTrailEvent.getMeasurements() != null) {
+            for (DbTrailMeasurement attribute: dbTrailEvent.getMeasurements()) {
                 Assertions.assertTrue(attributeMap.containsKey(attribute.getKey()));
                 Assertions.assertEquals(attributeMap.get(attribute.getKey()), attribute.getValue());
+                Assertions.assertEquals(MeasurementType.STRING, attribute.getType());
 
                 attributeMap.remove(attribute.getKey());
             }

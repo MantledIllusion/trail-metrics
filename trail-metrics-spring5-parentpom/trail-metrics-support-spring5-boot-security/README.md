@@ -1,6 +1,6 @@
-# trail-metrics-support-spring-boot-security
+# trail-measurements-support-spring-boot-security
 
-Contains a Spring Boot auto configurations that automatically configures metric dispatchers for failing/starting/ending authentications.
+Contains a Spring Boot auto configurations that automatically configures measurement dispatchers for failing/starting/ending authentications.
 
 ## How to use
 
@@ -12,9 +12,9 @@ The **_TrailMetricsSecurityAutoConfiguration_** will activate automatically and 
 trailMetrics:
   security:
     authentication:
-      dispatchFailure: <Dispatch a metric when authentication fails, false by default>
-      dispatchSuccess: <Dispatch a metric when authentication succeeds, false by default>
-      dispatchClosure: <Dispatch a metric when authentication ends, false by default>
+      dispatchFailure: <Dispatch a measurement when authentication fails, false by default>
+      dispatchSuccess: <Dispatch a measurement when authentication succeeds, false by default>
+      dispatchClosure: <Dispatch a measurement when authentication ends, false by default>
 ```
 
 ## Metrics dispatched

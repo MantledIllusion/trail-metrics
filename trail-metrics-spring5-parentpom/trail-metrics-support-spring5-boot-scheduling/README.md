@@ -1,4 +1,4 @@
-# trail-metrics-support-spring-boot-scheduling
+# trail-measurements-support-spring-boot-scheduling
 
 Contains a Spring Boot auto configuration that automatically configures an interceptor for @Scheduled annotated methods.
 
@@ -12,8 +12,8 @@ Use _@EnableScheduling_ on any Spring configuration.
 trailMetrics:
   scheduling:
     endMode: <How to end task trails, one of [IMMEDIATE, IMMEDIATE_ON_SUCCESS, IMMEDIATE_ON_FAILURE, DELAYED], IMMEDIATE by default>
-    dispatchBegin: <Dispatch a metric when a task begins, false by default>
-    dispatchEnd: <Dispatch a metric when a task ends, false by default>
+    dispatchBegin: <Dispatch a measurement when a task begins, false by default>
+    dispatchEnd: <Dispatch a measurement when a task ends, false by default>
 ```
 
 ## Metrics dispatched

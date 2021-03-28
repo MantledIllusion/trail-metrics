@@ -1,4 +1,4 @@
-# trail-metrics-support-slf4j
+# trail-measurements-support-slf4j
 
 A _**MetricsTrail**_ support for SLF4J.
 

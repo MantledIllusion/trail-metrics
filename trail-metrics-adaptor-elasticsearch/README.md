@@ -1,6 +1,6 @@
-# trail-metrics-adaptor-elasticsearch
+# trail-measurements-adaptor-elasticsearch
 
-A **_MetricsConsumer_** that is able to persist metrics into an ElasticSearch DB.
+A **_MetricsConsumer_** that is able to persist measurements into an ElasticSearch DB.
 
 ## How to use
 

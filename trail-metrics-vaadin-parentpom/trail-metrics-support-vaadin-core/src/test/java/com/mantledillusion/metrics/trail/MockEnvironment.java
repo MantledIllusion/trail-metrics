@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 
 import com.mantledillusion.metrics.trail.MockService.MockRequest;
 import com.mantledillusion.metrics.trail.MockService.MockSession;
-import com.mantledillusion.metrics.trail.api.Metric;
+import com.mantledillusion.metrics.trail.api.Event;
 
 public class MockEnvironment {
 
@@ -34,8 +34,8 @@ public class MockEnvironment {
 		return ((MetricsTrail) session.get(MetricsTrail.class)).getCorrelationId();
 	}
 	
-	public void mockDispatch(Metric metric) {
+	public void mockDispatch(Event event) {
 		getCurrentSession().addRequest(new MockRequest());
-		((MetricsTrail) getCurrentSession().get(MetricsTrail.class)).commit(metric);
+		((MetricsTrail) getCurrentSession().get(MetricsTrail.class)).commit(event);
 	}
 }

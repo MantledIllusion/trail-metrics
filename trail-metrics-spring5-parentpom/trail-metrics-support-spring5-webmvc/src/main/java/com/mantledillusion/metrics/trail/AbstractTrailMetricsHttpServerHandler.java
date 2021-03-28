@@ -1,8 +1,8 @@
 package com.mantledillusion.metrics.trail;
 
-import com.mantledillusion.metrics.trail.api.Metric;
-import com.mantledillusion.metrics.trail.api.MetricAttribute;
-import com.mantledillusion.metrics.trail.api.MetricType;
+import com.mantledillusion.metrics.trail.api.Event;
+import com.mantledillusion.metrics.trail.api.Measurement;
+import com.mantledillusion.metrics.trail.api.MeasurementType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.RequestPath;
 import org.springframework.util.StringUtils;
@@ -28,6 +28,7 @@ abstract class AbstractTrailMetricsHttpServerHandler {
     private static final String MID_REQUEST = "spring.web.server.request";
     private static final String AKEY_ENDPOINT = "endpoint";
     private static final String AKEY_ORIGINAL_CORRELATION_ID = "originalCorrelationId";
+    private static final String AKEY_DURATION = "duration";
 
     private static final String MID_RESPONSE = "spring.web.server.response";
 
@@ -181,13 +182,14 @@ abstract class AbstractTrailMetricsHttpServerHandler {
 
     private void dispatchRequestMetric(ServletRequest request) {
         if (this.dispatchRequest) {
-            Metric metric = new Metric(MID_REQUEST, MetricType.ALERT);
-            metric.getAttributes().add(new MetricAttribute(AKEY_ENDPOINT, ((HttpServletRequest) request).getRequestURI()));
+            Event event = new Event(MID_REQUEST, new Measurement(AKEY_ENDPOINT, ((HttpServletRequest) request).getRequestURI(), MeasurementType.STRING));
             if (((HttpServletRequest) request).getHeader(this.headerName) != null) {
-                metric.getAttributes().add(new MetricAttribute(AKEY_ORIGINAL_CORRELATION_ID,
-                        ((HttpServletRequest) request).getHeader(this.headerName)));
+                event.getMeasurements().add(new Measurement(
+                        AKEY_ORIGINAL_CORRELATION_ID,
+                        ((HttpServletRequest) request).getHeader(this.headerName),
+                        MeasurementType.STRING));
             }
-            MetricsTrailSupport.commit(metric, false);
+            MetricsTrailSupport.commit(event, false);
         }
     }
 
@@ -196,7 +198,10 @@ abstract class AbstractTrailMetricsHttpServerHandler {
             ((HttpServletResponse) response).addHeader(this.headerName, MetricsTrailSupport.id().toString());
 
             if (this.dispatchResponse && matches(this.dispatchPatterns, request)) {
-                MetricsTrailSupport.commit(new Metric(MID_RESPONSE, MetricType.METER, System.currentTimeMillis()-REQUEST_DURATION.get()), false);
+                MetricsTrailSupport.commit(new Event(MID_RESPONSE, new Measurement(
+                        AKEY_DURATION,
+                        String.valueOf(System.currentTimeMillis()-REQUEST_DURATION.get()),
+                        MeasurementType.LONG)), false);
             }
             REQUEST_DURATION.set(null);
         }

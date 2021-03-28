@@ -1,17 +1,15 @@
 package com.mantledillusion.metrics.trail;
 
-import com.mantledillusion.metrics.trail.api.Metric;
+import com.mantledillusion.metrics.trail.api.Event;
 
 /**
- * A stateless predicate for {@link Metric}s.
+ * A stateless predicate for {@link Event}s.
  * <p>
- * A {@link MetricsPredicate} is able to cause a {@link MetricsTrailConsumer}
- * to hold all of a trail's events back until a {@link Metric} occurs that
- * flushes the accumulated events.
+ * A {@link MetricsPredicate} is able to cause a {@link MetricsTrailConsumer} to hold all of a trail's events back
+ * until a {@link Event} occurs that flushes the accumulated events.
  * <p>
- * In contract to a {@link MetricsValve}, a predicate is stateless, so it reacts
- * on every {@link Metric} individually and might close again after it has been
- * opened.
+ * In contract to a {@link MetricsValve}, a predicate is stateless, so it reacts on every {@link Event}
+ * individually and might close again after it has been opened.
  */
 @FunctionalInterface
 public interface MetricsPredicate {
@@ -19,10 +17,10 @@ public interface MetricsPredicate {
 	/**
 	 * Tests whether the given event matched this predicate.
 	 * 
-	 * @param metric The event to test; might <b>not</b> be null.
+	 * @param event The event to test; might <b>not</b> be null.
 	 * @return True if the predicate is fulfilled, false otherwise.
 	 */
-	boolean test(Metric metric);
+	boolean test(Event event);
 
 	/**
 	 * Returns a clone of this predicate that reacts the same as this predicate
@@ -41,7 +39,7 @@ public interface MetricsPredicate {
 	 * 
 	 * @param other The other predicate to combine with; might <b>not</b> be null.
 	 * @return A new {@link MetricsPredicate} instance, containing both this and the
-	 *         given predicate for its {@link #test(Metric)}, never null
+	 *         given predicate for its {@link #test(Event)}, never null
 	 */
 	default MetricsPredicate and(MetricsPredicate other) {
 		if (other == null) {
@@ -51,8 +49,8 @@ public interface MetricsPredicate {
 		return new MetricsPredicate() {
 
 			@Override
-			public boolean test(Metric metric) {
-				return base.test(metric) && other.test(metric);
+			public boolean test(Event event) {
+				return base.test(event) && other.test(event);
 			}
 
 			@Override
@@ -71,7 +69,7 @@ public interface MetricsPredicate {
 	 * 
 	 * @param other The other predicate to combine with; might <b>not</b> be null.
 	 * @return A new {@link MetricsPredicate} instance, containing both this and the
-	 *         given predicate for its {@link #test(Metric)}, never null
+	 *         given predicate for its {@link #test(Event)}, never null
 	 */
 	default MetricsPredicate or(MetricsPredicate other) {
 		if (other == null) {
@@ -81,8 +79,8 @@ public interface MetricsPredicate {
 		return new MetricsPredicate() {
 
 			@Override
-			public boolean test(Metric metric) {
-				return base.test(metric) || other.test(metric);
+			public boolean test(Event event) {
+				return base.test(event) || other.test(event);
 			}
 
 			@Override
@@ -99,7 +97,7 @@ public interface MetricsPredicate {
 	 * {@link MetricsValve}.
 	 * 
 	 * @return A new {@link MetricsValve} containing this {@link MetricsPredicate}
-	 *         for its {@link #test(Metric)}, never null
+	 *         for its {@link #test(Event)}, never null
 	 */
 	default MetricsValve asValve() {
 		return MetricsValve.of(this);

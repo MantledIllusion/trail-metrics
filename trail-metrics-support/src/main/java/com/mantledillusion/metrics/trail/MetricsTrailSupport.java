@@ -1,6 +1,6 @@
 package com.mantledillusion.metrics.trail;
 
-import com.mantledillusion.metrics.trail.api.Metric;
+import com.mantledillusion.metrics.trail.api.Event;
 
 import java.lang.ref.WeakReference;
 import java.util.*;
@@ -187,10 +187,10 @@ public final class MetricsTrailSupport {
      * Hooks the given {@link MetricsTrailConsumer} to the current {@link Thread}s {@link MetricsTrail}.
      * <p>
      * To hook the given {@link MetricsTrailConsumer} to the {@link MetricsTrail}, a new
-     * {@link MetricsTrailConsumer.MetricsTrailConsumerQueue} is created that will receive the trail's {@link Metric}s
+     * {@link MetricsTrailConsumer.MetricsTrailConsumerQueue} is created that will receive the trail's {@link Event}s
      * and enqueue them for delivery for the consumer.
      * <p>
-     * Delivering the {@link Metric}s will depend on the settings made to the {@link MetricsTrailConsumer}.
+     * Delivering the {@link Event}s will depend on the settings made to the {@link MetricsTrailConsumer}.
      *
      * @param consumer The {@link MetricsTrailConsumer} hook; might <b>not</b> be null.
      * @return A new {@link MetricsTrailConsumer.MetricsTrailConsumerQueue}, never null
@@ -204,36 +204,36 @@ public final class MetricsTrailSupport {
     }
 
     /**
-     * Commits the given {@link Metric} to all {@link MetricsTrailConsumer.MetricsTrailConsumerQueue}s hooked to the current {@link Thread}'s {@link MetricsTrail}.
+     * Commits the given {@link Event} to all {@link MetricsTrailConsumer.MetricsTrailConsumerQueue}s hooked to the current {@link Thread}'s {@link MetricsTrail}.
      *
-     * @param metric The metric to commit; might <b>not</b> be null.
+     * @param event The metric to commit; might <b>not</b> be null.
      * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrail}.
      */
-    public static void commit(Metric metric) throws IllegalStateException {
-        commit(metric, true);
+    public static void commit(Event event) throws IllegalStateException {
+        commit(event, true);
     }
 
     /**
-     * Commits the given {@link Metric} to all {@link MetricsTrailConsumer.MetricsTrailConsumerQueue}s hooked to the current {@link Thread}'s {@link MetricsTrail}.
+     * Commits the given {@link Event} to all {@link MetricsTrailConsumer.MetricsTrailConsumerQueue}s hooked to the current {@link Thread}'s {@link MetricsTrail}.
      *
-     * @param metric The metric to commit; might <b>not</b> be null.
-     * @param forced True if committing the given {@link Metric} is inevitable, so if the current {@link Thread} is not identified by a trail, an {@link IllegalStateException} has to be thrown.
+     * @param event The metric to commit; might <b>not</b> be null.
+     * @param forced True if committing the given {@link Event} is inevitable, so if the current {@link Thread} is not identified by a trail, an {@link IllegalStateException} has to be thrown.
      * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrail} and the commit is forced.
      */
-    public static void commit(Metric metric, boolean forced) throws IllegalStateException {
+    public static void commit(Event event, boolean forced) throws IllegalStateException {
         MetricsTrail trail = THREAD_LOCAL.get();
         if (trail != null) {
-            trail.commit(metric);
+            trail.commit(event);
         } else if (forced) {
             throw new IllegalStateException("Cannot commit the given metric to the current trail; current thread is not identified by one");
         }
     }
 
     /**
-     * Returns whether there are {@link Metric}s that are enqueued and waiting for any of the current {@link Thread}
+     * Returns whether there are {@link Event}s that are enqueued and waiting for any of the current {@link Thread}
      * {@link MetricsTrail}'s {@link MetricsTrailConsumer.MetricsTrailConsumerQueue} gates to open so they can be delivered.
      *
-     * @return True if there is at least one {@link Metric} currently gated, false otherwise
+     * @return True if there is at least one {@link Event} currently gated, false otherwise
      * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrail}.
      */
     public static boolean hasGated() throws IllegalStateException {
@@ -244,10 +244,10 @@ public final class MetricsTrailSupport {
     }
 
     /**
-     * Returns whether there are {@link Metric}s of the current {@link Thread} {@link MetricsTrail}'s
+     * Returns whether there are {@link Event}s of the current {@link Thread} {@link MetricsTrail}'s
      * {@link MetricsTrailConsumer.MetricsTrailConsumerQueue} currently being delivered to their consumer by asynchronous tasks.
      *
-     * @return True if there is at least one {@link Metric} currently being delivered, false otherwise
+     * @return True if there is at least one {@link Event} currently being delivered, false otherwise
      * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrail}.
      */
     public static boolean isDelivering() throws IllegalStateException {

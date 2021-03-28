@@ -4,8 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import com.mantledillusion.metrics.trail.api.Metric;
-import com.mantledillusion.metrics.trail.api.MetricType;
+import com.mantledillusion.metrics.trail.api.Event;
 import com.mantledillusion.metrics.trail.api.web.WebMetricConsumer;
 import com.mantledillusion.metrics.trail.api.web.WebMetricRequest;
 import com.mantledillusion.metrics.trail.api.web.WebMetricTrail;
@@ -21,14 +20,14 @@ public class MetricsSenderTransferTest implements TestConstants {
 	
 	@BeforeEach
 	public void before() {
-		this.sender = MetricsSender.wrap(request -> this.receivedRequests.add(request));
+		this.sender = MetricsSender.wrap(this.receivedRequests::add);
 	}
 	
 	@Test
 	public void testMetricRequestMapping() throws Exception {
-		Metric metric = new Metric(IDENTIFIER, MetricType.ALERT);
+		Event event = new Event(IDENTIFIER);
 		
-		consume(this.sender, CONSUMER, TRAIL_ID, metric);
+		consume(this.sender, CONSUMER, TRAIL_ID, event);
 		
 		assertEquals(1, this.receivedRequests.size());
 		WebMetricRequest request = this.receivedRequests.get(0);
@@ -42,16 +41,16 @@ public class MetricsSenderTransferTest implements TestConstants {
 		assertEquals(TRAIL_ID, UUID.fromString(trail.getCorrelationId()));
 
 		assertEquals(1, trail.getMetrics().size());
-		assertTrue(equals(metric, trail.getMetrics().get(0)));
+		assertTrue(equals(event, trail.getMetrics().get(0)));
 	}
 	
 	@Test
 	public void testSendSynchronously() throws Exception {
 		this.sender.setMode(MetricsSender.SenderMode.SYNCHRONOUS);
 		
-		Metric metric = new Metric(IDENTIFIER, MetricType.ALERT);
+		Event event = new Event(IDENTIFIER);
 		
-		consume(this.sender, CONSUMER, TRAIL_ID, metric, metric);
+		consume(this.sender, CONSUMER, TRAIL_ID, event, event);
 		
 		assertEquals(2, this.receivedRequests.size());
 	}
@@ -60,9 +59,9 @@ public class MetricsSenderTransferTest implements TestConstants {
 	public void testSendPackaged() throws Exception {
 		this.sender.setMode(MetricsSender.SenderMode.PACKAGED);
 		
-		Metric metric = new Metric(IDENTIFIER, MetricType.ALERT);
+		Event event = new Event(IDENTIFIER);
 		
-		consume(this.sender, CONSUMER, TRAIL_ID, metric, metric);
+		consume(this.sender, CONSUMER, TRAIL_ID, event, event);
 		
 		assertEquals(1, this.receivedRequests.size());
 		WebMetricRequest request = this.receivedRequests.get(0);

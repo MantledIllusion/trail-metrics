@@ -1,8 +1,8 @@
 package com.mantledillusion.metrics.trail;
 
-import com.mantledillusion.metrics.trail.api.Metric;
-import com.mantledillusion.metrics.trail.api.MetricAttribute;
-import com.mantledillusion.metrics.trail.api.MetricType;
+import com.mantledillusion.metrics.trail.api.Event;
+import com.mantledillusion.metrics.trail.api.Measurement;
+import com.mantledillusion.metrics.trail.api.MeasurementType;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -13,16 +13,16 @@ public class TrailMetricsMessageUtil {
     private static final String AKEY_DESTINATION = "destination";
     private static final String AKEY_ORIGINAL_CORRELATION_ID = "originalCorrelationId";
 
-    static void writeReceiveMetric(Message message, String originalDestinationId) {
-        Metric metric = new Metric(MID_RECEIVED, MetricType.ALERT);
+    static void writeReceiveMetric(Message message, String originalCorrelationId) {
+        Event event = new Event(MID_RECEIVED);
         try {
-            metric.getAttributes().add(new MetricAttribute(AKEY_DESTINATION, message.getJMSDestination().toString()));
-            if (originalDestinationId != null) {
-                metric.getAttributes().add(new MetricAttribute(AKEY_ORIGINAL_CORRELATION_ID, message.getJMSDestination().toString()));
+            event.getMeasurements().add(new Measurement(AKEY_DESTINATION, message.getJMSDestination().toString(), MeasurementType.STRING));
+            if (originalCorrelationId != null) {
+                event.getMeasurements().add(new Measurement(AKEY_ORIGINAL_CORRELATION_ID, message.getJMSDestination().toString(), MeasurementType.STRING));
             }
         } catch (JMSException e) {
             // Ignore
         }
-        MetricsTrailSupport.commit(metric, false);
+        MetricsTrailSupport.commit(event, false);
     }
 }

@@ -1,8 +1,8 @@
 package com.mantledillusion.metrics.trail;
 
-import com.mantledillusion.metrics.trail.api.Metric;
-import com.mantledillusion.metrics.trail.api.jpa.DbMetric;
-import com.mantledillusion.metrics.trail.api.jpa.DbMetricsConsumerTrail;
+import com.mantledillusion.metrics.trail.api.Event;
+import com.mantledillusion.metrics.trail.api.jpa.DbTrailEvent;
+import com.mantledillusion.metrics.trail.api.jpa.DbTrailConsumer;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 /**
- * {@link MetricsConsumer} implementation that is able to persist consumed {@link Metric}s into a JPA database.
+ * {@link MetricsConsumer} implementation that is able to persist consumed {@link Event}s into a JPA database.
  */
 public class MetricsPersistor implements MetricsConsumer {
 
@@ -26,35 +26,35 @@ public class MetricsPersistor implements MetricsConsumer {
     }
 
     @Override
-    public void consume(String consumerId, UUID correlationId, Metric metric) {
+    public void consume(String consumerId, UUID correlationId, Event event) {
         EntityTransaction tx = this.em.getTransaction();
         tx.begin();
 
         try {
             CriteriaBuilder builder = this.em.getCriteriaBuilder();
-            CriteriaQuery<DbMetricsConsumerTrail> query = builder.createQuery(DbMetricsConsumerTrail.class);
-            Root<DbMetricsConsumerTrail> root = query.from(DbMetricsConsumerTrail.class);
+            CriteriaQuery<DbTrailConsumer> query = builder.createQuery(DbTrailConsumer.class);
+            Root<DbTrailConsumer> root = query.from(DbTrailConsumer.class);
 
             query.select(root).where(builder.and(
                     builder.equal(root.get("consumerId"), consumerId),
                     builder.equal(root.get("correlationId"), correlationId)
             ));
-            TypedQuery<DbMetricsConsumerTrail> trailTypedQuery = this.em.createQuery(query);
+            TypedQuery<DbTrailConsumer> trailTypedQuery = this.em.createQuery(query);
 
-            DbMetricsConsumerTrail dbConsumerTrail;
+            DbTrailConsumer dbConsumerTrail;
             try {
                 dbConsumerTrail = trailTypedQuery.getSingleResult();
             } catch (NoResultException e) {
-                dbConsumerTrail = new DbMetricsConsumerTrail(correlationId, consumerId);
+                dbConsumerTrail = new DbTrailConsumer(correlationId, consumerId);
             }
 
-            DbMetric dbMetric = DbMetric.from(metric);
-            dbMetric.setTrail(dbConsumerTrail);
+            DbTrailEvent dbTrailEvent = DbTrailEvent.from(event);
+            dbTrailEvent.setTrail(dbConsumerTrail);
 
-            dbConsumerTrail.setMetrics(dbConsumerTrail.getMetrics() != null ? dbConsumerTrail.getMetrics() : new ArrayList<>());
-            dbConsumerTrail.getMetrics().add(dbMetric);
+            dbConsumerTrail.setEvents(dbConsumerTrail.getEvents() != null ? dbConsumerTrail.getEvents() : new ArrayList<>());
+            dbConsumerTrail.getEvents().add(dbTrailEvent);
 
-            this.em.persist(dbMetric);
+            this.em.persist(dbTrailEvent);
             tx.commit();
         } catch (Exception e) {
             tx.rollback();

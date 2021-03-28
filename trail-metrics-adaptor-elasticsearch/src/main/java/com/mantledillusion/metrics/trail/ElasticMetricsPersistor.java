@@ -1,8 +1,8 @@
 package com.mantledillusion.metrics.trail;
 
-import com.mantledillusion.metrics.trail.api.Metric;
-import com.mantledillusion.metrics.trail.api.MetricAttribute;
-import com.mantledillusion.metrics.trail.api.MetricFields;
+import com.mantledillusion.metrics.trail.api.Event;
+import com.mantledillusion.metrics.trail.api.Measurement;
+import com.mantledillusion.metrics.trail.api.EventFields;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -10,10 +10,16 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 /**
- * {@link MetricsConsumer} implementation that is able to persist consumed {@link Metric}s into an Elastic database.
+ * {@link MetricsConsumer} implementation that is able to persist consumed {@link Event}s into an Elastic database.
  */
 public class ElasticMetricsPersistor implements MetricsConsumer {
 
@@ -25,12 +31,12 @@ public class ElasticMetricsPersistor implements MetricsConsumer {
     public enum IndexMode {
 
         /**
-         * The index will be the {@link Metric}'s identifier, prepended by the prefix currently set.
+         * The index will be the {@link Event}'s identifier, prepended by the prefix currently set.
          */
         IDENTIFIER,
 
         /**
-         * The index will be the {@link Metric}'s consumer's ID, prepended by the prefix currently set.
+         * The index will be the {@link Event}'s consumer's ID, prepended by the prefix currently set.
          */
         CONSUMER,
 
@@ -88,24 +94,64 @@ public class ElasticMetricsPersistor implements MetricsConsumer {
     }
 
     @Override
-    public void consume(String consumerId, UUID correlationId, Metric metric) throws IOException {
+    public void consume(String consumerId, UUID correlationId, Event event) throws IOException {
         XContentBuilder builder = XContentFactory.jsonBuilder()
                 .startObject()
-                .field(MetricFields.CONSUMER_ID.getName(), consumerId)
-                .field(MetricFields.CORRELATION_ID.getName(), correlationId.toString())
-                .field(MetricFields.IDENTIFIER.getName(), metric.getIdentifier())
-                .field(MetricFields.TYPE.getName(), metric.getType().name());
+                .field(EventFields.CONSUMER_ID.getName(), consumerId)
+                .field(EventFields.CORRELATION_ID.getName(), correlationId.toString())
+                .field(EventFields.IDENTIFIER.getName(), event.getIdentifier());
 
-        if (metric.getAttributes() != null) {
-            for (MetricAttribute attribute : metric.getAttributes()) {
-                builder.field(MetricFields.ATTRIBUTES.getName() + '.' + attribute.getKey(), attribute.getValue());
+        if (event.getMeasurements() != null) {
+            for (Measurement measurement : event.getMeasurements()) {
+                String name = EventFields.MEASUREMENTS.getName() + '.' + measurement.getKey();
+                switch (measurement.getType()) {
+                    case BOOLEAN:
+                        builder.field(name, (Boolean) measurement.parseValue());
+                        break;
+                    case SHORT:
+                        builder.field(name, (Short) measurement.parseValue());
+                        break;
+                    case INTEGER:
+                        builder.field(name, (Integer) measurement.parseValue());
+                        break;
+                    case LONG:
+                        builder.field(name, (Long) measurement.parseValue());
+                        break;
+                    case FLOAT:
+                        builder.field(name, (Float) measurement.parseValue());
+                        break;
+                    case DOUBLE:
+                        builder.field(name, (Double) measurement.parseValue());
+                        break;
+                    case BIGINTEGER:
+                        builder.field(name, (BigInteger) measurement.parseValue());
+                        break;
+                    case BIGDECIMAL:
+                        builder.field(name, (BigDecimal) measurement.parseValue());
+                        break;
+                    case LOCAL_DATE:
+                        builder.field(name, (LocalDate) measurement.parseValue());
+                        break;
+                    case LOCAL_TIME:
+                        builder.field(name, (LocalTime) measurement.parseValue());
+                        break;
+                    case LOCAL_DATETIME:
+                        builder.field(name, (LocalDateTime) measurement.parseValue());
+                        break;
+                    case ZONED_DATETIME:
+                        builder.field(name, (ZonedDateTime) measurement.parseValue());
+                        break;
+                    default:
+                        builder.field(name, measurement.getValue());
+                        break;
+                }
             }
         }
 
         String index = this.indexPrefix;
         switch (this.indexMode) {
             case IDENTIFIER:
-                index += metric.getIdentifier();
+                index += event.getIdentifier();
                 break;
             case CONSUMER:
                 index = consumerId;
@@ -115,7 +161,7 @@ public class ElasticMetricsPersistor implements MetricsConsumer {
         this.client.index(new IndexRequest()
                 .index(index)
                 .source(builder
-                        .timeField(MetricFields.TIMESTAMP.getName(), metric.getTimestamp())
+                        .timeField(EventFields.TIMESTAMP.getName(), event.getTimestamp())
                         .endObject()),
                 RequestOptions.DEFAULT);
     }
