@@ -7,7 +7,6 @@ import com.mantledillusion.metrics.trail.api.jpa.DbTrailConsumer;
 import com.mantledillusion.metrics.trail.repositories.MeasurementRepository;
 import com.mantledillusion.metrics.trail.repositories.EventRepository;
 import com.mantledillusion.metrics.trail.repositories.ConsumerRepository;
-import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,7 +73,7 @@ public class TrailMetricsHibernateJpaAutoConfigurationTest {
             Assertions.assertEquals(1, consumer.getEvents().size());
             DbTrailEvent event = consumer.getEvents().iterator().next();
             Assertions.assertNotNull(event.getId());
-            Assert.assertSame(consumer, event.getTrail());
+            Assertions.assertSame(consumer, event.getTrail());
             Assertions.assertEquals(METRIC_IDENTIFIER, event.getIdentifier());
             Assertions.assertEquals(METRIC_TIMESTAMP, event.getTimestamp());
             Assertions.assertEquals(METRIC_TIMEZONE, event.getTimezone());
@@ -82,7 +81,7 @@ public class TrailMetricsHibernateJpaAutoConfigurationTest {
             Assertions.assertEquals(1, event.getMeasurements().size());
             DbTrailMeasurement measurement = event.getMeasurements().iterator().next();
             Assertions.assertNotNull(measurement.getId());
-            Assert.assertSame(event, measurement.getEvent());
+            Assertions.assertSame(event, measurement.getEvent());
             Assertions.assertEquals(ATTRIBUTE_KEY, measurement.getKey());
             Assertions.assertEquals(ATTRIBUTE_VALUE, measurement.getValue());
         });
