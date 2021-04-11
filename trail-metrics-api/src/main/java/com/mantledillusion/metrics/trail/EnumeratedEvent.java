@@ -10,7 +10,8 @@ import java.util.Arrays;
  */
 public interface EnumeratedEvent {
 
-    String name(); /** Declares the {@link Enum#name()} method.**/
+    /** Declares the {@link Enum#name()} method.**/
+    String name();
 
     /**
      * Returns a prefix all of the enumerated metrics share.
