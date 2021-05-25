@@ -205,12 +205,13 @@ public final class MetricsTrailSupport {
 
     /**
      * Commits the given {@link Event} to all {@link MetricsTrailConsumer.MetricsTrailConsumerQueue}s hooked to the current {@link Thread}'s {@link MetricsTrail}.
+     * <p>
+     * Convenience method for {@link #commit(Event, TrailBehaviourMode)} with {@link TrailBehaviourMode#LENIENT}.
      *
      * @param event The metric to commit; might <b>not</b> be null.
-     * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrail}.
      */
     public static void commit(Event event) throws IllegalStateException {
-        commit(event, true);
+        commit(event, TrailBehaviourMode.LENIENT);
     }
 
     /**
@@ -221,10 +222,23 @@ public final class MetricsTrailSupport {
      * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrail} and the commit is forced.
      */
     public static void commit(Event event, boolean forced) throws IllegalStateException {
-        MetricsTrail trail = THREAD_LOCAL.get();
-        if (trail != null) {
-            trail.commit(event);
-        } else if (forced) {
+        commit(event, forced ? TrailBehaviourMode.STRICT : TrailBehaviourMode.OPTIONAL);
+    }
+
+    /**
+     * Commits the given {@link Event} to all {@link MetricsTrailConsumer.MetricsTrailConsumerQueue}s hooked to the current {@link Thread}'s {@link MetricsTrail}.
+     *
+     * @param event The metric to commit; might <b>not</b> be null.
+     * @param mode The {@link TrailBehaviourMode} just for the given {@link Event}; might <b>not</b> be null. In case of {@link TrailBehaviourMode#LENIENT} starts a new {@link MetricsTrail}, it ends immediately after dispatching the event.
+     */
+    public static void commit(Event event, TrailBehaviourMode mode) throws IllegalStateException {
+        if (has()) {
+            THREAD_LOCAL.get().commit(event);
+        } else if (mode == null || mode == TrailBehaviourMode.LENIENT) {
+            begin();
+            THREAD_LOCAL.get().commit(event);
+            end();
+        } else if (mode == TrailBehaviourMode.STRICT) {
             throw new IllegalStateException("Cannot commit the given metric to the current trail; current thread is not identified by one");
         }
     }
