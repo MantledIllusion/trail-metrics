@@ -77,7 +77,7 @@ public class MetricsTrailSupportTest {
 
     @Test
     public void commitForcedMetricWithoutExisting() {
-        Assertions.assertThrows(IllegalStateException.class, () -> MetricsTrailSupport.commit(new Event()));
+        Assertions.assertThrows(IllegalStateException.class, () -> MetricsTrailSupport.commit(new Event(), true));
     }
 
     @Test
