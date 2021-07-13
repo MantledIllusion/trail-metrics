@@ -6,6 +6,10 @@ import com.mantledillusion.metrics.trail.api.jpa.DbTrailConsumer;
 import com.mantledillusion.metrics.trail.repositories.ConsumerRepository;
 import com.mantledillusion.metrics.trail.repositories.EventRepository;
 import com.mantledillusion.metrics.trail.repositories.MeasurementRepository;
+import net.javacrumbs.shedlock.provider.jdbctemplate.entity.DbSchedulerLock;
+import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor;
+import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import org.hibernate.Session;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
@@ -26,6 +30,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
@@ -73,11 +78,13 @@ public class TrailMetricsHibernateJpaAutoConfiguration {
     public static final String ENTITY_MANAGER_QUALIFIER = "MetricsEntityManager";
     public static final String TRANSACTION_MANAGER_QUALIFIER = "MetricsTransactionManager";
     public static final String CLEANUP_TASK_QUALIFIER = "MetricsCleanupTask";
+    public static final String CLEANUP_TASK_EXECUTOR_QUALIFIER = "MetricsCleanupTaskExecutor";
     public static final String PERSISTENCE_UNIT = "MetricsPersistenceUnit";
 
     public static final String PRTY_DATA_SOURCE_QUALIFIER = "trailMetrics.jpa.dataSourceQualifier";
     public static final String PRTY_MIGRATE_DATABASE = "trailMetrics.jpa.doMigrate";
     public static final String PRTY_METRICS_CLEANUP = "trailMetrics.jpa.doCleanup";
+    public static final String PRTY_METRICS_CLEANUP_LOCKING = "trailMetrics.jpa.cleanup.doLock";
     public static final String DATA_SOURCE_DEFAULT_QUALIFIER = "dataSource";
 
     @Value("${"+PRTY_MIGRATE_DATABASE+":true}")
@@ -128,6 +135,38 @@ public class TrailMetricsHibernateJpaAutoConfiguration {
     @Bean(TRANSACTION_MANAGER_QUALIFIER)
     public PlatformTransactionManager transactionManager(@Qualifier(ENTITY_MANAGER_FACTORY_QUALIFIER) EntityManagerFactory emf) {
         return new JpaTransactionManager(emf);
+    }
+
+    @Bean(CLEANUP_TASK_EXECUTOR_QUALIFIER)
+    @ConditionalOnProperty(name = {PRTY_METRICS_CLEANUP, PRTY_METRICS_CLEANUP_LOCKING}, havingValue = "true")
+    public LockingTaskExecutor lockingTaskExecutor(@Qualifier(ENTITY_MANAGER_QUALIFIER) EntityManager entityManager,
+                                                   @Qualifier(TRANSACTION_MANAGER_QUALIFIER) PlatformTransactionManager transactionManager,
+                                                   ApplicationContext applicationContext) {
+        DataSource dataSource = applicationContext.getBean(this.dataSourceQualifier, DataSource.class);
+
+        if (this.doMigrate) {
+            Session session = (Session) entityManager.getDelegate();
+            SessionFactoryImpl sessionFactory = (SessionFactoryImpl) session.getSessionFactory();
+            Dialect dialect = sessionFactory.getJdbcServices().getDialect();
+
+            StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder().
+                    applySetting(Environment.DIALECT, dialect.getClass().getName()).
+                    applySetting(Environment.DATASOURCE, dataSource).
+                    build();
+            Metadata metadata = new MetadataSources(serviceRegistry).
+                    addAnnotatedClass(DbSchedulerLock.class).
+                    buildMetadata();
+            new SchemaExport().
+                    execute(EnumSet.of(TargetType.DATABASE), SchemaExport.Action.CREATE, metadata);
+        }
+
+        JdbcTemplateLockProvider.Configuration templateConfiguration = JdbcTemplateLockProvider.Configuration.builder()
+                .withJdbcTemplate(new JdbcTemplate(dataSource))
+                .withTransactionManager(transactionManager)
+                .withTableName(DbSchedulerLock.TABLE_NAME)
+                .build();
+
+        return new DefaultLockingTaskExecutor(new JdbcTemplateLockProvider(templateConfiguration));
     }
 
     @Bean(CLEANUP_TASK_QUALIFIER)
