@@ -33,19 +33,19 @@ The **_Measurement_** class is used to describe meta data to an **_Event_** and 
 - A key, which is unique for its event
 - A value
 - A type determining the value's content, which is one of:
--- STRING
--- BOOLEAN
--- SHORT
--- INTEGER
--- LONG
--- FLOAT
--- DOUBLE
--- BIGINTEGER
--- BIGDECIMAL
--- LOCAL_DATE
--- LOCAL_TIME
--- LOCAL_DATETIME
--- ZONED_DATETIME
+- STRING
+  - BOOLEAN
+  - SHORT
+  - INTEGER
+  - LONG
+  - FLOAT
+  - DOUBLE
+  - BIGINTEGER
+  - BIGDECIMAL
+  - LOCAL_DATE
+  - LOCAL_TIME
+  - LOCAL_DATETIME
+  - ZONED_DATETIME
 
 ### How do I write an Event and its Measurements to a Trail?
 
