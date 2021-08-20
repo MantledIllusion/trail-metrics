@@ -7,8 +7,6 @@ import java.util.Objects;
  */
 public class Measurement {
 
-
-
 	private String key;
 	private String value;
 	private MeasurementType type;
