@@ -10,7 +10,10 @@ import java.util.Arrays;
  */
 public interface EnumeratedEvent {
 
-    /** Declares the {@link Enum#name()} method.**/
+    /** Declares the {@link Enum#name()} method.
+     *
+     * @return The name of the {@link Enum} entry, never null
+     */
     String name();
 
     /**
