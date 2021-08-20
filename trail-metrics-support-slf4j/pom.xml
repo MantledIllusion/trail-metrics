@@ -14,6 +14,10 @@
 	<description>Trail Metrics support for SLF4J.</description>
 	<url>http://www.mantledillusion.com</url>
 
+	<properties>
+		<logback.version>1.2.5</logback.version>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>com.mantledillusion.metrics</groupId>
@@ -28,7 +32,7 @@
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
-			<version>1.2.3</version>
+			<version>${logback.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

@@ -36,9 +36,10 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<!-- dependency versions -->
-		<slf4j.version>1.7.30</slf4j.version>
+		<slf4j.version>1.7.32</slf4j.version>
 		<junit.version>5.7.2</junit.version>
 		<javax-servlet.version>4.0.1</javax-servlet.version>
+		<javax-jms.version>2.0.1</javax-jms.version>
 	</properties>
 
 	<scm>
