@@ -24,7 +24,7 @@ public interface MetricsPredicate {
 
 	/**
 	 * Returns a clone of this predicate that reacts the same as this predicate
-	 * does, but is stateless, so the state it might possibly have is not cloned.
+	 * does, but is stateless, so the state it might have is not cloned.
 	 * 
 	 * @return A functional clone, never null
 	 */

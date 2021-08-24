@@ -2,6 +2,15 @@
 
 Trail Metrics offer a highly flexible way to gather measurements occurring along the execution of a process.
 
+```xml
+<dependency>
+    <groupId>com.mantledillusion.metrics</groupId>
+    <artifactId>trail-metrics-support</artifactId>
+</dependency>
+```
+
+Get the newest version at  [mvnrepository.com/trail-metrics](https://mvnrepository.com/artifact/com.mantledillusion.metrics/trail-metrics-support)
+
 ## Introduction
 
 When a function of a system is called, it is instructed to fulfil its use case by performing all operations necessary for that use case. 
@@ -33,7 +42,7 @@ The **_Measurement_** class is used to describe meta data to an **_Event_** and 
 - A key, which is unique for its event
 - A value
 - A type determining the value's content, which is one of:
-- STRING
+  - STRING
   - BOOLEAN
   - SHORT
   - INTEGER
@@ -49,28 +58,42 @@ The **_Measurement_** class is used to describe meta data to an **_Event_** and 
 
 ### How do I write an Event and its Measurements to a Trail?
 
-The _**MetricsTrail**.commit()_ method accepts instances of the **_Event_** class. 
+First, a trail needs to be open on the current thread, which can be done by calling  _**MetricsTrailSupport**.begin()_, while _**MetricsTrailSupport**.end()_ will close the **_MetricsTrail_** again, flushing all queued up metrics.
 
-In order to have a **_MetricsTrail_** to write to anywhere in your application, use a **_support_** package that will begin **_MetricsTrail_** instances automatically, for example on incoming HTTP requests, in UI sessions, on cron task executiomns or where ever.
+In most cases, this has not to be done manually, but is rather done by a specialized **_support_** package, which will auto-open and close trails on incoming HTTP requests, in UI sessions, on cron task executions or when ever.
 
-Most of these **_support_** packages use the **_ThreadLocal_** based approach of **_MetricsTrailSupport_** class, so writing measurements to a **_MetricsTrail_** becomes as easy as calling _**MetricsTrailSupport**.commit()_ with a **_Metric_** instance as the parameter.
+As long as a trail is hooked to the current thread, the static _**MetricsTrailSupport**.commit()_ method is used for dispatching metrics to the current thread's trail:
 
-In case there is no suitable specialized **_support_** package, the **_MetricsTrailSupport_** can often be used as a base for custom implementations, as it only requires calls to _**MetricsTrailSupport**.begin()_ and _**MetricsTrailSupport**.end()_ to (un-)hook a **_MetricsTrail_** to the current thread.
+```java
+MetricsTrailSupport.commit(new Event("my.event.identifier",
+        new Measurement("my.measurement.key1", "foobar", MeasurementType.STRING),
+        new Measurement("my.measurement.key2", "1.337", MeasurementType.FLOAT)));
+```
 
-### How do I receive Trails?
+### How do I receive Events from Trails?
 
-The **_MetricsConsumer_** interface is used to create consumers to trails. The **_MetricsTrailConsumer_** class wraps an instance of **_MetricsConsumer_**, adding a whole of configurable standard functionality like:
+The **_MetricsConsumer_** interface is used to create consumers to trails:
+
+```java
+MetricsTrailConsumer myConsumer = MetricsTrailConsumer.from("my.consumer", (consumerId, correlationId, event) ->
+        // A super simple consumer that will just print any received event to console
+        System.out.println("Consumer "+consumerId+" received event of trail "+correlationId+": "+event.toString()));
+```
+
+The **_MetricsTrailConsumer_** class wraps an instance of **_MetricsConsumer_**, adding a whole of configurable standard functionality like:
 - Asychronism with retry, so committing a measurement to a consumer will <u>never</u> cause an exception in a committing thread
 - Gates to hold back **_Metric_** instance committing to a trail until a certain type of **_Metric_** occurs
 - Filters to prevent certain types of **_Metric_** instances to be committed to trails
 
-**_MetricsTrailConsumer_** instances can be hooked directly to a **_MetricsTrail_** instance.
+To ensure consumers are automatically hooked to all trails opened, a simple _**MetricsTrailSupport.hook()**_ call will hook a **_MetricsTrailConsumer_** to all thread based trails:
 
-When using a **_support_** package, the consumer is often given to some kind of registry though which will ensure that the consumer is automatically hooked to all trails that are created. In case of **_MetricsTrailSupport_** for example, a simple _**MetricsTrailSupport.hook()**_ call will hook a **_MetricsTrailConsumer_** to all thread based trails.
+```java
+MetricsTrailSupport.hook(myConsumer);
+```
 
 The **_adapter_** packages provide a lot of reference implementations for standard consumers of measurements, like logs, web services, databases and so on.
 
-### I have an application i want to integrate MetricTrails into, how do i get started?
+### I have an application I want to integrate MetricTrails into, how do i get started?
 
 First, choose all the **_support_** packages that fit your application, or hook the basic _trail-measurements-support_ yourself. It will enable your application to create measurements in all situations that might occur. Then simply create as many measurements as required and commit them.
 
