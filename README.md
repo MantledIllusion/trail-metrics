@@ -1,4 +1,4 @@
-# trail-measurements
+# trail-metrics
 
 Trail Metrics offer a highly flexible way to gather measurements occurring along the execution of a process.
 
