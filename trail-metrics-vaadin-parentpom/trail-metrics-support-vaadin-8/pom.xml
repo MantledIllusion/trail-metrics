@@ -16,7 +16,7 @@
 	<url>http://www.mantledillusion.com</url>
 
 	<properties>
-		<vaadin.version>8.13.1</vaadin.version>
+		<vaadin.version>8.14.1</vaadin.version>
 	</properties>
 
 	<dependencies>
