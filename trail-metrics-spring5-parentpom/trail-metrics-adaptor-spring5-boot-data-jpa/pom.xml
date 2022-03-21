@@ -15,7 +15,7 @@
 	<url>http://www.mantledillusion.com</url>
 
 	<properties>
-		<shedlock.version>4.25.0</shedlock.version>
+		<shedlock.version>4.33.0</shedlock.version>
 	</properties>
 
 	<dependencies>
