@@ -15,7 +15,7 @@
 	<url>http://www.mantledillusion.com</url>
 
 	<properties>
-		<influxdb.version>2.21</influxdb.version>
+		<influxdb.version>2.22</influxdb.version>
 	</properties>
 
 	<dependencies>
