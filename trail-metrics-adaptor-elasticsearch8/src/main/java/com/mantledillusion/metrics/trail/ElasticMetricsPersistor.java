@@ -1,13 +1,12 @@
 package com.mantledillusion.metrics.trail;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch.core.IndexRequest;
 import com.mantledillusion.metrics.trail.api.Event;
 import com.mantledillusion.metrics.trail.api.Measurement;
 import com.mantledillusion.metrics.trail.api.EventFields;
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -16,6 +15,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 /**
@@ -46,11 +46,11 @@ public class ElasticMetricsPersistor implements MetricsConsumer {
         STATIC
     }
 
-    private final RestHighLevelClient client;
+    private final ElasticsearchClient client;
     private IndexMode indexMode = IndexMode.IDENTIFIER;
     private String indexPrefix = DEFAULT_INDEX_PREFIX;
 
-    private ElasticMetricsPersistor(RestHighLevelClient client) {
+    private ElasticMetricsPersistor(ElasticsearchClient client) {
         this.client = client;
     }
 
@@ -95,86 +95,90 @@ public class ElasticMetricsPersistor implements MetricsConsumer {
 
     @Override
     public void consume(String consumerId, UUID correlationId, Event event) throws IOException {
-        XContentBuilder builder = XContentFactory.jsonBuilder()
-                .startObject()
-                .field(EventFields.CONSUMER_ID.getName(), consumerId)
-                .field(EventFields.CORRELATION_ID.getName(), correlationId.toString())
-                .field(EventFields.IDENTIFIER.getName(), event.getIdentifier());
+        JsonObjectBuilder builder = Json.createObjectBuilder()
+                .add(EventFields.CONSUMER_ID.getName(), consumerId)
+                .add(EventFields.CORRELATION_ID.getName(), correlationId.toString())
+                .add(EventFields.IDENTIFIER.getName(), event.getIdentifier());
 
         if (event.getMeasurements() != null) {
             for (Measurement measurement : event.getMeasurements()) {
                 String name = EventFields.MEASUREMENTS.getName() + '.' + measurement.getKey();
                 switch (measurement.getType()) {
                     case BOOLEAN:
-                        builder.field(name, (Boolean) measurement.parseValue());
+                        builder.add(name, (Boolean) measurement.parseValue());
                         break;
                     case SHORT:
-                        builder.field(name, (Short) measurement.parseValue());
+                        builder.add(name, (Short) measurement.parseValue());
                         break;
                     case INTEGER:
-                        builder.field(name, (Integer) measurement.parseValue());
+                        builder.add(name, (Integer) measurement.parseValue());
                         break;
                     case LONG:
-                        builder.field(name, (Long) measurement.parseValue());
+                        builder.add(name, (Long) measurement.parseValue());
                         break;
                     case FLOAT:
-                        builder.field(name, (Float) measurement.parseValue());
+                        builder.add(name, (Float) measurement.parseValue());
                         break;
                     case DOUBLE:
-                        builder.field(name, (Double) measurement.parseValue());
+                        builder.add(name, (Double) measurement.parseValue());
                         break;
                     case BIGINTEGER:
-                        builder.field(name, (BigInteger) measurement.parseValue());
+                        builder.add(name, (BigInteger) measurement.parseValue());
                         break;
                     case BIGDECIMAL:
-                        builder.field(name, (BigDecimal) measurement.parseValue());
+                        builder.add(name, (BigDecimal) measurement.parseValue());
                         break;
                     case LOCAL_DATE:
-                        builder.field(name, (LocalDate) measurement.parseValue());
+                        LocalDate localDate = LocalDate.parse(measurement.getValue());
+                        builder.add(name, DateTimeFormatter.ISO_LOCAL_DATE.format(localDate));
                         break;
                     case LOCAL_TIME:
-                        builder.field(name, (LocalTime) measurement.parseValue());
+                        LocalTime localTime = LocalTime.parse(measurement.getValue());
+                        builder.add(name, DateTimeFormatter.ISO_LOCAL_TIME.format(localTime));
                         break;
                     case LOCAL_DATETIME:
-                        builder.field(name, (LocalDateTime) measurement.parseValue());
+                        LocalDateTime localDateTime = LocalDateTime.parse(measurement.getValue());
+                        builder.add(name, DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(localDateTime));
                         break;
                     case ZONED_DATETIME:
-                        builder.field(name, (ZonedDateTime) measurement.parseValue());
+                        ZonedDateTime zonedDateTime = ZonedDateTime.parse(measurement.getValue());
+                        builder.add(name, DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(zonedDateTime));
                         break;
                     default:
-                        builder.field(name, measurement.getValue());
+                        builder.add(name, measurement.getValue());
                         break;
                 }
             }
         }
 
-        String index = this.indexPrefix;
+        String index;
         switch (this.indexMode) {
             case IDENTIFIER:
-                index += event.getIdentifier();
+                index = this.indexPrefix + event.getIdentifier();
                 break;
             case CONSUMER:
                 index = consumerId;
                 break;
+            default:
+                index = this.indexPrefix;
         }
 
-        this.client.index(new IndexRequest()
+        this.client.index(IndexRequest.of(b -> b
                 .index(index)
-                .source(builder
-                        .timeField(EventFields.TIMESTAMP.getName(), event.getTimestamp())
-                        .endObject()),
-                RequestOptions.DEFAULT);
+                .document(builder
+                        .add(EventFields.TIMESTAMP.getName(), DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(event.getTimestamp()))
+                        .build())));
     }
 
     /**
      * Factory method for {@link ElasticMetricsPersistor}s.
      * <p>
-     * Will use the given {@link RestHighLevelClient} to persist consumed metrics.
+     * Will use the given {@link ElasticsearchClient} to persist consumed metrics.
      *
-     * @param client The {@link RestHighLevelClient} to persist into; might <b>not</b> be null.
+     * @param client The {@link ElasticsearchClient} to persist into; might <b>not</b> be null.
      * @return A new {@link ElasticMetricsPersistor} instance, never null
      */
-    public static ElasticMetricsPersistor from(RestHighLevelClient client) {
+    public static ElasticMetricsPersistor from(ElasticsearchClient client) {
         if (client == null) {
             throw new IllegalArgumentException("Cannot create a metrics persistor from a null client.");
         }

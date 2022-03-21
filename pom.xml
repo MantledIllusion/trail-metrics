@@ -63,7 +63,8 @@
 		<module>trail-metrics-api</module>
 		<module>trail-metrics</module>
 		<module>trail-metrics-adaptor-influxdb</module>
-		<module>trail-metrics-adaptor-elasticsearch</module>
+		<module>trail-metrics-adaptor-elasticsearch7</module>
+		<module>trail-metrics-adaptor-elasticsearch8</module>
 		<module>trail-metrics-adaptor-jpa</module>
 		<module>trail-metrics-adaptor-slf4j</module>
 		<module>trail-metrics-adaptor-web</module>
