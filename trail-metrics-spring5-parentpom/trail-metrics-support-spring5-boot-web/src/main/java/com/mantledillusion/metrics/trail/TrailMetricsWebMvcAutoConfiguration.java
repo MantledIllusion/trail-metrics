@@ -34,16 +34,16 @@ public class TrailMetricsWebMvcAutoConfiguration implements WebMvcConfigurer {
     private boolean followSessions;
     @Value("${"+AbstractTrailMetricsHttpServerHandler.PRTY_DISPATCH_PATTERNS+":}")
     private String[] dispatchPatterns;
-    @Value("${"+AbstractTrailMetricsHttpServerHandler.PRTY_DISPATCH_REQUEST+":"+AbstractTrailMetricsHttpServerHandler.DEFAULT_DISPATCH_REQUEST+"}")
-    private boolean dispatchRequest;
-    @Value("${"+AbstractTrailMetricsHttpServerHandler.PRTY_DISPATCH_RESPONSE+":"+AbstractTrailMetricsHttpServerHandler.DEFAULT_DISPATCH_RESPONSE+"}")
-    private boolean dispatchResponse;
+    @Value("${"+AbstractTrailMetricsHttpServerHandler.PRTY_DISPATCH_EVENT +":"+AbstractTrailMetricsHttpServerHandler.DEFAULT_DISPATCH_EVENT +"}")
+    private boolean dispatchEvent;
+    @Value("${"+AbstractTrailMetricsHttpServerHandler.PRTY_ID_MATCHERS+":"+AbstractTrailMetricsHttpServerHandler.DEFAULT_URI_MATCHER_NUMID+','+AbstractTrailMetricsHttpServerHandler.DEFAULT_URI_MATCHER_UUID+"}")
+    private String[] idMatchers;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         if ("INTERCEPTOR".equals(this.mode)) {
             registry.addInterceptor(new TrailMetricsHttpServerInterceptor(this.headerName, this.requestPatterns,
-                    this.incomingMode, this.followSessions, this.dispatchPatterns, this.dispatchRequest, this.dispatchResponse));
+                    this.incomingMode, this.followSessions, this.dispatchPatterns, this.dispatchEvent, this.idMatchers));
         }
     }
 
@@ -51,7 +51,7 @@ public class TrailMetricsWebMvcAutoConfiguration implements WebMvcConfigurer {
     @ConditionalOnProperty(name = PRTY_MODE, havingValue = "FILTER", matchIfMissing = true)
     public FilterRegistrationBean<TrailMetricsHttpServerFilter> trailMetricsHttpServerFilter() {
         TrailMetricsHttpServerFilter filter = new TrailMetricsHttpServerFilter(this.headerName, this.requestPatterns,
-                this.incomingMode, this.followSessions, this.dispatchPatterns, this.dispatchRequest, this.dispatchResponse);
+                this.incomingMode, this.followSessions, this.dispatchPatterns, this.dispatchEvent, this.idMatchers);
 
         FilterRegistrationBean<TrailMetricsHttpServerFilter> filterRegistrationBean = new FilterRegistrationBean<>(filter);
         filterRegistrationBean.setOrder(this.filterOrder);

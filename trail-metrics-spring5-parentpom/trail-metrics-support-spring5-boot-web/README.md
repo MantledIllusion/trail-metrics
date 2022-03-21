@@ -21,9 +21,9 @@ trailMetrics:
     correlationIdHeaderName: <The name of the HTTP header to use when sending correlationIds, 'correlation-id' by default>
     requestPatterns: <An array of MVC URI patterns to limit beginning trails on to>
     incomingMode: <The mode of how to handle incoming trails, one of [STRICT, LENIENT, OPTIONAL], LENIENT by default>
+    dispatchEvent: <Whether or not to dispatch a measurement when a request is handled, false by default>
     dispatchPatterns: <An array of MVC URI patterns to limit dispatching measurements to>
-    dispatchRequest: <Whether or not to dispatch a measurement when a request is received, false by default>
-    dispatchResponse: <Whether or not to dispatch a measurement when a request is responded to, false by default>
+    idMatchers: <An array of matchers for IDs embedded into the URI which will be used to replace IDs with a placeholder for measurements, numeric and UUIDs by default>
 ```
 
 ## Metrics dispatched

@@ -15,10 +15,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 abstract class AbstractTrailMetricsHttpServerHandler {
@@ -30,39 +27,39 @@ abstract class AbstractTrailMetricsHttpServerHandler {
     private static final String AKEY_ORIGINAL_CORRELATION_ID = "originalCorrelationId";
     private static final String AKEY_DURATION = "duration";
 
-    private static final String MID_RESPONSE = "spring.web.server.response";
+    private static final String URI_PLACEHOLDER = "/{id}";
 
     public static final String PRTY_HEADER_NAME = "trailMetrics.http.correlationIdHeaderName";
     public static final String PRTY_REQUEST_PATTERNS = "trailMetrics.http.requestPatterns";
     public static final String PRTY_INCOMING_MODE = "trailMetrics.http.incomingMode";
     public static final String PRTY_FOLLOW_SESSIONS = "trailMetrics.http.server.followSessions";
     public static final String PRTY_DISPATCH_PATTERNS = "trailMetrics.http.dispatchPatterns";
-    public static final String PRTY_DISPATCH_REQUEST = "trailMetrics.http.dispatchRequest";
-    public static final String PRTY_DISPATCH_RESPONSE = "trailMetrics.http.dispatchResponse";
+    public static final String PRTY_DISPATCH_EVENT = "trailMetrics.http.dispatchEvent";
+    public static final String PRTY_ID_MATCHERS = "trailMetrics.http.idMatchers";
     public static final String DEFAULT_HEADER_NAME = MetricsTrailSupport.DEFAULT_TRAIL_ID_KEY;
     public static final String DEFAULT_INCOMING_MODE = "LENIENT";
     public static final boolean DEFAULT_FOLLOW_SESSIONS = true;
-    public static final boolean DEFAULT_DISPATCH_REQUEST = false;
-    public static final boolean DEFAULT_DISPATCH_RESPONSE = false;
+    public static final boolean DEFAULT_DISPATCH_EVENT = false;
+    public static final String DEFAULT_URI_MATCHER_NUMID = "/\\d+";
+    public static final String DEFAULT_URI_MATCHER_UUID = "/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
 
     private final String headerName;
     private List<PathPattern> requestPatterns = Collections.emptyList();
     private TrailBehaviourMode incomingMode;
     private boolean followSessions;
     private List<PathPattern> dispatchPatterns = Collections.emptyList();
-    private boolean dispatchRequest;
-    private boolean dispatchResponse;
+    private boolean dispatchEvent;
+    private List<String> idMatchers = Collections.emptyList();
 
-    public AbstractTrailMetricsHttpServerHandler(String headerName, TrailBehaviourMode incomingMode, boolean followSessions,
-                                                 boolean dispatchRequest, boolean dispatchResponse) {
+    public AbstractTrailMetricsHttpServerHandler(String headerName, TrailBehaviourMode incomingMode,
+                                                 boolean followSessions, boolean dispatchEvent) {
         if (headerName == null || StringUtils.isEmpty(headerName.trim())) {
             throw new IllegalArgumentException("Cannot use a blank header name.");
         }
         this.headerName = headerName;
         setIncomingMode(incomingMode);
         this.followSessions = followSessions;
-        this.dispatchRequest = dispatchRequest;
-        this.dispatchResponse = dispatchResponse;
+        this.dispatchEvent = dispatchEvent;
     }
 
     public List<PathPattern> getRequestPatterns() {
@@ -109,7 +106,7 @@ abstract class AbstractTrailMetricsHttpServerHandler {
     }
 
     public void setDispatchPatterns(String... dispatchMvcPatterns) {
-        this.dispatchPatterns = Arrays.asList(dispatchMvcPatterns).stream().
+        this.dispatchPatterns = Arrays.stream(dispatchMvcPatterns).
                 map(pattern -> new PathPatternParser().parse(pattern)).
                 collect(Collectors.toList());
     }
@@ -119,35 +116,25 @@ abstract class AbstractTrailMetricsHttpServerHandler {
      *
      * @return True if a metric is dispatched, false otherwise.
      */
-    public boolean isDispatchRequest() {
-        return this.dispatchRequest;
+    public boolean isDispatchEvent() {
+        return this.dispatchEvent;
     }
 
     /**
      * Sets whether to dispatch a metric when a request comes in.
      *
-     * @param dispatchRequest True if a metric should be dispatched, false otherwise.
+     * @param dispatchEvent True if a metric should be dispatched, false otherwise.
      */
-    public void setDispatchRequest(boolean dispatchRequest) {
-        this.dispatchRequest = dispatchRequest;
+    public void setDispatchEvent(boolean dispatchEvent) {
+        this.dispatchEvent = dispatchEvent;
     }
 
-    /**
-     * Returns whether to dispatch a metric when a request is responded to.
-     *
-     * @return True if a metric is dispatched, false otherwise.
-     */
-    public boolean isDispatchResponse() {
-        return dispatchResponse;
+    public List<String> getIdMatchers() {
+        return idMatchers;
     }
 
-    /**
-     * Sets whether to dispatch a metric when a request is responded to.
-     *
-     * @param dispatchResponse True if a metric should be dispatched, false otherwise.
-     */
-    public void setDispatchResponse(boolean dispatchResponse) {
-        this.dispatchResponse = dispatchResponse;
+    public void setIdMatchers(String... idMatchers) {
+        this.idMatchers = Arrays.asList(idMatchers);
     }
 
     protected boolean requestStart(ServletRequest request) {
@@ -173,35 +160,42 @@ abstract class AbstractTrailMetricsHttpServerHandler {
                         }
                 }
             }
-            dispatchRequestMetric(request);
 
             REQUEST_DURATION.set(System.currentTimeMillis());
         }
         return true;
     }
 
-    private void dispatchRequestMetric(ServletRequest request) {
-        if (this.dispatchRequest) {
-            Event event = new Event(MID_REQUEST, new Measurement(AKEY_ENDPOINT, ((HttpServletRequest) request).getRequestURI(), MeasurementType.STRING));
-            if (((HttpServletRequest) request).getHeader(this.headerName) != null) {
-                event.getMeasurements().add(new Measurement(
-                        AKEY_ORIGINAL_CORRELATION_ID,
-                        ((HttpServletRequest) request).getHeader(this.headerName),
-                        MeasurementType.STRING));
-            }
-            MetricsTrailSupport.commit(event, false);
-        }
-    }
-
-    protected void dispatchResponseMetric(ServletRequest request, ServletResponse response) {
+    protected void dispatchMetric(ServletRequest request, ServletResponse response) {
         if (matches(this.requestPatterns, request)) {
             ((HttpServletResponse) response).addHeader(this.headerName, MetricsTrailSupport.id().toString());
 
-            if (this.dispatchResponse && matches(this.dispatchPatterns, request)) {
-                MetricsTrailSupport.commit(new Event(MID_RESPONSE, new Measurement(
-                        AKEY_DURATION,
-                        String.valueOf(System.currentTimeMillis()-REQUEST_DURATION.get()),
-                        MeasurementType.LONG)), false);
+            if (this.dispatchEvent && matches(this.dispatchPatterns, request)) {
+                String uri = ((HttpServletRequest) request).getRequestURI();
+                for (String pattern: this.idMatchers) {
+                    uri = uri.replaceAll(pattern, URI_PLACEHOLDER);
+                }
+
+                Event event = new Event(MID_REQUEST,
+                        new Measurement(
+                                AKEY_ENDPOINT,
+                                uri,
+                                MeasurementType.STRING),
+                        new Measurement(
+                                AKEY_DURATION,
+                                String.valueOf(System.currentTimeMillis()-REQUEST_DURATION.get()),
+                                MeasurementType.LONG)
+                );
+
+                if (((HttpServletRequest) request).getHeader(this.headerName) != null) {
+                    event.getMeasurements().add(
+                            new Measurement(
+                                    AKEY_ORIGINAL_CORRELATION_ID,
+                                    ((HttpServletRequest) request).getHeader(this.headerName),
+                                    MeasurementType.STRING));
+                }
+
+                MetricsTrailSupport.commit(event, false);
             }
             REQUEST_DURATION.set(null);
         }
