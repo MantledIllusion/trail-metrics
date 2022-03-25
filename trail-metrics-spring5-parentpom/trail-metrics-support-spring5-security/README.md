@@ -5,6 +5,7 @@ Contains Spring event listeners for creating events when authentications fail/be
 ## How to use
 
 Register any combination of instances of the following classes as Spring beans:
+- **_TrailMetricsSecurityAuthenticationProviderInterceptor_**
 - **_TrailMetricsSecurityAuthenticationFailureListener_**
 - **_TrailMetricsSecurityAuthenticationSuccessListener_**
 - **_TrailMetricsSecurityAuthenticationClosureListener_**
@@ -14,6 +15,8 @@ Register any combination of instances of the following classes as Spring beans:
 ```yaml
 trailMetrics:
   security:
+    provider:
+      dispatch: <Dispatch a measurement when an authentication provider has handled authentication, false by default>
     authentication:
       dispatchFailure: <Dispatch a measurement when authentication fails, false by default>
       dispatchSuccess: <Dispatch a measurement when authentication succeeds, false by default>
@@ -21,10 +24,16 @@ trailMetrics:
 ```
 
 ## Metrics dispatched
-- ALERT spring.security.auth.failure: When an authentication fails.
+- **spring.security.provider**: When an authentication provider has handled authentication
+  - authenticationProvider: The fully qualified class name of the provider
+  - principalName: The name of the principal.
+  - duration: The time it took for authentication, in milliseconds.
+  - success: Whether authentication succeeded.
+  - failureMessage: The message of the exception causing the failure.
+- **spring.security.auth.failure**: When an authentication fails.
   - principalName: The name of the principal.
   - failureMessage: The message of the exception causing the failure.
-- ALERT spring.security.auth.success: When an authentication succeeds.
+- **spring.security.auth.success**: When an authentication succeeds.
   - principalName: The name of the principal.
-- ALERT spring.security.auth.closure: When an authentication ends.
+- **spring.security.auth.closure**: When an authentication ends.
   - principalName: The name of the principal.
