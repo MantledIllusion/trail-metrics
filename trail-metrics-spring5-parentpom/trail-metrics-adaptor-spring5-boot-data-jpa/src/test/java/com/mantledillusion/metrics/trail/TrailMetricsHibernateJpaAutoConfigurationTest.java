@@ -8,11 +8,13 @@ import com.mantledillusion.metrics.trail.repositories.MeasurementRepository;
 import com.mantledillusion.metrics.trail.repositories.EventRepository;
 import com.mantledillusion.metrics.trail.repositories.ConsumerRepository;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Collections;
@@ -38,6 +40,12 @@ public class TrailMetricsHibernateJpaAutoConfigurationTest {
     private EventRepository eventRepository;
     @Autowired
     private MeasurementRepository measurementRepository;
+
+    @BeforeEach
+    @Transactional
+    public void before() {
+        this.metricsConsumerRepository.deleteAll();
+    }
 
     @Test
     public void testPersist() {
