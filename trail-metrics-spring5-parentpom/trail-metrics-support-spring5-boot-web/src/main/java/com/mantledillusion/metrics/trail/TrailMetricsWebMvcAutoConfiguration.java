@@ -36,7 +36,7 @@ public class TrailMetricsWebMvcAutoConfiguration implements WebMvcConfigurer {
     private String[] dispatchPatterns;
     @Value("${"+AbstractTrailMetricsHttpServerHandler.PRTY_DISPATCH_EVENT +":"+AbstractTrailMetricsHttpServerHandler.DEFAULT_DISPATCH_EVENT +"}")
     private boolean dispatchEvent;
-    @Value("${"+AbstractTrailMetricsHttpServerHandler.PRTY_ID_MATCHERS+":"+AbstractTrailMetricsHttpServerHandler.DEFAULT_URI_MATCHER_NUMID+','+AbstractTrailMetricsHttpServerHandler.DEFAULT_URI_MATCHER_UUID+"}")
+    @Value("${"+AbstractTrailMetricsHttpServerHandler.PRTY_ID_MATCHERS+":"+AbstractTrailMetricsHttpServerHandler.DEFAULT_URI_MATCHER_UUID+','+AbstractTrailMetricsHttpServerHandler.DEFAULT_URI_MATCHER_NUMID+"}")
     private String[] idMatchers;
 
     @Override
