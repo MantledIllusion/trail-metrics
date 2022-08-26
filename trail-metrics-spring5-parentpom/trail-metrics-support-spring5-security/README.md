@@ -17,6 +17,8 @@ trailMetrics:
   security:
     provider:
       dispatch: <Dispatch a measurement when an authentication provider has handled authentication, false by default>
+    manager:
+      dispatch: <Dispatch a measurement when an authentication manager has handled authentication, false by default>
     authentication:
       dispatchFailure: <Dispatch a measurement when authentication fails, false by default>
       dispatchSuccess: <Dispatch a measurement when authentication succeeds, false by default>
@@ -26,6 +28,12 @@ trailMetrics:
 ## Metrics dispatched
 - **spring.security.provider**: When an authentication provider has handled authentication
   - authenticationProvider: The fully qualified class name of the provider
+  - principalName: The name of the principal.
+  - duration: The time it took for authentication, in milliseconds.
+  - success: Whether authentication succeeded.
+  - failureMessage: The message of the exception causing the failure.
+- **spring.security.manager**: When an authentication manager has handled authentication
+  - authenticationProvider: The fully qualified class name of the manager
   - principalName: The name of the principal.
   - duration: The time it took for authentication, in milliseconds.
   - success: Whether authentication succeeded.

@@ -7,8 +7,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 /**
- * Spring Boot auto configuration registering an {@link TrailMetricsSecurityAuthenticationProviderInterceptor}.
- *
+ * Spring Boot auto configuration registering a {@link TrailMetricsSecurityAuthenticationProviderInterceptor} and
+ * a {@link TrailMetricsSecurityAuthenticationManagerInterceptor}.
+ * <p>
  * Also configures the following {@link org.springframework.context.ApplicationListener}s:<br>
  * - {@link TrailMetricsSecurityAuthenticationFailureListener}<br>
  * - {@link TrailMetricsSecurityAuthenticationSuccessListener}<br>
@@ -23,6 +24,11 @@ public class TrailMetricsSecurityAutoConfiguration {
     @Bean
     public TrailMetricsSecurityAuthenticationProviderInterceptor authenticationProviderInterceptor() {
         return new TrailMetricsSecurityAuthenticationProviderInterceptor();
+    }
+
+    @Bean
+    public TrailMetricsSecurityAuthenticationManagerInterceptor authenticationManagerInterceptor() {
+        return new TrailMetricsSecurityAuthenticationManagerInterceptor();
     }
 
     @Bean
