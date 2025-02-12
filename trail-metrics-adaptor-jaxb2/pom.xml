@@ -1,0 +1,34 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.mantledillusion.metrics</groupId>
+		<artifactId>trail-metrics-parentpom</artifactId>
+		<version>2.3.0-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>trail-metrics-adaptor-jaxb2</artifactId>
+
+	<name>trail-metrics-adaptor-jaxb2</name>
+	<description>XML based (REST/SOAP) JAXB 2 adaptor for the trail-metrics-api.</description>
+	<url>http://www.mantledillusion.com</url>
+
+	<properties>
+		<jaxb.version>2.3.1</jaxb.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.mantledillusion.metrics</groupId>
+			<artifactId>trail-metrics</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.xml.bind</groupId>
+			<artifactId>jaxb-api</artifactId>
+			<version>${jaxb.version}</version>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
+</project>

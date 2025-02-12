@@ -1,6 +1,6 @@
-# trail-measurements-adaptor-web
+# trail-measurements-adaptor-jaxb4
 
-A **_MetricsConsumer_** that is able to package and send measurements via web service in JAX-B annotated POJOs.
+A **_MetricsConsumer_** that is able to package and send measurements via web service in JAX-B 4 annotated POJOs.
 
 ## How to use (Client Side)
 On the client side, hook a _com.mantledillusion.measurements.trail.**MetricsSender**_ instance as consumer to the used **_MetricsTrail_**. 
