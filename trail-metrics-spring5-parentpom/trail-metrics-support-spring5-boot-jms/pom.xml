@@ -33,7 +33,6 @@
 		<dependency>
 			<groupId>javax.jms</groupId>
 			<artifactId>javax.jms-api</artifactId>
-			<version>${javax-jms.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>

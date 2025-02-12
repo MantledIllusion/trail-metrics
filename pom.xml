@@ -38,8 +38,6 @@
 		<!-- dependency versions -->
 		<slf4j.version>1.7.36</slf4j.version>
 		<junit.version>5.8.2</junit.version>
-		<javax-servlet.version>4.0.1</javax-servlet.version>
-		<javax-jms.version>2.0.1</javax-jms.version>
 	</properties>
 
 	<scm>
@@ -75,17 +73,6 @@
 		<module>trail-metrics-spring5-parentpom</module>
 		<module>trail-metrics-vaadin-parentpom</module>
 	</modules>
-
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>javax.servlet</groupId>
-				<artifactId>javax.servlet-api</artifactId>
-				<version>${javax-servlet.version}</version>
-				<scope>provided</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 
 	<dependencies>
 		<dependency>

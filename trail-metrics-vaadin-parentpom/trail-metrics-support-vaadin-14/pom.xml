@@ -18,6 +18,7 @@
 	<properties>
 		<vaadin.version>14.8.5</vaadin.version>
 		<object-essentials.version>1.2.0</object-essentials.version>
+		<servlet.version>4.0.1</servlet.version>
 	</properties>
 
 	<dependencyManagement>
@@ -51,6 +52,7 @@
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
+			<version>${servlet.version}</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
