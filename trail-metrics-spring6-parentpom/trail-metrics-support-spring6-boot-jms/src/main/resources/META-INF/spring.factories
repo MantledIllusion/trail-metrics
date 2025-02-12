@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.mantledillusion.metrics.trail.TrailMetricsJmsTemplateAutoConfiguration,\
+com.mantledillusion.metrics.trail.TrailMetricsJmsListenerContainerFactoryAutoConfiguration

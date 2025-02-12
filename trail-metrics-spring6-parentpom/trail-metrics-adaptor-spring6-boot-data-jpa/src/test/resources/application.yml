@@ -1,0 +1,11 @@
+trailMetrics:
+  jpa:
+    doCleanup: true
+    cleanup:
+      cron: "* * * ? * *"
+      age: 1ms
+      identifiersLike: cleanme.%
+      doLock: true
+      lock:
+        atLeastFor: 5s
+        atMostFor: 1m
