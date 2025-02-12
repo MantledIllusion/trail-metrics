@@ -67,7 +67,8 @@
 		<module>trail-metrics-adaptor-elasticsearch8</module>
 		<module>trail-metrics-adaptor-jaxb2</module>
 		<module>trail-metrics-adaptor-jaxb4</module>
-		<module>trail-metrics-adaptor-jpa</module>
+		<module>trail-metrics-adaptor-jpa2</module>
+		<module>trail-metrics-adaptor-jpa3</module>
 		<module>trail-metrics-adaptor-slf4j</module>
 		<module>trail-metrics-support</module>
 		<module>trail-metrics-support-slf4j</module>

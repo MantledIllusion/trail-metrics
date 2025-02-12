@@ -8,16 +8,16 @@
 		<version>2.3.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>trail-metrics-adaptor-jpa</artifactId>
+	<artifactId>trail-metrics-adaptor-jpa3</artifactId>
 
-	<name>trail-metrics-adaptor-jpa</name>
-	<description>JPA based database adaptor for the trail-metrics-api.</description>
+	<name>trail-metrics-adaptor-jpa3</name>
+	<description>JPA 3 based database adaptor for the trail-metrics-api.</description>
 	<url>http://www.mantledillusion.com</url>
 
 	<properties>
-		<jpa.version>2.2</jpa.version>
+		<jpa.version>3.1.0</jpa.version>
 		<h2.version>1.4.200</h2.version>
-		<hibernate.version>5.6.7.Final</hibernate.version>
+		<hibernate.version>6.6.7.Final</hibernate.version>
 	</properties>
 
 	<dependencies>
@@ -26,9 +26,10 @@
 			<artifactId>trail-metrics-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
 		<dependency>
-			<groupId>javax.persistence</groupId>
-			<artifactId>javax.persistence-api</artifactId>
+			<groupId>jakarta.persistence</groupId>
+			<artifactId>jakarta.persistence-api</artifactId>
 			<version>${jpa.version}</version>
 			<scope>provided</scope>
 		</dependency>
@@ -39,7 +40,7 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.hibernate</groupId>
+			<groupId>org.hibernate.orm</groupId>
 			<artifactId>hibernate-core</artifactId>
 			<version>${hibernate.version}</version>
 			<scope>test</scope>
