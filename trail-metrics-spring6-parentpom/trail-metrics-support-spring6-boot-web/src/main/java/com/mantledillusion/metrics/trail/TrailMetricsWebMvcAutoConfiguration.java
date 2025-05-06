@@ -36,14 +36,14 @@ public class TrailMetricsWebMvcAutoConfiguration implements WebMvcConfigurer {
     private String[] dispatchPatterns;
     @Value("${"+AbstractTrailMetricsHttpServerHandler.PRTY_DISPATCH_EVENT +":"+AbstractTrailMetricsHttpServerHandler.DEFAULT_DISPATCH_EVENT +"}")
     private boolean dispatchEvent;
-    @Value("${"+AbstractTrailMetricsHttpServerHandler.PRTY_ID_MATCHERS+":"+AbstractTrailMetricsHttpServerHandler.DEFAULT_URI_MATCHER_UUID+','+AbstractTrailMetricsHttpServerHandler.DEFAULT_URI_MATCHER_NUMID+"}")
-    private String[] idMatchers;
+    @Value("${"+AbstractTrailMetricsHttpServerHandler.PRTY_PARAMETER_MATCHERS +":"+AbstractTrailMetricsHttpServerHandler.DEFAULT_PARAMETER_MATCHER_UUID +','+AbstractTrailMetricsHttpServerHandler.DEFAULT_PARAMETER_MATCHER_NUMID +"}")
+    private String[] parameterMatchers;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         if ("INTERCEPTOR".equals(this.mode)) {
             registry.addInterceptor(new TrailMetricsHttpServerInterceptor(this.headerName, this.requestPatterns,
-                    this.incomingMode, this.followSessions, this.dispatchPatterns, this.dispatchEvent, this.idMatchers));
+                    this.incomingMode, this.followSessions, this.dispatchPatterns, this.dispatchEvent, this.parameterMatchers));
         }
     }
 
@@ -51,7 +51,7 @@ public class TrailMetricsWebMvcAutoConfiguration implements WebMvcConfigurer {
     @ConditionalOnProperty(name = PRTY_MODE, havingValue = "FILTER", matchIfMissing = true)
     public FilterRegistrationBean<TrailMetricsHttpServerFilter> trailMetricsHttpServerFilter() {
         TrailMetricsHttpServerFilter filter = new TrailMetricsHttpServerFilter(this.headerName, this.requestPatterns,
-                this.incomingMode, this.followSessions, this.dispatchPatterns, this.dispatchEvent, this.idMatchers);
+                this.incomingMode, this.followSessions, this.dispatchPatterns, this.dispatchEvent, this.parameterMatchers);
 
         FilterRegistrationBean<TrailMetricsHttpServerFilter> filterRegistrationBean = new FilterRegistrationBean<>(filter);
         filterRegistrationBean.setOrder(this.filterOrder);

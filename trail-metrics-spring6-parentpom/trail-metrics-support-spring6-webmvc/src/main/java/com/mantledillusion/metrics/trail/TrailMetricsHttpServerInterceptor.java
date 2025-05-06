@@ -51,7 +51,7 @@ public class TrailMetricsHttpServerInterceptor extends AbstractTrailMetricsHttpS
      * @param followSessions Whether to use the same correlationId for requests of the same session that do not have a specific correlation ID set in their header.
      * @param dispatchPatterns The MVC URI patterns to limit dispatching metrics to; might <b>not</b> be null.
      * @param dispatchEvent Whether to dispatch an event when a request is handled.
-     * @param idMatchers The regex matchers for IDs within the URI to substitute with a placeholder; might <b>not</b> be null.
+     * @param parameterMatchers The regex matchers for parameters within the URI to substitute with a placeholder; might <b>not</b> be null.
      */
     @Autowired
     public TrailMetricsHttpServerInterceptor(@Value("${"+PRTY_HEADER_NAME+":"+DEFAULT_HEADER_NAME+"}") String headerName,
@@ -60,11 +60,11 @@ public class TrailMetricsHttpServerInterceptor extends AbstractTrailMetricsHttpS
                                              @Value("${"+ PRTY_FOLLOW_SESSIONS +":"+ DEFAULT_FOLLOW_SESSIONS +"}") boolean followSessions,
                                              @Value("${"+ PRTY_DISPATCH_PATTERNS +":}") String[] dispatchPatterns,
                                              @Value("${"+ PRTY_DISPATCH_EVENT +":"+ DEFAULT_DISPATCH_EVENT +"}") boolean dispatchEvent,
-                                             @Value("${"+ PRTY_ID_MATCHERS +":}") String[] idMatchers) {
+                                             @Value("${"+ PRTY_PARAMETER_MATCHERS +":}") String[] parameterMatchers) {
         super(headerName, TrailBehaviourMode.valueOf(incomingMode), followSessions, dispatchEvent);
         setRequestPatterns(requestPatterns);
         setDispatchPatterns(dispatchPatterns);
-        setIdMatchers(idMatchers);
+        setParameterMatchers(parameterMatchers);
     }
 
     /**

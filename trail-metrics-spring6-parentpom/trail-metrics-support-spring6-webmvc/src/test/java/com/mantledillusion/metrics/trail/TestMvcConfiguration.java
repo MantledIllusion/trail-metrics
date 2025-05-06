@@ -19,6 +19,7 @@ public class TestMvcConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        interceptor.setParameterMatchers(AbstractTrailMetricsHttpServerHandler.DEFAULT_PARAMETER_MATCHER_NUMID);
         registry.addInterceptor(this.interceptor);
     }
 }

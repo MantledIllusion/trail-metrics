@@ -23,7 +23,7 @@ trailMetrics:
     incomingMode: <The mode of how to handle incoming trails, one of [STRICT, LENIENT, OPTIONAL], LENIENT by default>
     dispatchEvent: <Whether or not to dispatch a measurement when a request is handled, false by default>
     dispatchPatterns: <An array of MVC URI patterns to limit dispatching measurements to>
-    idMatchers: <An array of matchers for IDs embedded into the URI which will be used to replace IDs with a placeholder for measurements, numeric and UUIDs by default>
+    parameterMatchers: <An array of matchers for parameters embedded into the URI which will be used to replace IDs with a placeholder for measurements, numeric and UUIDs by default>
 ```
 
 ## Metrics dispatched

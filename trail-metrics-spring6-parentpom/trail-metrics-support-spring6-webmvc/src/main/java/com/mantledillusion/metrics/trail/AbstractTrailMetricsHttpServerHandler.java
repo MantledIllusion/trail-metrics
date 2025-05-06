@@ -5,7 +5,6 @@ import com.mantledillusion.metrics.trail.api.Measurement;
 import com.mantledillusion.metrics.trail.api.MeasurementType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.RequestPath;
-import org.springframework.util.StringUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.util.pattern.PathPattern;
 import org.springframework.web.util.pattern.PathPatternParser;
@@ -17,6 +16,8 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.net.URI;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 abstract class AbstractTrailMetricsHttpServerHandler {
@@ -24,11 +25,11 @@ abstract class AbstractTrailMetricsHttpServerHandler {
     private static final ThreadLocal<Long> REQUEST_DURATION = new ThreadLocal<>();
 
     private static final String MID_REQUEST = "spring.web.server.request";
+    private static final String AKEY_METHOD = "method";
     private static final String AKEY_ENDPOINT = "endpoint";
+    private static final String AKEY_PARAMETER_PREFIX = "parameters.";
     private static final String AKEY_ORIGINAL_CORRELATION_ID = "originalCorrelationId";
     private static final String AKEY_DURATION = "duration";
-
-    private static final String URI_PLACEHOLDER = "/{id}";
 
     public static final String PRTY_HEADER_NAME = "trailMetrics.http.correlationIdHeaderName";
     public static final String PRTY_REQUEST_PATTERNS = "trailMetrics.http.requestPatterns";
@@ -36,13 +37,13 @@ abstract class AbstractTrailMetricsHttpServerHandler {
     public static final String PRTY_FOLLOW_SESSIONS = "trailMetrics.http.server.followSessions";
     public static final String PRTY_DISPATCH_PATTERNS = "trailMetrics.http.dispatchPatterns";
     public static final String PRTY_DISPATCH_EVENT = "trailMetrics.http.dispatchEvent";
-    public static final String PRTY_ID_MATCHERS = "trailMetrics.http.idMatchers";
+    public static final String PRTY_PARAMETER_MATCHERS = "trailMetrics.http.parameterMatchers";
     public static final String DEFAULT_HEADER_NAME = MetricsTrailSupport.DEFAULT_TRAIL_ID_KEY;
     public static final String DEFAULT_INCOMING_MODE = "LENIENT";
     public static final boolean DEFAULT_FOLLOW_SESSIONS = true;
     public static final boolean DEFAULT_DISPATCH_EVENT = false;
-    public static final String DEFAULT_URI_MATCHER_NUMID = "/\\d+";
-    public static final String DEFAULT_URI_MATCHER_UUID = "/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
+    public static final String DEFAULT_PARAMETER_MATCHER_NUMID = "\\d+";
+    public static final String DEFAULT_PARAMETER_MATCHER_UUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
 
     private final String headerName;
     private List<PathPattern> requestPatterns = Collections.emptyList();
@@ -50,11 +51,11 @@ abstract class AbstractTrailMetricsHttpServerHandler {
     private boolean followSessions;
     private List<PathPattern> dispatchPatterns = Collections.emptyList();
     private boolean dispatchEvent;
-    private List<String> idMatchers = Collections.emptyList();
+    private List<String> parameterMatchers = Collections.emptyList();
 
     public AbstractTrailMetricsHttpServerHandler(String headerName, TrailBehaviourMode incomingMode,
                                                  boolean followSessions, boolean dispatchEvent) {
-        if (headerName == null || StringUtils.isEmpty(headerName.trim())) {
+        if (headerName == null || headerName.trim().isBlank()) {
             throw new IllegalArgumentException("Cannot use a blank header name.");
         }
         this.headerName = headerName;
@@ -68,9 +69,9 @@ abstract class AbstractTrailMetricsHttpServerHandler {
     }
 
     public void setRequestPatterns(String... requestMvcPatterns) {
-        this.requestPatterns = Arrays.asList(requestMvcPatterns).stream().
-                map(pattern -> new PathPatternParser().parse(pattern)).
-                collect(Collectors.toList());
+        this.requestPatterns = Arrays.stream(requestMvcPatterns)
+                .map(pattern -> new PathPatternParser().parse(pattern))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -130,15 +131,15 @@ abstract class AbstractTrailMetricsHttpServerHandler {
         this.dispatchEvent = dispatchEvent;
     }
 
-    public List<String> getIdMatchers() {
-        return idMatchers;
+    public List<String> getParameterMatchers() {
+        return parameterMatchers;
     }
 
-    public void setIdMatchers(String... idMatchers) {
-        this.idMatchers = Arrays.asList(idMatchers);
+    public void setParameterMatchers(String... parameterMatchers) {
+        this.parameterMatchers = Arrays.asList(parameterMatchers);
     }
 
-    protected boolean requestStart(ServletRequest request) {
+    protected void requestStart(ServletRequest request) {
         if (matches(this.requestPatterns, request)) {
             try {
                 MetricsTrailSupport.begin(UUID.fromString(((HttpServletRequest) request).getHeader(this.headerName)));
@@ -164,7 +165,6 @@ abstract class AbstractTrailMetricsHttpServerHandler {
 
             REQUEST_DURATION.set(System.currentTimeMillis());
         }
-        return true;
     }
 
     protected void dispatchMetric(ServletRequest request, ServletResponse response) {
@@ -172,21 +172,41 @@ abstract class AbstractTrailMetricsHttpServerHandler {
             ((HttpServletResponse) response).addHeader(this.headerName, MetricsTrailSupport.id().toString());
 
             if (this.dispatchEvent && matches(this.dispatchPatterns, request)) {
-                String uri = ((HttpServletRequest) request).getRequestURI();
-                for (String pattern: this.idMatchers) {
-                    uri = uri.replaceAll(pattern, URI_PLACEHOLDER);
-                }
-
                 Event event = new Event(MID_REQUEST,
                         new Measurement(
-                                AKEY_ENDPOINT,
-                                uri,
+                                AKEY_METHOD,
+                                ((HttpServletRequest) request).getMethod(),
                                 MeasurementType.STRING),
                         new Measurement(
                                 AKEY_DURATION,
                                 String.valueOf(System.currentTimeMillis()-REQUEST_DURATION.get()),
                                 MeasurementType.LONG)
                 );
+
+                String uri = ((HttpServletRequest) request).getRequestURI();
+
+                int parameterIndex = 0;
+                Optional<Matcher> parameterMatcher = firstMatch(uri);
+                while (parameterMatcher.isPresent()) {
+                    String parameterValueMatch = parameterMatcher.get().group();
+
+                    event.getMeasurements().add(
+                            new Measurement(
+                                    AKEY_PARAMETER_PREFIX+parameterIndex,
+                                    parameterValueMatch.substring(1),
+                                    MeasurementType.STRING));
+
+                    uri = uri.replace(parameterValueMatch, "/{"+parameterIndex+"}");
+
+                    parameterMatcher = firstMatch(uri);
+                    parameterIndex++;
+                }
+
+                event.getMeasurements().add(
+                        new Measurement(
+                                AKEY_ENDPOINT,
+                                uri,
+                                MeasurementType.STRING));
 
                 if (((HttpServletRequest) request).getHeader(this.headerName) != null) {
                     event.getMeasurements().add(
@@ -198,7 +218,7 @@ abstract class AbstractTrailMetricsHttpServerHandler {
 
                 MetricsTrailSupport.commit(event, false);
             }
-            REQUEST_DURATION.set(null);
+            REQUEST_DURATION.remove();
         }
     }
 
@@ -212,5 +232,12 @@ abstract class AbstractTrailMetricsHttpServerHandler {
         return request instanceof HttpServletRequest && (patterns.isEmpty() || patterns.parallelStream().anyMatch(
                 pathPattern -> pathPattern.matches(RequestPath.parse(URI.create(((HttpServletRequest) request).
                                 getRequestURI()), ((HttpServletRequest) request).getContextPath()))));
+    }
+
+    private Optional<Matcher> firstMatch(String uri) {
+        return this.parameterMatchers.stream()
+                .map(parameterMatcher -> Pattern.compile('/'+parameterMatcher).matcher(uri))
+                .filter(Matcher::find)
+                .min(Comparator.comparing(Matcher::start));
     }
 }
