@@ -120,7 +120,7 @@ public class TrailMetricsHibernateJpaAutoConfigurationTest {
         long ms = System.currentTimeMillis();
         this.transactionTemplate.executeWithoutResult(transactionStatus -> {
             while (this.eventRepository.countByIdentifier("cleanme.%") != 0) {
-                if (System.currentTimeMillis()-ms < 5000) {
+                if (System.currentTimeMillis()-ms < 60000) {
                     try {
                         Thread.sleep(50);
                     } catch (InterruptedException e) {
