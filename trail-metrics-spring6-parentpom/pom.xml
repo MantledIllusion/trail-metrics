@@ -18,7 +18,7 @@
 	<properties>
 		<java.compiler.version>17</java.compiler.version>
 
-		<spring-boot.version>3.4.0</spring-boot.version>
+		<spring-boot.version>3.4.5</spring-boot.version>
 		<spring-cloud.version>2024.0.0</spring-cloud.version>
 		<servlet.version>6.1.0</servlet.version>
 		<jms.version>3.1.0</jms.version>
