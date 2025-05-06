@@ -1,0 +1,2 @@
+com.mantledillusion.metrics.trail.TrailMetricsJmsTemplateAutoConfiguration
+com.mantledillusion.metrics.trail.TrailMetricsJmsListenerContainerFactoryAutoConfiguration
