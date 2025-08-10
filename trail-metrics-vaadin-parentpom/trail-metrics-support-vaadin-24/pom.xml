@@ -18,6 +18,7 @@
 	<properties>
 		<vaadin.version>24.8.4</vaadin.version>
 		<object-essentials.version>1.2.0</object-essentials.version>
+		<servet-api.version>6.1.0</servet-api.version>
 	</properties>
 
 	<dependencyManagement>
@@ -47,6 +48,12 @@
 			<groupId>com.mantledillusion.essentials</groupId>
 			<artifactId>object-essentials</artifactId>
 			<version>${object-essentials.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
+			<version>${servet-api.version}</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 </project>
