@@ -11,7 +11,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
- * {@link MetricsTrail} support for Vaadin 7.
+ * {@link MetricsTrail} support for Vaadin 13.
  * <p>
  * By supporting a {@link VaadinService} using {@link #support(VaadinService)}, the {@link VaadinMetricsTrailSupport}
  * will automatically begin new {@link MetricsTrail}s for every new {@link VaadinSession} of that service.
