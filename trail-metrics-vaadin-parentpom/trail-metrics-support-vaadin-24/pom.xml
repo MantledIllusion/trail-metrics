@@ -1,0 +1,59 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.mantledillusion.metrics</groupId>
+		<artifactId>trail-metrics-vaadin-parentpom</artifactId>
+		<version>2.4.0-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>trail-metrics-support-vaadin-24</artifactId>
+
+	<name>trail-metrics-support-vaadin-24</name>
+	<description>Trail Metrics support for Vaadin Flow 24.</description>
+	<url>http://www.mantledillusion.com</url>
+
+	<properties>
+		<vaadin.version>24.8.4</vaadin.version>
+		<object-essentials.version>1.2.0</object-essentials.version>
+		<servlet.version>4.0.1</servlet.version>
+	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.vaadin</groupId>
+				<artifactId>vaadin-bom</artifactId>
+				<version>${vaadin.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.mantledillusion.metrics</groupId>
+			<artifactId>trail-metrics-support-vaadin-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>flow-server</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.mantledillusion.essentials</groupId>
+			<artifactId>object-essentials</artifactId>
+			<version>${object-essentials.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>${servlet.version}</version>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
+</project>
