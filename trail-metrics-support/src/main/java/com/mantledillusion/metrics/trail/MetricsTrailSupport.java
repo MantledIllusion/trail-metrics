@@ -4,6 +4,7 @@ import com.mantledillusion.metrics.trail.api.Event;
 
 import java.lang.ref.WeakReference;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 
 /**
@@ -171,16 +172,23 @@ public final class MetricsTrailSupport {
     }
 
     /**
+     * Returns an {@link Optional} containing the {@link MetricsTrail} that identifies the current {@link Thread} if there is one.
+     *
+     * @return The current {@link MetricsTrail}, never null
+     * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrail}.
+     */
+    public static Optional<MetricsTrail> find() throws IllegalStateException {
+        return Optional.ofNullable(THREAD_LOCAL.get());
+    }
+
+    /**
      * Returns the {@link MetricsTrail} that identifies the current {@link Thread}.
      *
-     * @return Th current {@link MetricsTrail}, never null
+     * @return The current {@link MetricsTrail}, never null
      * @throws IllegalStateException If the current {@link Thread} is not identified by a {@link MetricsTrail}.
      */
     public static MetricsTrail get() throws IllegalStateException {
-        if (THREAD_LOCAL.get() == null) {
-            throw new IllegalStateException("Cannot retrieve the ID of the current trail; current thread is not identified by one");
-        }
-        return THREAD_LOCAL.get();
+        return find().orElseThrow(() -> new IllegalStateException("Cannot retrieve the ID of the current trail; current thread is not identified by one"));
     }
 
     /**
@@ -336,6 +344,58 @@ public final class MetricsTrailSupport {
             throw new IllegalArgumentException("Cannot release a null trail");
         }
         announce(metricsTrail, MetricsTrailListener.EventType.RELEASE);
+    }
+
+    /**
+     * Runs the given {@link Runnable} in the given {@link MetricsTrail}.
+     * <p>
+     * If the current {@link Thread} already has a {@link MetricsTrail}, it is released and bound again after running.
+     *
+     * @param metricsTrail The trail to run in; might <b>not</b> be null.
+     * @param runnable The runnable to run; might <b>not</b> be null.
+     */
+    public static void runIn(MetricsTrail metricsTrail, Runnable runnable) {
+        if (metricsTrail == null) {
+            throw new IllegalArgumentException("Cannot run in a null trail");
+        } else if (runnable == null) {
+            throw new IllegalArgumentException("Cannot run a null runnable");
+        }
+        Optional<MetricsTrail> current = find();
+        current.ifPresent(MetricsTrailSupport::release);
+        bind(metricsTrail);
+        try {
+            runnable.run();
+        } finally {
+            release();
+            current.ifPresent(MetricsTrailSupport::bind);
+        }
+    }
+
+    /**
+     * Calls the given {@link Callable} in the given {@link MetricsTrail}.
+     * <p>
+     * If the current {@link Thread} already has a {@link MetricsTrail}, it is released and bound again after calling.
+     *
+     * @param metricsTrail The trail to call in; might <b>not</b> be null.
+     * @param callable The callable to call; might <b>not</b> be null.
+     * @return The callable's return value, might be null
+     * @throws Exception Any exception that might be raised by the callable
+     */
+    public static <V> V callIn(MetricsTrail metricsTrail, Callable<V> callable) throws Exception {
+        if (metricsTrail == null) {
+            throw new IllegalArgumentException("Cannot call in a null trail");
+        } else if (callable == null) {
+            throw new IllegalArgumentException("Cannot call a null callable");
+        }
+        Optional<MetricsTrail> current = find();
+        current.ifPresent(MetricsTrailSupport::release);
+        bind(metricsTrail);
+        try {
+            return callable.call();
+        } finally {
+            release();
+            current.ifPresent(MetricsTrailSupport::bind);
+        }
     }
 
     private static void announce(MetricsTrail metricsTrail, MetricsTrailListener.EventType eventType) {
