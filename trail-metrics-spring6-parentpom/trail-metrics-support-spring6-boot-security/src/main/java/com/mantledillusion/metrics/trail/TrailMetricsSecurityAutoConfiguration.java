@@ -1,6 +1,7 @@
 package com.mantledillusion.metrics.trail;
 
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,31 +23,37 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 public class TrailMetricsSecurityAutoConfiguration {
 
     @Bean
+    @ConditionalOnProperty(TrailMetricsSecurityAuthenticationProviderInterceptor.PRTY_DISPATCH_SUCCESS)
     public TrailMetricsSecurityAuthenticationProviderInterceptor authenticationProviderInterceptor() {
         return new TrailMetricsSecurityAuthenticationProviderInterceptor();
     }
 
     @Bean
+    @ConditionalOnProperty(TrailMetricsSecurityAuthenticationManagerInterceptor.PRTY_DISPATCH_SUCCESS)
     public TrailMetricsSecurityAuthenticationManagerInterceptor authenticationManagerInterceptor() {
         return new TrailMetricsSecurityAuthenticationManagerInterceptor();
     }
 
     @Bean
+    @ConditionalOnProperty(TrailMetricsSecurityAuthenticationFailureListener.PRTY_DISPATCH_FAILURE)
     public TrailMetricsSecurityAuthenticationFailureListener authenticationFailureMetricsListener() {
         return new TrailMetricsSecurityAuthenticationFailureListener();
     }
 
     @Bean
+    @ConditionalOnProperty(TrailMetricsSecurityAuthenticationSuccessListener.PRTY_DISPATCH_SUCCESS)
     public TrailMetricsSecurityAuthenticationSuccessListener authenticationSuccessMetricsListener() {
         return new TrailMetricsSecurityAuthenticationSuccessListener();
     }
 
     @Bean
+    @ConditionalOnProperty(TrailMetricsSecurityAuthenticationInteractiveSuccessListener.PRTY_DISPATCH_SUCCESS)
     public TrailMetricsSecurityAuthenticationInteractiveSuccessListener authenticationInteractiveSuccessListener() {
         return new TrailMetricsSecurityAuthenticationInteractiveSuccessListener();
     }
 
     @Bean
+    @ConditionalOnProperty(TrailMetricsSecurityAuthenticationClosureListener.PRTY_DISPATCH_CLOSURE)
     public TrailMetricsSecurityAuthenticationClosureListener authenticationClosureMetricsListener() {
         return new TrailMetricsSecurityAuthenticationClosureListener();
     }
