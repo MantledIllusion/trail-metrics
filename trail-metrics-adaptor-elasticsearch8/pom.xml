@@ -15,7 +15,7 @@
     <url>http://www.mantledillusion.com</url>
 
     <properties>
-        <elastic.version>8.1.0</elastic.version>
+        <elastic.version>8.19.16</elastic.version>
     </properties>
 
     <dependencies>
